@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NS Engineering & Geotechnical Services Website
+
+Professional website for NS Engineering, a geotechnical and engineering services company in Nepal.
+
+## Features
+
+- Interactive service showcase (Pile Testing, Soil/Rock Laboratory, Drilling, Geophysical Surveys)
+- Project portfolio with filterable gallery
+- Equipment catalog with specifications
+- Interactive project location map
+- Knowledge center (blog)
+- Contact/RFQ form
+- Fully responsive design
+- Optimized for performance and SEO
+
+## Tech Stack
+
+- **Framework**: Next.js 14+ (App Router) with static export
+- **Styling**: Tailwind CSS v4
+- **Language**: TypeScript
+- **Animations**: Framer Motion
+- **Maps**: React Leaflet
+- **Icons**: Lucide React
+- **Forms**: React Hook Form + Zod
 
 ## Getting Started
 
-First, run the development server:
+### Development
 
+1. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Run the development server:
+```bash
+npm run dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Build
 
-## Learn More
+To create a production build:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This generates a static export in the `out` directory.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Preview Production Build
 
-## Deploy on Vercel
+```bash
+npm run build
+npx serve@latest out
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The site is automatically deployed to GitHub Pages when changes are pushed to the `main` branch.
+
+### Manual Deployment
+
+1. Ensure GitHub Pages is enabled in repository settings
+2. Set source to "GitHub Actions"
+3. Push to main branch - GitHub Actions will build and deploy automatically
+
+## Project Structure
+
+```
+src/
+├── app/                 # Next.js pages
+├── components/          # React components
+│   ├── layout/         # Header, Footer
+│   ├── home/           # Homepage components
+│   ├── services/       # Service cards, modals
+│   ├── projects/       # Project components
+│   ├── equipment/      # Equipment catalog
+│   ├── ui/             # Reusable UI components
+│   └── animations/     # Animation wrappers
+├── data/               # Static data files
+├── types/              # TypeScript interfaces
+└── lib/                # Utility functions
+```
+
+## Customization
+
+### Colors
+
+Edit brand colors in `src/app/globals.css`:
+- Primary: Blue (#1890ff)
+- Secondary: Teal (#13c2c2)
+
+### Content
+
+Update company information in `src/data/site-config.ts`
+
+## Future Enhancements
+
+- ERPNext integration for client portal
+- Real-time equipment availability
+- Multi-step RFQ form
+- Interactive project timeline
+- Advanced search and filtering
