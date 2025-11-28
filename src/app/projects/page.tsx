@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import {
   Building2,
@@ -12,19 +13,57 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import FadeIn from '@/components/animations/FadeIn';
-import { projects, projectCategories, type Project } from '@/data/projects';
+import type { Project } from '@/types/project';
+import projectsData from '@/data/generated/projects.json';
 import Input from '@/components/ui/Input';
+
+// Dynamic import for map component (client-side only)
+const ProjectMap = dynamic(
+  () => import('@/components/map/ProjectMap'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[300px] sm:h-[400px] md:h-[450px] lg:h-[500px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg shadow-lg overflow-hidden relative">
+        {/* Animated loading skeleton */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600 font-medium">Loading interactive map...</p>
+            <p className="text-sm text-gray-500 mt-1">Preparing {projectsData.projects.length} project locations</p>
+          </div>
+        </div>
+        {/* Animated background pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }} />
+        </div>
+      </div>
+    )
+  }
+);
+
+const projects: Project[] = projectsData.projects;
+const projectCategories = [
+  { id: 'all', label: 'All Projects' },
+  { id: 'pile-testing', label: 'Pile Testing' },
+  { id: 'tunnel-road', label: 'Tunnel & Road' },
+  { id: 'hydropower', label: 'Hydropower' },
+  { id: 'transmission', label: 'Transmission Lines' },
+  { id: 'ndt', label: 'NDT Services' },
+];
 
 export default function ProjectsPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [highlightedProjectId, setHighlightedProjectId] = useState<string | null>(null);
 
   const filteredProjects = projects.filter((project) => {
     const matchesCategory = selectedCategory === 'all' || project.category === selectedCategory;
     const matchesSearch =
       project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       project.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.location.toLowerCase().includes(searchQuery.toLowerCase());
+      project.location.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -48,6 +87,23 @@ export default function ProjectsPage() {
       'ndt': 'NDT'
     };
     return labels[category];
+  };
+
+  // Map interaction handlers
+  const handleMarkerClick = (projectId: string) => {
+    setHighlightedProjectId(projectId);
+    // Scroll to project card in list
+    const element = document.getElementById(`project-${projectId}`);
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+  };
+
+  const handleMarkerHover = (projectId: string | null) => {
+    setHighlightedProjectId(projectId);
   };
 
   return (
@@ -124,6 +180,66 @@ export default function ProjectsPage() {
         </div>
       </section>
 
+      {/* Map Section */}
+      <section className="bg-gray-100 border-y border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Project Locations</h2>
+              <p className="text-gray-600">Click a marker to view project details below</p>
+            </div>
+
+            {/* Legend */}
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <span className="text-gray-600 font-medium">Categories:</span>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-[#7c3aed] border-2 border-white shadow-sm"></div>
+                <span className="text-gray-700">Pile Testing</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-[#6d28d9] border-2 border-white shadow-sm"></div>
+                <span className="text-gray-700">Tunnel & Road</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-[#8b5cf6] border-2 border-white shadow-sm"></div>
+                <span className="text-gray-700">Hydropower</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-[#5b21b6] border-2 border-white shadow-sm"></div>
+                <span className="text-gray-700">Transmission</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-[#6366f1] border-2 border-white shadow-sm"></div>
+                <span className="text-gray-700">NDT</span>
+              </div>
+            </div>
+          </div>
+
+          <ProjectMap
+            projects={projects}
+            highlightedProjectId={highlightedProjectId}
+            onMarkerClick={handleMarkerClick}
+            onMarkerHover={handleMarkerHover}
+          />
+
+          {/* Map Stats */}
+          <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-primary-600" />
+              <span><strong>{projects.length}</strong> projects mapped</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-primary-600" />
+              <span><strong>{new Set(projects.map(p => p.client)).size}</strong> unique clients</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-primary-600" />
+              <span><strong>{Math.max(...projects.map(p => p.year)) - Math.min(...projects.map(p => p.year)) + 1}</strong> years of projects</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Projects Grid */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -135,9 +251,21 @@ export default function ProjectsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProjects.map((project, index) => (
+              {filteredProjects.map((project, index) => {
+                const isHighlighted = project.id === highlightedProjectId;
+                return (
                 <FadeIn key={project.id} delay={index * 0.05}>
-                  <Card hover className="h-full">
+                  <div
+                    id={`project-${project.id}`}
+                    onMouseEnter={() => setHighlightedProjectId(project.id)}
+                    onMouseLeave={() => setHighlightedProjectId(null)}
+                  >
+                    <Card
+                      hover
+                      className={`h-full transition-all duration-300 ${
+                        isHighlighted ? 'ring-4 ring-purple-500 shadow-2xl scale-105' : ''
+                      }`}
+                    >
                     <CardContent className="p-0">
                       {/* Project Header */}
                       <div className={`p-6 bg-gradient-to-br ${getCategoryColor(project.category)} text-white`}>
@@ -173,7 +301,7 @@ export default function ProjectsPage() {
                             <div>
                               <div className="text-xs text-gray-500 mb-1">Location</div>
                               <div className="text-sm font-medium text-gray-900">
-                                {project.location}
+                                {project.location.name}
                               </div>
                             </div>
                           </div>
@@ -199,8 +327,10 @@ export default function ProjectsPage() {
                       </div>
                     </CardContent>
                   </Card>
+                  </div>
                 </FadeIn>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

@@ -1,22 +1,28 @@
-export type Industry = 'roads' | 'bridges' | 'hydropower' | 'buildings';
+export type ProjectCategory = 'pile-testing' | 'tunnel-road' | 'hydropower' | 'transmission' | 'ndt';
 
 export interface ProjectLocation {
   name: string;
-  coordinates: [number, number]; // [latitude, longitude]
+  district?: string;
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+}
+
+export interface ProjectMedia {
+  images: string[];
+  pdfs: string[];
+  heroImage?: string;
 }
 
 export interface Project {
   id: string;
-  name: string;
+  title: string;
   client: string;
+  category: ProjectCategory;
   year: number;
   location: ProjectLocation;
-  industry: Industry;
-  services: string[];
-  scopeOfWork: string;
-  images: string[];
-  equipmentUsed: string[];
-  outcomes: string;
-  caseStudyPDF?: string;
+  scope: string[];
+  media: ProjectMedia;
   featured?: boolean;
 }
