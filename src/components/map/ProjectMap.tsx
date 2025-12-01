@@ -92,10 +92,6 @@ export default function ProjectMap({
         style={{ background: '#f0f0f0' }}
         minZoom={6}
         maxZoom={18}
-        // Improve touch interactions on mobile
-        tap={true}
-        tapTolerance={15}
-        // Accessibility
         attributionControl={true}
       >
         <TileLayer

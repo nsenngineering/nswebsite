@@ -17,7 +17,7 @@ export async function parseCSVFile(filePath: string): Promise<CSVRecord[]> {
       skip_empty_lines: true,
       trim: true,
       bom: true // Handle BOM (Byte Order Mark) if present
-    });
+    }) as CSVRecord[];
 
     return records;
   } catch (error) {

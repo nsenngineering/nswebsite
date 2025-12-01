@@ -44,14 +44,14 @@ function validateRequired(value: string | undefined, fieldName: string, projectI
 /**
  * Validate category is one of allowed values
  */
-function validateCategory(category: string, projectId: string): typeof VALID_CATEGORIES[number] {
+function validateCategory(category: string, projectId: string): 'pile-testing' | 'tunnel-road' | 'hydropower' | 'transmission' | 'ndt' {
   if (!VALID_CATEGORIES.includes(category)) {
     throw new Error(
       `❌ Invalid category "${category}" for project: ${projectId}\n` +
       `   Valid categories: ${VALID_CATEGORIES.join(', ')}`
     );
   }
-  return category as typeof VALID_CATEGORIES[number];
+  return category as 'pile-testing' | 'tunnel-road' | 'hydropower' | 'transmission' | 'ndt';
 }
 
 /**
