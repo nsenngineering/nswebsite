@@ -14,11 +14,14 @@ import {
 import { Card, CardContent } from '@/components/ui/Card';
 import FadeIn from '@/components/animations/FadeIn';
 import type { Project } from '@/types/project';
-import projectsData from '@/data/generated/projects.json';
+import projectsDataRaw from '@/data/generated/projects.json';
 import Input from '@/components/ui/Input';
 
+// Type assertion for imported JSON
+const projectsData = projectsDataRaw as { projects: Project[] };
+
 // Dynamic import for map component (client-side only)
-const ProjectMap = dynamic(  
+const ProjectMap = dynamic(
   () => import('@/components/map/ProjectMap'),
   {
     ssr: false,
