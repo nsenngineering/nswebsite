@@ -219,7 +219,7 @@ export default function ProjectsPage() {
           </div>
 
           <ProjectMap
-            projects={projects}
+            projects={filteredProjects}
             highlightedProjectId={highlightedProjectId}
             onMarkerClick={handleMarkerClick}
             onMarkerHover={handleMarkerHover}
@@ -229,15 +229,15 @@ export default function ProjectsPage() {
           <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-primary-600" />
-              <span><strong>{projects.length}</strong> projects mapped</span>
+              <span><strong>{filteredProjects.length}</strong> projects mapped</span>
             </div>
             <div className="flex items-center gap-2">
               <Building2 className="w-4 h-4 text-primary-600" />
-              <span><strong>{new Set(projects.map(p => p.client)).size}</strong> unique clients</span>
+              <span><strong>{new Set(filteredProjects.map(p => p.client)).size}</strong> unique clients</span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-primary-600" />
-              <span><strong>{Math.max(...projects.map(p => p.year)) - Math.min(...projects.map(p => p.year)) + 1}</strong> years of projects</span>
+              <span><strong>{filteredProjects.length > 0 ? Math.max(...filteredProjects.map(p => p.year)) - Math.min(...filteredProjects.map(p => p.year)) + 1 : 0}</strong> years of projects</span>
             </div>
           </div>
         </div>
