@@ -52,7 +52,7 @@ async function buildContent() {
 
     // Step 2: Validate and transform data
     console.log('🔍 Validating project data...');
-    const projects = parseProjects(records);
+    const projects = await parseProjects(records);
     console.log();
 
     // Step 3: Validate media files

@@ -373,7 +373,7 @@ Leading provider of geotechnical investigation, in-situ & laboratory testing ser
 
 ## Implementation Complete ✅
 
-### Interactive Project Map with File-Based CMS
+### Interactive Project Map with File-Based CMS + Photo Gallery System
 
 **Completed Features:**
 
@@ -389,6 +389,7 @@ Leading provider of geotechnical investigation, in-situ & laboratory testing ser
    - Marker clustering for better visualization
    - Category-colored markers (purple palette)
    - Interactive tooltips and popups
+   - **NEW:** Image previews in map popups
    - Click marker → scroll to project card
    - Hover card → highlight marker
    - Mobile-optimized (300px-500px responsive heights)
@@ -397,12 +398,45 @@ Leading provider of geotechnical investigation, in-situ & laboratory testing ser
 3. **Enhanced Projects Page**
    - Fixed map section at top (shows all projects)
    - Filterable/searchable project list below
+   - **NEW:** Project cards with hero image thumbnails
+   - **NEW:** Camera badge showing photo count
+   - **NEW:** Click card to open modal with photo carousel
    - Category legend with color codes
    - Dynamic statistics (32 projects, 23 clients, 5 years)
    - Bidirectional highlighting (map ↔ list)
    - Professional loading states
 
-4. **Comprehensive Documentation**
+4. **Project Photo Gallery System (Phase 6)**
+   - **Image Carousel Component:**
+     - Embla Carousel with thumbnail navigation
+     - Previous/Next arrow buttons
+     - Image counter display ("3 / 12")
+     - Keyboard navigation (arrow keys)
+     - Touch/swipe support on mobile
+     - Loading skeletons and error handling
+
+   - **Project Modal:**
+     - Full-screen modal with photo carousel
+     - Two-column layout (desktop): 60% carousel / 40% details
+     - Single-column layout (mobile): stacked
+     - Complete project metadata
+     - Scrollable scope of work list
+     - PDF downloads section
+
+   - **Homepage Featured Projects:**
+     - Horizontal scroll carousel
+     - Large hero images (400px height)
+     - Category badge and photo count overlay
+     - Click to open modal
+     - Shows projects with `featured: true`
+
+   - **Image Integration:**
+     - Hero images on project cards
+     - Image previews in map popups
+     - Graceful fallbacks with SVG placeholders
+     - Lazy loading for performance
+
+5. **Comprehensive Documentation**
    - [Content Management Guide](./docs/content-management.md) - For editing CSV
    - [Adding Projects Guide](./docs/adding-projects.md) - Step-by-step instructions
    - [GPS Coordinates Guide](./docs/gps-coordinates.md) - Finding coordinates
@@ -412,7 +446,9 @@ Leading provider of geotechnical investigation, in-situ & laboratory testing ser
 - Next.js 16 (App Router) with static export
 - TypeScript (100% typed)
 - Tailwind CSS v4
+- Framer Motion (animations)
 - Leaflet + React-Leaflet + clustering
+- **NEW:** Embla Carousel (image carousel)
 - CSV-based content management
 
 **Build Commands:**
@@ -424,31 +460,49 @@ npm run build          # Production build
 
 **File Structure:**
 ```
-content/projects/projects.csv      # Master data (edit in Excel)
-scripts/build-content.ts            # Build orchestrator
-src/data/generated/projects.json   # Auto-generated
-src/components/map/ProjectMap.tsx  # Interactive map
-src/app/projects/page.tsx           # Projects page with map
-docs/                               # User documentation
+content/projects/projects.csv           # Master data (edit in Excel)
+scripts/build-content.ts                 # Build orchestrator
+src/data/generated/projects.json        # Auto-generated
+src/components/map/ProjectMap.tsx       # Interactive map
+src/components/ui/ImageCarousel.tsx     # Photo carousel component
+src/components/projects/ProjectCard.tsx # Enhanced project cards
+src/components/projects/ProjectModal.tsx # Modal with carousel
+src/components/home/FeaturedProjects.tsx # Homepage featured section
+src/app/projects/page.tsx                # Projects page with map & modal
+src/app/page.tsx                         # Homepage with featured projects
+docs/                                    # User documentation
 ```
 
 **Current Status:**
-- ✅ All core features implemented
+- ✅ All core features implemented (Phases 1-6 complete)
+- ✅ Project photo gallery system complete
+- ✅ Image carousel with modal functionality working
+- ✅ Featured projects section on homepage
 - ✅ 32 projects with random GPS (ready for real coordinates)
+- ✅ Photo infrastructure ready for image upload
 - ✅ Documentation complete
 - ✅ Mobile optimized and tested
 - ⏳ Awaiting real project images and GPS coordinates
 - ⏳ Ready for content population
 
+**How Photo System Works:**
+1. Add images to `content/projects/{project-id}/images/` folder
+2. Update CSV with image filenames: `"hero.jpg;site-1.jpg;site-2.jpg"`
+3. Mark featured projects: Set `featured` column to `true`
+4. Run `npm run build:content` to process images
+5. Images appear on cards, in carousel, on homepage
+
 **Next Steps:**
 1. Gather real GPS coordinates for 32 projects
-2. Collect 2-3 photos per project
-3. Update CSV with real data and image filenames
-4. Test with real content
-5. Deploy to production
+2. Collect 2-5 photos per project
+3. Organize photos into project folders
+4. Update CSV with real coordinates and image filenames
+5. Mark 4-6 projects as featured
+6. Test with real content
+7. Deploy to production
 
 ---
 
-**Last Updated**: 2025-11-28
-**Status**: Map Integration Complete - Ready for Content Population
-**Next Step**: Gather Real GPS Coordinates & Project Images
+**Last Updated**: 2025-12-08
+**Status**: Phase 1-6 Complete - Map & Photo Gallery System Ready
+**Next Step**: Populate with Real GPS Coordinates & Project Images

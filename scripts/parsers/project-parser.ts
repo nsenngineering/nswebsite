@@ -1,3 +1,5 @@
+import path from 'path';
+import fs from 'fs-extra';
 import { CSVRecord, parseSemicolonArray, parseBoolean, parseNumber } from './csv-parser.js';
 
 export interface Project {
@@ -87,9 +89,74 @@ function validateProjectId(id: string): void {
 }
 
 /**
+ * Auto-detect images from filesystem when CSV is empty
+ */
+async function autoDetectImages(
+  projectId: string,
+  csvImages: string[],
+  csvHeroImage?: string
+): Promise<{ images: string[]; heroImage?: string }> {
+  // If CSV has images, use those (override mode)
+  if (csvImages.length > 0) {
+    return { images: csvImages, heroImage: csvHeroImage };
+  }
+
+  // Otherwise, scan filesystem
+  const CONTENT_ROOT = path.join(process.cwd(), 'content', 'projects');
+  const imagesDir = path.join(CONTENT_ROOT, projectId, 'images');
+
+  // Check if directory exists
+  const dirExists = await fs.pathExists(imagesDir);
+  if (!dirExists) {
+    return { images: [], heroImage: undefined };
+  }
+
+  try {
+    // Read all files in directory
+    const files = await fs.readdir(imagesDir);
+
+    // Filter by image extensions
+    const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png'];
+    const imageFiles = files
+      .filter(file => {
+        const ext = path.extname(file).toLowerCase();
+        return IMAGE_EXTENSIONS.includes(ext);
+      })
+      .sort(); // Alphabetical order
+
+    // Determine hero image
+    let heroImage: string | undefined;
+    if (csvHeroImage) {
+      // CSV hero specified - validate it exists
+      if (imageFiles.includes(csvHeroImage)) {
+        heroImage = csvHeroImage;
+      } else {
+        console.warn(
+          `⚠️  Warning: CSV hero_image "${csvHeroImage}" not found in ` +
+          `${projectId}/images/ directory. Using first alphabetical image instead.`
+        );
+        heroImage = imageFiles.length > 0 ? imageFiles[0] : undefined;
+      }
+    } else {
+      // No CSV hero - use first alphabetical
+      heroImage = imageFiles.length > 0 ? imageFiles[0] : undefined;
+    }
+
+    return { images: imageFiles, heroImage };
+
+  } catch (error) {
+    console.error(
+      `❌ Error reading images directory for project "${projectId}":`,
+      error instanceof Error ? error.message : error
+    );
+    return { images: [], heroImage: undefined };
+  }
+}
+
+/**
  * Parse a single project from CSV record
  */
-export function parseProject(record: CSVRecord): Project {
+export async function parseProject(record: CSVRecord): Promise<Project> {
   const id = validateRequired(record.id, 'id', record.id || 'unknown');
   validateProjectId(id);
 
@@ -112,9 +179,12 @@ export function parseProject(record: CSVRecord): Project {
   }
 
   // Parse media files
-  const images = parseSemicolonArray(record.images);
+  const csvImages = parseSemicolonArray(record.images);
   const pdfs = parseSemicolonArray(record.pdfs);
-  const heroImage = record.hero_image?.trim() || undefined;
+  const csvHeroImage = record.hero_image?.trim() || undefined;
+
+  // Auto-detect images from filesystem if CSV is empty
+  const { images, heroImage } = await autoDetectImages(id, csvImages, csvHeroImage);
 
   // Construct full media paths (projectId/images/filename)
   const imagesPaths = images.map(img => `${id}/images/${img}`);
@@ -147,13 +217,13 @@ export function parseProject(record: CSVRecord): Project {
 /**
  * Parse all projects from CSV records
  */
-export function parseProjects(records: CSVRecord[]): Project[] {
+export async function parseProjects(records: CSVRecord[]): Promise<Project[]> {
   const projects: Project[] = [];
   const seenIds = new Set<string>();
 
   for (let i = 0; i < records.length; i++) {
     try {
-      const project = parseProject(records[i]);
+      const project = await parseProject(records[i]);
 
       // Check for duplicate IDs
       if (seenIds.has(project.id)) {
