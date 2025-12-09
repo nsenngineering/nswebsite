@@ -503,6 +503,22 @@ docs/                                    # User documentation
 
 ---
 
-**Last Updated**: 2025-12-08
+## Build System Architecture
+
+For detailed technical documentation on how the image build pipeline works, see:
+**[Build Pipeline Documentation](/.claude/plans/spicy-whistling-dove.md)**
+
+The build system uses a **5-stage automated pipeline** (Source → Parse → Validate → Copy → Runtime) that:
+- Auto-detects images from filesystem (no manual configuration needed)
+- Validates all media files before building
+- Copies assets to public folder for serving
+- Generates TypeScript-compatible JSON for components
+- Provides graceful fallbacks for missing images
+
+This architecture is **extensible** and can be replicated for other content types (team members, equipment, services) following the same pattern.
+
+---
+
+**Last Updated**: 2025-12-09
 **Status**: Phase 1-6 Complete - Map & Photo Gallery System Ready
 **Next Step**: Populate with Real GPS Coordinates & Project Images

@@ -7,6 +7,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Project, ProjectCategory } from '@/types/project';
 import { Building2, MapPin } from 'lucide-react';
+import { withBasePath } from '@/lib/utils';
 
 // Fix for default marker icons in Next.js
 if (typeof window !== 'undefined') {
@@ -147,7 +148,7 @@ export default function ProjectMap({
                     {(project.media?.heroImage || project.media?.images?.[0]) && (
                       <div className="relative mb-2 overflow-hidden rounded">
                         <img
-                          src={`/projects/${project.media.heroImage || project.media.images[0]}`}
+                          src={withBasePath(`/projects/${project.media.heroImage || project.media.images[0]}`)}
                           alt={project.title}
                           className="w-full h-32 object-cover"
                           loading="lazy"

@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import ProjectModal from '@/components/projects/ProjectModal';
 import projectsDataRaw from '@/data/generated/projects.json';
 import type { Project } from '@/types/project';
+import { withBasePath } from '@/lib/utils';
 
 const projectsData = projectsDataRaw as { projects: Project[] };
 const featuredProjects = projectsData.projects.filter(p => p.featured);
@@ -74,7 +75,7 @@ export default function FeaturedProjects() {
                       {/* Hero Image or Gradient Fallback */}
                       {hasImages && heroImage ? (
                         <img
-                          src={`/projects/${heroImage}`}
+                          src={withBasePath(`/projects/${heroImage}`)}
                           alt={project.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
