@@ -3,13 +3,14 @@
 import path from 'path';
 import fs from 'fs-extra';
 import { parseCSVFile } from './parsers/csv-parser.js';
-import { parseProjects } from './parsers/project-parser.js';
+import { parseProjects, extractCategories } from './parsers/project-parser.js';
 import { validateAllMedia, copyProjectMedia } from './parsers/validate-media.js';
 import { parseHeroCarousel, copyHeroImages } from './parsers/hero-carousel-parser.js';
 import { parseTeam, copyTeamImages } from './parsers/team-parser.js';
 
 const CSV_PATH = path.join(process.cwd(), 'content', 'projects', 'projects.csv');
 const OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'projects.json');
+const CATEGORIES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'categories.json');
 const HERO_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'hero-carousel.json');
 const TEAM_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'team.json');
 
@@ -24,16 +25,10 @@ interface GeneratedOutput {
 }
 
 /**
- * Count projects by category
+ * Count projects by category (dynamic)
  */
 function categorizeProjects(projects: any[]): Record<string, number> {
-  const counts: Record<string, number> = {
-    'pile-testing': 0,
-    'tunnel-road': 0,
-    'hydropower': 0,
-    'transmission': 0,
-    'ndt': 0
-  };
+  const counts: Record<string, number> = {};
 
   for (const project of projects) {
     counts[project.category] = (counts[project.category] || 0) + 1;
@@ -85,14 +80,20 @@ async function buildContent() {
     await fs.writeJSON(OUTPUT_PATH, output, { spaces: 2 });
     console.log(`✅ Generated: ${path.relative(process.cwd(), OUTPUT_PATH)}`);
 
+    // Generate categories metadata
+    console.log('\n🏷️  Generating categories metadata...');
+    const categories = extractCategories(projects);
+    await fs.writeJSON(CATEGORIES_OUTPUT_PATH, categories, { spaces: 2 });
+    console.log(`✅ Generated: ${path.relative(process.cwd(), CATEGORIES_OUTPUT_PATH)}`);
+    console.log(`   Extracted ${categories.length} unique categories`);
+
     // Summary
     console.log('\n📊 Build Summary:');
     console.log(`   Total projects: ${projects.length}`);
     console.log(`   Categories:`);
-    for (const [category, count] of Object.entries(output.categories)) {
-      if (count > 0) {
-        console.log(`      ${category}: ${count}`);
-      }
+    for (const category of categories) {
+      const count = output.categories[category.id] || 0;
+      console.log(`      ${category.label} (${category.id}): ${count}`);
     }
     console.log(`   Featured projects: ${projects.filter(p => p.featured).length}`);
 

@@ -8,6 +8,7 @@ import 'leaflet/dist/leaflet.css';
 import type { Project, ProjectCategory } from '@/types/project';
 import { Building2, MapPin } from 'lucide-react';
 import { withBasePath } from '@/lib/utils';
+import { getAllCategories, getCategoryColor, getCategoryLabel } from '@/lib/categories';
 
 // Fix for default marker icons in Next.js
 if (typeof window !== 'undefined') {
@@ -29,23 +30,6 @@ const NEPAL_BOUNDS: [[number, number], [number, number]] = [
   [30.27, 88.20]   // Northeast corner (Kanchenjunga, far east)
 ];
 
-// Category colors (Purple palette matching brand)
-const categoryColors: Record<ProjectCategory, string> = {
-  'pile-testing': '#7c3aed',    // Purple-600
-  'tunnel-road': '#6d28d9',     // Purple-700
-  'hydropower': '#8b5cf6',      // Purple-500
-  'transmission': '#5b21b6',    // Purple-800
-  'ndt': '#6366f1'              // Indigo-500
-};
-
-const categoryLabels: Record<ProjectCategory, string> = {
-  'pile-testing': 'Pile Testing',
-  'tunnel-road': 'Tunnel & Road',
-  'hydropower': 'Hydropower',
-  'transmission': 'Transmission',
-  'ndt': 'NDT'
-};
-
 interface ProjectMapProps {
   projects: Project[];
   highlightedProjectId?: string | null;
@@ -58,7 +42,7 @@ interface ProjectMapProps {
  * Create custom marker icon for a project
  */
 function createCustomMarker(category: ProjectCategory, isHighlighted: boolean): L.DivIcon {
-  const color = categoryColors[category];
+  const color = getCategoryColor(category);
   const size = isHighlighted ? 40 : 30;
 
   return L.divIcon({
@@ -165,7 +149,7 @@ export default function ProjectMap({
                     )}
 
                     <div className="text-xs text-gray-500 mb-1">
-                      {categoryLabels[project.category]}
+                      {getCategoryLabel(project.category)}
                     </div>
                     <h3 className="font-bold text-sm mb-2">{project.title}</h3>
                     <div className="text-xs text-gray-600 mb-1 flex items-center gap-1">

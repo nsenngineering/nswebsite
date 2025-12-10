@@ -6,7 +6,7 @@ export interface Project {
   id: string;
   title: string;
   client: string;
-  category: 'pile-testing' | 'tunnel-road' | 'hydropower' | 'transmission' | 'ndt';
+  category: string;
   year: number;
   location: {
     name: string;
@@ -25,7 +25,14 @@ export interface Project {
   featured?: boolean;
 }
 
-const VALID_CATEGORIES = ['pile-testing', 'tunnel-road', 'hydropower', 'transmission', 'ndt'];
+export interface CategoryMetadata {
+  id: string;
+  label: string;
+  color: string;
+  gradientFrom: string;
+  gradientTo: string;
+  description: string;
+}
 
 // Nepal coordinate bounds
 const NEPAL_LAT_MIN = 26.3479;
@@ -44,16 +51,17 @@ function validateRequired(value: string | undefined, fieldName: string, projectI
 }
 
 /**
- * Validate category is one of allowed values
+ * Validate category format (kebab-case)
  */
-function validateCategory(category: string, projectId: string): 'pile-testing' | 'tunnel-road' | 'hydropower' | 'transmission' | 'ndt' {
-  if (!VALID_CATEGORIES.includes(category)) {
+function validateCategory(category: string, projectId: string): string {
+  const kebabCaseRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+  if (!kebabCaseRegex.test(category)) {
     throw new Error(
-      `❌ Invalid category "${category}" for project: ${projectId}\n` +
-      `   Valid categories: ${VALID_CATEGORIES.join(', ')}`
+      `❌ Invalid category format "${category}" for project: ${projectId}\n` +
+      `   Categories must be lowercase, kebab-case (e.g., "pile-testing")`
     );
   }
-  return category as 'pile-testing' | 'tunnel-road' | 'hydropower' | 'transmission' | 'ndt';
+  return category;
 }
 
 /**
@@ -240,4 +248,52 @@ export async function parseProjects(records: CSVRecord[]): Promise<Project[]> {
 
   console.log(`✅ Successfully parsed ${projects.length} projects`);
   return projects;
+}
+
+/**
+ * Format category slug to label (e.g., 'pile-testing' -> 'Pile Testing')
+ */
+function formatCategoryLabel(slug: string): string {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Extract unique categories from projects and generate metadata
+ */
+export function extractCategories(projects: Project[]): CategoryMetadata[] {
+  // Load category configuration
+  const configPath = path.join(process.cwd(), 'content', 'categories', 'category-config.json');
+  let categoryConfig: any = { categories: {}, defaults: {} };
+
+  try {
+    const configFile = fs.readFileSync(configPath, 'utf-8');
+    categoryConfig = JSON.parse(configFile);
+  } catch (error) {
+    console.warn(`⚠️  Warning: Could not load category config from ${configPath}`);
+    console.warn('   Using default category styling');
+    categoryConfig = {
+      categories: {},
+      defaults: {
+        color: '#9333ea',
+        gradientFrom: 'purple-500',
+        gradientTo: 'purple-700'
+      }
+    };
+  }
+
+  // Get unique categories from projects
+  const uniqueCategories = [...new Set(projects.map(p => p.category))].sort();
+
+  // Map to metadata
+  return uniqueCategories.map(cat => ({
+    id: cat,
+    label: categoryConfig.categories[cat]?.label || formatCategoryLabel(cat),
+    color: categoryConfig.categories[cat]?.color || categoryConfig.defaults.color,
+    gradientFrom: categoryConfig.categories[cat]?.gradientFrom || categoryConfig.defaults.gradientFrom,
+    gradientTo: categoryConfig.categories[cat]?.gradientTo || categoryConfig.defaults.gradientTo,
+    description: categoryConfig.categories[cat]?.description || '',
+  }));
 }

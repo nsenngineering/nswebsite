@@ -12,8 +12,9 @@ This guide explains how to update project information on the website without wri
 2. [Editing Projects](#editing-projects)
 3. [Adding New Projects](#adding-new-projects)
 4. [Adding Project Images](#adding-project-images)
-5. [Publishing Changes](#publishing-changes)
-6. [Troubleshooting](#troubleshooting)
+5. [Managing Project Categories](#managing-project-categories)
+6. [Publishing Changes](#publishing-changes)
+7. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -180,6 +181,123 @@ hero_image: "hero.jpg"
 ```
 
 **Note:** Only include the filename, not the full path!
+
+---
+
+## Managing Project Categories
+
+### What are Categories?
+
+Categories group projects by type of work:
+- **pile-testing** - Pile load testing and integrity testing
+- **tunnel-road** - Tunnel and road construction projects
+- **hydropower** - Hydropower plant investigations
+- **transmission** - Transmission line and substation projects
+- **ndt** - Non-destructive testing services
+
+Categories appear:
+- In the filter dropdown on the projects page
+- As colored badges on project cards
+- As colored markers on the map
+- In the statistics section
+
+### Adding a New Category
+
+**Step 1: Add Projects with New Category**
+
+In `content/projects/projects.csv`, use your new category name:
+
+```csv
+id,title,client,category,...
+new-project,New Project,Client Name,geophysical,...
+```
+
+**Category Naming Rules:**
+- Use lowercase letters only
+- Use dashes instead of spaces (e.g., `soil-lab-testing`)
+- Keep it short and descriptive
+- Use kebab-case format (e.g., `pile-testing`, not `Pile Testing`)
+
+**Step 2: (Optional) Customize Category Appearance**
+
+To customize colors and labels, edit: `content/categories/category-config.json`
+
+```json
+{
+  "categories": {
+    "geophysical": {
+      "label": "Geophysical Surveys",
+      "color": "#8b5cf6",
+      "gradientFrom": "purple-500",
+      "gradientTo": "purple-600",
+      "description": "Seismic and resistivity surveys"
+    }
+  }
+}
+```
+
+**Configuration Options:**
+- `label` - Display name shown to users (e.g., "Geophysical Surveys")
+- `color` - Hex color for map markers (e.g., "#8b5cf6")
+- `gradientFrom` - Start color for gradients (Tailwind class, e.g., "purple-500")
+- `gradientTo` - End color for gradients (Tailwind class, e.g., "purple-600")
+- `description` - Brief description of the category
+
+**Step 3: Rebuild Content**
+
+```bash
+npm run build:content
+```
+
+The new category will automatically:
+- ✅ Appear in the filter dropdown
+- ✅ Show on the map with custom colors (or default purple if not configured)
+- ✅ Display in project cards
+- ✅ Update the statistics section
+
+### Default Category Styling
+
+If you don't customize a category, it will use default purple gradient colors that match the website's brand.
+
+### Renaming a Category
+
+**Option 1: Update the Label Only**
+
+To change how a category is displayed without changing the ID:
+
+1. Edit `content/categories/category-config.json`
+2. Update the `label` field
+3. Run `npm run build:content`
+
+Example:
+```json
+"pile-testing": {
+  "label": "Pile Load Testing",  // Changed from "Pile Testing"
+  ...
+}
+```
+
+**Option 2: Fully Rename the Category**
+
+To change the category ID:
+
+1. Open `content/projects/projects.csv`
+2. Find all rows with the old category
+3. Change to new category name
+4. Update `content/categories/category-config.json` if needed
+5. Run `npm run build:content`
+
+**Important:** This changes URLs and may break external links!
+
+### Deleting a Category
+
+To remove a category:
+
+1. Open `content/projects/projects.csv`
+2. Change all projects in that category to a different one
+3. Run `npm run build:content`
+
+The category will automatically disappear from filters and statistics.
 
 ---
 
