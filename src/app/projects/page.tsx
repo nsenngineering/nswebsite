@@ -7,12 +7,12 @@ import {
   Building2,
   MapPin,
   Calendar,
-  CheckCircle2,
   Filter,
   Search
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/Card';
 import FadeIn from '@/components/animations/FadeIn';
+import ProjectCard from '@/components/projects/ProjectCard';
+import ProjectModal from '@/components/projects/ProjectModal';
 import type { Project } from '@/types/project';
 import projectsDataRaw from '@/data/generated/projects.json';
 import Input from '@/components/ui/Input';
@@ -60,6 +60,7 @@ export default function ProjectsPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedProjectId, setHighlightedProjectId] = useState<string | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const filteredProjects = projects.filter((project) => {
     const matchesCategory = selectedCategory === 'all' || project.category === selectedCategory;
@@ -219,7 +220,7 @@ export default function ProjectsPage() {
           </div>
 
           <ProjectMap
-            projects={projects}
+            projects={filteredProjects}
             highlightedProjectId={highlightedProjectId}
             onMarkerClick={handleMarkerClick}
             onMarkerHover={handleMarkerHover}
@@ -229,15 +230,15 @@ export default function ProjectsPage() {
           <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-primary-600" />
-              <span><strong>{projects.length}</strong> projects mapped</span>
+              <span><strong>{filteredProjects.length}</strong> projects mapped</span>
             </div>
             <div className="flex items-center gap-2">
               <Building2 className="w-4 h-4 text-primary-600" />
-              <span><strong>{new Set(projects.map(p => p.client)).size}</strong> unique clients</span>
+              <span><strong>{new Set(filteredProjects.map(p => p.client)).size}</strong> unique clients</span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-primary-600" />
-              <span><strong>{Math.max(...projects.map(p => p.year)) - Math.min(...projects.map(p => p.year)) + 1}</strong> years of projects</span>
+              <span><strong>{filteredProjects.length > 0 ? Math.max(...filteredProjects.map(p => p.year)) - Math.min(...filteredProjects.map(p => p.year)) + 1 : 0}</strong> years of projects</span>
             </div>
           </div>
         </div>
@@ -257,81 +258,15 @@ export default function ProjectsPage() {
               {filteredProjects.map((project, index) => {
                 const isHighlighted = project.id === highlightedProjectId;
                 return (
-                <FadeIn key={project.id} delay={index * 0.05}>
-                  <div
-                    id={`project-${project.id}`}
-                    onMouseEnter={() => setHighlightedProjectId(project.id)}
-                    onMouseLeave={() => setHighlightedProjectId(null)}
-                  >
-                    <Card
-                      hover
-                      className={`h-full transition-all duration-300 ${
-                        isHighlighted ? 'ring-4 ring-purple-500 shadow-2xl scale-105' : ''
-                      }`}
-                    >
-                    <CardContent className="p-0">
-                      {/* Project Header */}
-                      <div className={`p-6 bg-gradient-to-br ${getCategoryColor(project.category)} text-white`}>
-                        <div className="flex items-start justify-between mb-4">
-                          <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-medium">
-                            {getCategoryLabel(project.category)}
-                          </span>
-                          <span className="flex items-center gap-1 text-sm">
-                            <Calendar className="w-4 h-4" />
-                            {project.year}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-bold mb-2 line-clamp-2">
-                          {project.title}
-                        </h3>
-                      </div>
-
-                      {/* Project Details */}
-                      <div className="p-6">
-                        <div className="space-y-3 mb-4">
-                          <div className="flex items-start gap-2">
-                            <Building2 className="w-4 h-4 text-primary-600 mt-1 flex-shrink-0" />
-                            <div>
-                              <div className="text-xs text-gray-500 mb-1">Client</div>
-                              <div className="text-sm font-medium text-gray-900 line-clamp-2">
-                                {project.client}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-start gap-2">
-                            <MapPin className="w-4 h-4 text-primary-600 mt-1 flex-shrink-0" />
-                            <div>
-                              <div className="text-xs text-gray-500 mb-1">Location</div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {project.location.name}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Scope */}
-                        <div className="border-t border-gray-100 pt-4">
-                          <div className="text-xs text-gray-500 mb-2 font-medium">Scope of Work</div>
-                          <ul className="space-y-1.5">
-                            {project.scope.slice(0, 3).map((item, idx) => (
-                              <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-primary-600 mt-0.5 flex-shrink-0" />
-                                <span className="line-clamp-2">{item}</span>
-                              </li>
-                            ))}
-                            {project.scope.length > 3 && (
-                              <li className="text-xs text-primary-600 font-medium">
-                                +{project.scope.length - 3} more items
-                              </li>
-                            )}
-                          </ul>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  </div>
-                </FadeIn>
+                  <FadeIn key={project.id} delay={index * 0.05}>
+                    <ProjectCard
+                      project={project}
+                      isHighlighted={isHighlighted}
+                      onMouseEnter={() => setHighlightedProjectId(project.id)}
+                      onMouseLeave={() => setHighlightedProjectId(null)}
+                      onClick={() => setSelectedProject(project)}
+                    />
+                  </FadeIn>
                 );
               })}
             </div>
@@ -378,6 +313,13 @@ export default function ProjectsPage() {
           </FadeIn>
         </div>
       </section>
+
+      {/* Project Modal */}
+      <ProjectModal
+        project={selectedProject}
+        isOpen={selectedProject !== null}
+        onClose={() => setSelectedProject(null)}
+      />
     </div>
   );
 }

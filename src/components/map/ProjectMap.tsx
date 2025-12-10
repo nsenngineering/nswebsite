@@ -7,6 +7,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Project, ProjectCategory } from '@/types/project';
 import { Building2, MapPin } from 'lucide-react';
+import { withBasePath } from '@/lib/utils';
 
 // Fix for default marker icons in Next.js
 if (typeof window !== 'undefined') {
@@ -21,6 +22,12 @@ if (typeof window !== 'undefined') {
 // Nepal map configuration
 const NEPAL_CENTER: [number, number] = [28.3949, 84.1240]; // Geographic center of Nepal
 const DEFAULT_ZOOM = 7;
+
+// Nepal geographic boundaries - prevents panning outside country borders
+const NEPAL_BOUNDS: [[number, number], [number, number]] = [
+  [26.35, 80.07],  // Southwest corner (Mahakali River, far west)
+  [30.27, 88.20]   // Northeast corner (Kanchenjunga, far east)
+];
 
 // Category colors (Purple palette matching brand)
 const categoryColors: Record<ProjectCategory, string> = {
@@ -92,6 +99,8 @@ export default function ProjectMap({
         style={{ background: '#f0f0f0' }}
         minZoom={6}
         maxZoom={18}
+        maxBounds={NEPAL_BOUNDS}              // Restrict panning to Nepal
+        maxBoundsViscosity={1.0}              // Strict boundary enforcement
         attributionControl={true}
       >
         <TileLayer
@@ -134,7 +143,27 @@ export default function ProjectMap({
                 </Tooltip>
 
                 <Popup>
-                  <div className="p-2 min-w-[200px]">
+                  <div className="p-2 min-w-[250px]">
+                    {/* Hero Image Thumbnail */}
+                    {(project.media?.heroImage || project.media?.images?.[0]) && (
+                      <div className="relative mb-2 overflow-hidden rounded">
+                        <img
+                          src={withBasePath(`/projects/${project.media.heroImage || project.media.images[0]}`)}
+                          alt={project.title}
+                          className="w-full h-32 object-cover"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                        {project.media?.images && project.media.images.length > 1 && (
+                          <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                            +{project.media.images.length - 1} more
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     <div className="text-xs text-gray-500 mb-1">
                       {categoryLabels[project.category]}
                     </div>
