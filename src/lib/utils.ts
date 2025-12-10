@@ -27,12 +27,17 @@ export function getPlaceholderImage(category: ProjectCategory): string {
 }
 
 /**
- * Prepends the Next.js basePath to a given path
- * For GitHub Pages deployment at /nswebsite
- * @param path - The path to prepend the basePath to
- * @returns Path with basePath prefix
+ * Utility function for basePath handling
+ *
+ * Currently returns the path as-is since we're using custom domains
+ * (stage.nsengineering.com and nsengineering.com) which serve from root.
+ *
+ * Kept for future flexibility - can set NEXT_PUBLIC_BASE_PATH if needed.
+ *
+ * @param path - The path to return (with optional basePath prefix)
+ * @returns Path with basePath prefix if NEXT_PUBLIC_BASE_PATH is set
  */
 export function withBasePath(path: string): string {
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
-  return `${basePath}${path}`;
+  return basePath ? `${basePath}${path}` : path;
 }

@@ -1,12 +1,16 @@
 import type { NextConfig } from "next";
 
-// Use basePath only in production for GitHub Pages deployment
-const isProduction = process.env.NODE_ENV === 'production';
-
+/**
+ * Next.js configuration for static export
+ *
+ * No basePath needed - using custom domain (stage.nsengineering.com)
+ * which serves from root. GitHub Pages automatically handles the mapping
+ * from the repository path to the custom domain root.
+ */
 const nextConfig: NextConfig = {
   output: 'export',
-  basePath: isProduction ? '/nswebsite' : '',
-  assetPrefix: isProduction ? '/nswebsite' : '',
+  basePath: '',
+  assetPrefix: '',
   images: {
     unoptimized: true,
   },

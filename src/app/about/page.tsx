@@ -15,12 +15,16 @@ import {
 import { Card, CardContent } from '@/components/ui/Card';
 import FadeIn from '@/components/animations/FadeIn';
 import Image from 'next/image';
+import { withBasePath } from '@/lib/utils';
+import teamData from '@/data/generated/team.json';
 
 interface TeamMember {
   name: string;
   role: string;
   education: string;
   experience: string;
+  image?: string;
+  hasImage: boolean;
 }
 
 interface Stat {
@@ -57,38 +61,8 @@ const stats: Stat[] = [
   }
 ];
 
-const leadership: TeamMember[] = [
-  {
-    name: 'Arun Kumar Pandit',
-    role: 'Managing Director',
-    education: 'MSc. Geotechnical Engineering',
-    experience: '19 Years'
-  },
-  {
-    name: 'Dhurba Raj Tirpathi',
-    role: 'Director',
-    education: 'Bachelor in Civil Engineering',
-    experience: '28 Years'
-  },
-  {
-    name: 'Shrawan Kumar Thapa',
-    role: 'Director',
-    education: 'MSc. Transportation Engineering',
-    experience: '30 Years'
-  },
-  {
-    name: 'Madhav Pokhrel',
-    role: 'Director',
-    education: 'MSc. Disaster Risk Engineering',
-    experience: '15 Years'
-  },
-  {
-    name: 'Arjun Adhikari',
-    role: 'Director',
-    education: 'MSc. Geotechnical Engineering',
-    experience: '20 Years'
-  }
-];
+// Load team members from generated JSON
+const leadership: TeamMember[] = teamData.members;
 
 const values = [
   {
@@ -319,9 +293,21 @@ export default function AboutPage() {
               <FadeIn key={member.name} delay={index * 0.1}>
                 <Card hover className="h-full">
                   <CardContent className="p-6">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center mx-auto mb-4">
-                      <Users className="w-10 h-10 text-white" />
-                    </div>
+                    {/* Profile Image or Icon */}
+                    {member.hasImage && member.image ? (
+                      <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-4 border-4 border-purple-500 shadow-lg">
+                        <img
+                          src={withBasePath(member.image)}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                        <Users className="w-10 h-10 text-white" />
+                      </div>
+                    )}
+
                     <div className="text-center">
                       <h3 className="text-xl font-bold text-gray-900 mb-1">
                         {member.name}

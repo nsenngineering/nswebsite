@@ -5,9 +5,13 @@ import fs from 'fs-extra';
 import { parseCSVFile } from './parsers/csv-parser.js';
 import { parseProjects } from './parsers/project-parser.js';
 import { validateAllMedia, copyProjectMedia } from './parsers/validate-media.js';
+import { parseHeroCarousel, copyHeroImages } from './parsers/hero-carousel-parser.js';
+import { parseTeam, copyTeamImages } from './parsers/team-parser.js';
 
 const CSV_PATH = path.join(process.cwd(), 'content', 'projects', 'projects.csv');
 const OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'projects.json');
+const HERO_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'hero-carousel.json');
+const TEAM_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'team.json');
 
 interface GeneratedOutput {
   projects: any[];
@@ -91,6 +95,32 @@ async function buildContent() {
       }
     }
     console.log(`   Featured projects: ${projects.filter(p => p.featured).length}`);
+
+    // Step 6: Parse hero carousel
+    console.log('\n📸 Building hero carousel...');
+    const heroCarousel = await parseHeroCarousel();
+
+    // Step 7: Copy hero images to public folder
+    await copyHeroImages(heroCarousel);
+
+    // Step 8: Generate hero carousel JSON output
+    console.log('\n💾 Generating hero carousel JSON...');
+    await fs.ensureDir(path.dirname(HERO_OUTPUT_PATH));
+    await fs.writeJSON(HERO_OUTPUT_PATH, heroCarousel, { spaces: 2 });
+    console.log(`✅ Generated: ${path.relative(process.cwd(), HERO_OUTPUT_PATH)}`);
+
+    // Step 9: Parse team
+    console.log('\n👥 Building team...');
+    const team = await parseTeam();
+
+    // Step 10: Copy team images to public folder
+    await copyTeamImages(team);
+
+    // Step 11: Generate team JSON output
+    console.log('\n💾 Generating team JSON...');
+    await fs.ensureDir(path.dirname(TEAM_OUTPUT_PATH));
+    await fs.writeJSON(TEAM_OUTPUT_PATH, team, { spaces: 2 });
+    console.log(`✅ Generated: ${path.relative(process.cwd(), TEAM_OUTPUT_PATH)}`);
 
     console.log('\n✅ Content build complete!\n');
     process.exit(0);
