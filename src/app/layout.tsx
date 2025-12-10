@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import FloatingContactButtons from "@/components/layout/FloatingContactButtons";
 import { siteConfig } from "@/data/site-config";
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <FloatingContactButtons />
       </body>
     </html>
   );
