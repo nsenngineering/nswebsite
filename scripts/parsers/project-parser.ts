@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import { CSVRecord, parseSemicolonArray, parseBoolean, parseNumber } from './csv-parser.js';
+import { parseCategoriesCSV, CategoryConfig } from './category-parser.js';
 
 export interface Project {
   id: string;
@@ -260,40 +261,38 @@ function formatCategoryLabel(slug: string): string {
     .join(' ');
 }
 
+// Define default category colors
+const DEFAULT_COLOR = '#9333ea';         // Purple-600
+const DEFAULT_GRADIENT_FROM = 'purple-500';
+const DEFAULT_GRADIENT_TO = 'purple-700';
+
 /**
  * Extract unique categories from projects and generate metadata
  */
-export function extractCategories(projects: Project[]): CategoryMetadata[] {
-  // Load category configuration
-  const configPath = path.join(process.cwd(), 'content', 'categories', 'category-config.json');
-  let categoryConfig: any = { categories: {}, defaults: {} };
+export async function extractCategories(projects: Project[]): Promise<CategoryMetadata[]> {
+  // 1. Load category CSV (async)
+  const categoryConfigs = await parseCategoriesCSV();
 
-  try {
-    const configFile = fs.readFileSync(configPath, 'utf-8');
-    categoryConfig = JSON.parse(configFile);
-  } catch (error) {
-    console.warn(`⚠️  Warning: Could not load category config from ${configPath}`);
-    console.warn('   Using default category styling');
-    categoryConfig = {
-      categories: {},
-      defaults: {
-        color: '#9333ea',
-        gradientFrom: 'purple-500',
-        gradientTo: 'purple-700'
-      }
-    };
-  }
+  // 2. Convert to lookup map for fast access
+  const configMap = new Map<string, CategoryConfig>();
+  categoryConfigs.forEach(config => {
+    configMap.set(config.id, config);
+  });
 
-  // Get unique categories from projects
+  // 3. Get unique categories actually used in projects
   const uniqueCategories = [...new Set(projects.map(p => p.category))].sort();
 
-  // Map to metadata
-  return uniqueCategories.map(cat => ({
-    id: cat,
-    label: categoryConfig.categories[cat]?.label || formatCategoryLabel(cat),
-    color: categoryConfig.categories[cat]?.color || categoryConfig.defaults.color,
-    gradientFrom: categoryConfig.categories[cat]?.gradientFrom || categoryConfig.defaults.gradientFrom,
-    gradientTo: categoryConfig.categories[cat]?.gradientTo || categoryConfig.defaults.gradientTo,
-    description: categoryConfig.categories[cat]?.description || '',
-  }));
+  // 4. Merge project categories with CSV config + defaults
+  return uniqueCategories.map(cat => {
+    const config = configMap.get(cat);
+
+    return {
+      id: cat,
+      label: config?.label || formatCategoryLabel(cat),
+      color: config?.color || DEFAULT_COLOR,
+      gradientFrom: config?.gradientFrom || DEFAULT_GRADIENT_FROM,
+      gradientTo: config?.gradientTo || DEFAULT_GRADIENT_TO,
+      description: config?.description || '',
+    };
+  });
 }

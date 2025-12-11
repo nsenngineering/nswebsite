@@ -82,10 +82,15 @@ async function buildContent() {
 
     // Generate categories metadata
     console.log('\n🏷️  Generating categories metadata...');
-    const categories = extractCategories(projects);
+    const categories = await extractCategories(projects);
     await fs.writeJSON(CATEGORIES_OUTPUT_PATH, categories, { spaces: 2 });
     console.log(`✅ Generated: ${path.relative(process.cwd(), CATEGORIES_OUTPUT_PATH)}`);
     console.log(`   Extracted ${categories.length} unique categories`);
+
+    // Show which categories have custom config vs defaults
+    const DEFAULT_COLOR = '#9333ea';
+    const customConfigured = categories.filter(c => c.color !== DEFAULT_COLOR).length;
+    console.log(`   ${customConfigured} with custom styling, ${categories.length - customConfigured} using defaults`);
 
     // Summary
     console.log('\n📊 Build Summary:');
