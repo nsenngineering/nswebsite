@@ -75,7 +75,7 @@ export async function parseHeroCarousel(): Promise<HeroCarouselConfig> {
   let altTextOverrides: string[] = [];
   if (await fs.pathExists(HERO_CSV_PATH)) {
     try {
-      const records = await parseCSVFile(HERO_CSV_PATH) as HeroCSVRecord[];
+      const records = await parseCSVFile(HERO_CSV_PATH) as unknown as HeroCSVRecord[];
       altTextOverrides = records.map(r => r.alt_text).filter(Boolean);
       console.log(`   Found ${altTextOverrides.length} alt text overrides in CSV`);
     } catch (error) {
