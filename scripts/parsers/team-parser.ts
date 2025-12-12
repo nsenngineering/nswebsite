@@ -69,7 +69,7 @@ export async function parseTeam(): Promise<TeamConfig> {
   console.log('👥 Parsing team CSV...');
 
   // Read CSV file
-  const records = await parseCSVFile(TEAM_CSV_PATH) as TeamCSVRecord[];
+  const records = await parseCSVFile(TEAM_CSV_PATH) as unknown as TeamCSVRecord[];
 
   if (records.length === 0) {
     throw new Error('Team CSV is empty');
