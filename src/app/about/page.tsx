@@ -62,7 +62,7 @@ const stats: Stat[] = [
 ];
 
 // Load team members from generated JSON
-const leadership: TeamMember[] = teamData.members;
+const leadership = teamData.members as TeamMember[];
 
 const values = [
   {
