@@ -1,12 +1,13 @@
 import path from 'path';
 import fs from 'fs-extra';
 import { CSVRecord, parseSemicolonArray, parseBoolean, parseNumber } from './csv-parser.js';
+import { parseCategoriesCSV, CategoryConfig } from './category-parser.js';
 
 export interface Project {
   id: string;
   title: string;
   client: string;
-  category: 'pile-testing' | 'tunnel-road' | 'hydropower' | 'transmission' | 'ndt';
+  category: string;
   year: number;
   location: {
     name: string;
@@ -25,7 +26,14 @@ export interface Project {
   featured?: boolean;
 }
 
-const VALID_CATEGORIES = ['pile-testing', 'tunnel-road', 'hydropower', 'transmission', 'ndt'];
+export interface CategoryMetadata {
+  id: string;
+  label: string;
+  color: string;
+  gradientFrom: string;
+  gradientTo: string;
+  description: string;
+}
 
 // Nepal coordinate bounds
 const NEPAL_LAT_MIN = 26.3479;
@@ -44,16 +52,17 @@ function validateRequired(value: string | undefined, fieldName: string, projectI
 }
 
 /**
- * Validate category is one of allowed values
+ * Validate category format (kebab-case)
  */
-function validateCategory(category: string, projectId: string): 'pile-testing' | 'tunnel-road' | 'hydropower' | 'transmission' | 'ndt' {
-  if (!VALID_CATEGORIES.includes(category)) {
+function validateCategory(category: string, projectId: string): string {
+  const kebabCaseRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+  if (!kebabCaseRegex.test(category)) {
     throw new Error(
-      `❌ Invalid category "${category}" for project: ${projectId}\n` +
-      `   Valid categories: ${VALID_CATEGORIES.join(', ')}`
+      `❌ Invalid category format "${category}" for project: ${projectId}\n` +
+      `   Categories must be lowercase, kebab-case (e.g., "pile-testing")`
     );
   }
-  return category as 'pile-testing' | 'tunnel-road' | 'hydropower' | 'transmission' | 'ndt';
+  return category;
 }
 
 /**
@@ -240,4 +249,50 @@ export async function parseProjects(records: CSVRecord[]): Promise<Project[]> {
 
   console.log(`✅ Successfully parsed ${projects.length} projects`);
   return projects;
+}
+
+/**
+ * Format category slug to label (e.g., 'pile-testing' -> 'Pile Testing')
+ */
+function formatCategoryLabel(slug: string): string {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+// Define default category colors
+const DEFAULT_COLOR = '#9333ea';         // Purple-600
+const DEFAULT_GRADIENT_FROM = 'purple-500';
+const DEFAULT_GRADIENT_TO = 'purple-700';
+
+/**
+ * Extract unique categories from projects and generate metadata
+ */
+export async function extractCategories(projects: Project[]): Promise<CategoryMetadata[]> {
+  // 1. Load category CSV (async)
+  const categoryConfigs = await parseCategoriesCSV();
+
+  // 2. Convert to lookup map for fast access
+  const configMap = new Map<string, CategoryConfig>();
+  categoryConfigs.forEach(config => {
+    configMap.set(config.id, config);
+  });
+
+  // 3. Get unique categories actually used in projects
+  const uniqueCategories = [...new Set(projects.map(p => p.category))].sort();
+
+  // 4. Merge project categories with CSV config + defaults
+  return uniqueCategories.map(cat => {
+    const config = configMap.get(cat);
+
+    return {
+      id: cat,
+      label: config?.label || formatCategoryLabel(cat),
+      color: config?.color || DEFAULT_COLOR,
+      gradientFrom: config?.gradientFrom || DEFAULT_GRADIENT_FROM,
+      gradientTo: config?.gradientTo || DEFAULT_GRADIENT_TO,
+      description: config?.description || '',
+    };
+  });
 }

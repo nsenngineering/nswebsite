@@ -1,4 +1,7 @@
-export type ProjectCategory = 'pile-testing' | 'tunnel-road' | 'hydropower' | 'transmission' | 'ndt';
+import categoriesData from '@/data/generated/categories.json';
+
+// Dynamically generate union type from categories.json
+export type ProjectCategory = typeof categoriesData[number]['id'];
 
 export interface ProjectLocation {
   name: string;

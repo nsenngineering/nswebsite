@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import type { Project } from '@/types/project';
 import { withBasePath } from '@/lib/utils';
+import { getCategoryGradient, getCategoryLabel } from '@/lib/categories';
 
 interface ProjectCardProps {
   project: Project;
@@ -14,28 +15,6 @@ interface ProjectCardProps {
   onMouseLeave: () => void;
   onClick: () => void;
 }
-
-const getCategoryColor = (category: Project['category']) => {
-  const colors = {
-    'pile-testing': 'from-purple-500 to-purple-700',
-    'tunnel-road': 'from-purple-600 to-purple-800',
-    'hydropower': 'from-purple-400 to-purple-600',
-    'transmission': 'from-purple-700 to-purple-900',
-    'ndt': 'from-indigo-600 to-purple-700'
-  };
-  return colors[category];
-};
-
-const getCategoryLabel = (category: Project['category']) => {
-  const labels = {
-    'pile-testing': 'Pile Testing',
-    'tunnel-road': 'Tunnel & Road',
-    'hydropower': 'Hydropower',
-    'transmission': 'Transmission',
-    'ndt': 'NDT'
-  };
-  return labels[category];
-};
 
 export default function ProjectCard({
   project,
@@ -73,7 +52,7 @@ export default function ProjectCard({
                 onError={(e) => {
                   // Fallback to gradient if image fails to load
                   e.currentTarget.style.display = 'none';
-                  const colorClasses = getCategoryColor(project.category).split(' ');
+                  const colorClasses = getCategoryGradient(project.category).split(' ');
                   e.currentTarget.parentElement?.classList.add('bg-gradient-to-br', ...colorClasses);
                 }}
               />
@@ -106,7 +85,7 @@ export default function ProjectCard({
             </div>
           ) : (
             // Fallback gradient header if no images
-            <div className={`p-6 bg-gradient-to-br ${getCategoryColor(project.category)} text-white`}>
+            <div className={`p-6 bg-gradient-to-br ${getCategoryGradient(project.category)} text-white`}>
               <div className="flex items-start justify-between mb-4">
                 <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-medium">
                   {getCategoryLabel(project.category)}

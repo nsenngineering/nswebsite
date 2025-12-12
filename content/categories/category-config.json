@@ -1,0 +1,44 @@
+{
+  "categories": {
+    "pile-testing": {
+      "label": "Pile Testing",
+      "color": "#7c3aed",
+      "gradientFrom": "purple-500",
+      "gradientTo": "purple-700",
+      "description": "Dynamic and static pile load testing services"
+    },
+    "tunnel-road": {
+      "label": "Tunnel & Road",
+      "color": "#6d28d9",
+      "gradientFrom": "purple-600",
+      "gradientTo": "purple-800",
+      "description": "Tunnel investigations and road geotechnical surveys"
+    },
+    "hydropower": {
+      "label": "Hydropower",
+      "color": "#8b5cf6",
+      "gradientFrom": "purple-400",
+      "gradientTo": "purple-600",
+      "description": "Geotechnical investigations for hydropower projects"
+    },
+    "transmission": {
+      "label": "Transmission Lines",
+      "color": "#5b21b6",
+      "gradientFrom": "purple-700",
+      "gradientTo": "purple-900",
+      "description": "Foundation investigations for transmission towers"
+    },
+    "ndt": {
+      "label": "NDT Services",
+      "color": "#6366f1",
+      "gradientFrom": "indigo-600",
+      "gradientTo": "purple-700",
+      "description": "Non-destructive testing for structures"
+    }
+  },
+  "defaults": {
+    "color": "#9333ea",
+    "gradientFrom": "purple-500",
+    "gradientTo": "purple-700"
+  }
+}

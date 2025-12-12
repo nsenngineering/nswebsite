@@ -1,23 +1,27 @@
 # NS Engineering Website - Project Progress
 
-**Last Updated:** 2025-12-09
-**Status:** ✅ Phase 1-7 Complete - Image Loading Fixed & Tested
-**Next Milestone:** Content Population & Production Deployment
+**Last Updated:** 2024-12-12
+**Status:** ✅ Phase 1-8 Complete - eLibrary, FAQ & Careers Pages Implemented
+**Next Milestone:** Testing & Content Population
 
 ---
 
 ## Executive Summary
 
-Successfully implemented interactive project map with file-based CMS AND project photo gallery system for NS Engineering & Geotechnical Services website. All core features complete and tested.
+Successfully implemented interactive project map with file-based CMS, project photo gallery system, AND complete eLibrary/FAQ/Careers pages for NS Engineering & Geotechnical Services website. All core features complete and ready for testing.
 
 **Key Achievements:**
-- ✅ CSV-based content management system
+- ✅ CSV-based content management system (projects + eLibrary)
 - ✅ Interactive Leaflet map with 32 projects
 - ✅ Marker clustering and custom styling
 - ✅ Bidirectional map-list interaction
-- ✅ **NEW:** Project photo galleries with modal carousel
-- ✅ **NEW:** Featured projects section on homepage
-- ✅ **NEW:** Image previews in map popups
+- ✅ Project photo galleries with modal carousel
+- ✅ Featured projects section on homepage
+- ✅ Image previews in map popups
+- ✅ **NEW:** eLibrary page with two-column layout (sidebar + reading panel)
+- ✅ **NEW:** FAQ page with accordion and search (20 questions)
+- ✅ **NEW:** Careers page with job listings system
+- ✅ **NEW:** Updated navigation (8 links: added FAQ, Careers, changed Blog→eLibrary)
 - ✅ Mobile-optimized responsive design
 - ✅ Comprehensive documentation for non-technical users
 
@@ -252,6 +256,131 @@ Successfully implemented interactive project map with file-based CMS AND project
 
 ---
 
+### ✅ Phase 7: BasePath Fix for Image Loading (Day 10)
+
+**Goal:** Fix 404 errors for project images in development/production
+
+**Completed:**
+- [x] Created `withBasePath()` utility function
+- [x] Updated all components to use basePath prefix
+- [x] Configured conditional basePath for dev vs production
+- [x] Added environment variable configuration
+- [x] Tested image loading in development
+
+**Problem Solved:**
+- Images returning 404 despite existing in `public/` folder
+- Configuration mismatch between `next.config.ts` and components
+
+**Files Modified:**
+- `src/lib/utils.ts` - Added withBasePath() utility
+- `src/components/ui/ImageCarousel.tsx`
+- `src/components/projects/ProjectCard.tsx`
+- `src/components/home/FeaturedProjects.tsx`
+- `src/components/map/ProjectMap.tsx`
+- `src/components/projects/ProjectModal.tsx`
+- `next.config.ts` - Conditional basePath
+- `.env.local` - Environment configuration
+
+---
+
+### ✅ Phase 8: eLibrary, FAQ & Careers Pages (Days 11-12)
+
+**Goal:** Replace blog with eLibrary, add FAQ and Careers pages
+
+**Completed:**
+- [x] Created eLibrary CSV structure (documents.csv + sections.csv)
+- [x] Built eLibrary parser with validation
+- [x] Integrated eLibrary into build pipeline
+- [x] Created 3 eLibrary UI components (Sidebar, DocumentList, ReadingPanel)
+- [x] Implemented two-column eLibrary page
+- [x] Created FAQ data structure (20 questions, 4 categories)
+- [x] Built FAQ accordion component with animations
+- [x] Implemented FAQ page with search and filtering
+- [x] Created Careers data structure (benefits + job listings)
+- [x] Built job card and modal components
+- [x] Implemented Careers page with placeholder
+- [x] Updated Header navigation (Blog → eLibrary, added FAQ/Careers)
+- [x] Updated Footer navigation
+- [x] Created comprehensive eLibrary documentation
+- [x] Fixed async bugs in eLibrary and equipment parsers
+
+**eLibrary Features:**
+- **Three Sections:** Standards, Publications, Newsletters
+- **Two-Column Layout:**
+  - Left sidebar: Section filtering + search (20% width)
+  - Center: Document list (30% width)
+  - Right: Reading panel (70% width)
+- **CSV-Based CMS:**
+  - Auto-detection of PDF files from filesystem
+  - Validation: kebab-case IDs, date format, section types
+  - Build pipeline integration
+  - 12 placeholder documents included
+- **UI Features:**
+  - Real-time search across all document fields
+  - Section filtering with document counts
+  - Featured document badges
+  - PDF download buttons
+  - Category badges and metadata
+  - Mobile: stacks vertically (sidebar→list→panel)
+
+**FAQ Features:**
+- **20 Questions** across 4 categories
+- Accordion interface (one-open-at-a-time)
+- Category filtering tabs with counts
+- Real-time search functionality
+- Smooth Framer Motion animations
+- Contact CTA with phone/email links
+- Mobile responsive
+
+**Careers Features:**
+- **8 Company Benefits** with icons
+- Job listings system (currently empty)
+- JobCard and JobModal components
+- "No Openings" placeholder state
+- Email application integration
+- Support for full-time/part-time/contract positions
+- Benefits showcase grid
+- Contact section
+
+**Components Created:**
+- `src/components/elibrary/ELibrarySidebar.tsx`
+- `src/components/elibrary/DocumentList.tsx`
+- `src/components/elibrary/ReadingPanel.tsx`
+- `src/app/elibrary/page.tsx`
+- `src/components/faq/FAQAccordion.tsx`
+- `src/app/faq/page.tsx`
+- `src/components/careers/JobCard.tsx`
+- `src/components/careers/JobModal.tsx`
+- `src/app/careers/page.tsx`
+
+**Data Files Created:**
+- `content/elibrary/documents.csv` (12 documents)
+- `content/elibrary/sections.csv` (3 sections)
+- `src/data/faq.ts` (20 FAQ items)
+- `src/data/careers.ts` (benefits + job structure)
+- `src/types/elibrary.ts` (TypeScript types)
+
+**Documentation Created:**
+- `docs/elibrary-management.md` - Complete eLibrary guide
+
+**Build System:**
+- Parser: `scripts/parsers/elibrary-parser.ts`
+- Validation: Document IDs, dates, sections, file paths
+- Media handling: Auto-copy PDFs to `public/elibrary/`
+- Generated output: `src/data/generated/elibrary.json`
+
+**Bug Fixes:**
+- Fixed async/await issue in `loadSectionMetadata()` (elibrary-parser.ts:212)
+- Fixed async/await issue in `loadEquipmentCategoryMetadata()` (equipment-parser.ts:267)
+- Both parsers now correctly await `parseCSVFile()` function
+
+**Navigation Updates:**
+- Header: 8 items (Home, Services, Projects, Equipment, About, eLibrary, FAQ, Careers)
+- Footer: Company section updated with same links
+- "Blog" completely replaced with "eLibrary"
+
+---
+
 ## Technical Implementation Details
 
 ### Architecture
@@ -271,38 +400,62 @@ Next.js Pages (Map + List)
 ```
 ns-engineering-website/
 ├── content/                    # Content management (git tracked)
-│   └── projects/
-│       ├── projects.csv        # Master data (edit in Excel)
-│       └── {project-id}/       # Per-project folders
-│           ├── images/         # Project photos
-│           └── pdfs/           # Case studies
+│   ├── projects/
+│   │   ├── projects.csv        # Master data (edit in Excel)
+│   │   └── {project-id}/       # Per-project folders
+│   │       ├── images/         # Project photos
+│   │       └── pdfs/           # Case studies
+│   └── elibrary/
+│       ├── documents.csv       # eLibrary documents
+│       ├── sections.csv        # Section metadata
+│       └── {document-id}/      # Per-document folders
+│           └── files/          # PDF files
 │
 ├── scripts/                    # Build scripts
 │   ├── build-content.ts        # Main orchestrator
 │   └── parsers/
 │       ├── csv-parser.ts       # CSV parsing
-│       ├── project-parser.ts   # Validation
+│       ├── project-parser.ts   # Project validation
+│       ├── elibrary-parser.ts  # eLibrary validation
+│       ├── equipment-parser.ts # Equipment validation
 │       └── validate-media.ts   # Media checks
 │
 ├── src/
-│   ├── data/generated/         # Auto-generated (gitignored)
-│   │   └── projects.json       # Generated from CSV
-│   ├── components/map/
-│   │   └── ProjectMap.tsx      # Leaflet map component
-│   ├── app/projects/
-│   │   └── page.tsx            # Projects page
+│   ├── data/
+│   │   ├── generated/          # Auto-generated (gitignored)
+│   │   │   ├── projects.json   # Generated from CSV
+│   │   │   └── elibrary.json   # Generated from CSV
+│   │   ├── faq.ts              # FAQ data (20 questions)
+│   │   └── careers.ts          # Careers data
+│   ├── components/
+│   │   ├── map/
+│   │   │   └── ProjectMap.tsx  # Leaflet map
+│   │   ├── elibrary/           # 3 components
+│   │   ├── faq/                # 1 component
+│   │   └── careers/            # 2 components
+│   ├── app/
+│   │   ├── projects/page.tsx
+│   │   ├── elibrary/page.tsx
+│   │   ├── faq/page.tsx
+│   │   └── careers/page.tsx
 │   └── types/
-│       └── project.ts          # TypeScript interfaces
+│       ├── project.ts
+│       └── elibrary.ts
 │
-├── public/projects/            # Copied at build (gitignored)
-│   └── {project-id}/
-│       ├── images/
-│       └── pdfs/
+├── public/
+│   ├── projects/               # Copied at build (gitignored)
+│   │   └── {project-id}/
+│   │       ├── images/
+│   │       └── pdfs/
+│   └── elibrary/               # Copied at build (gitignored)
+│       └── {document-id}/
+│           └── files/
 │
 └── docs/                       # User documentation
     ├── content-management.md
     ├── adding-projects.md
-    └── gps-coordinates.md
+    ├── gps-coordinates.md
+    └── elibrary-management.md
 ```
 
 ### Data Flow
@@ -678,6 +831,50 @@ ns-engineering-website/
 
 ## Changelog
 
+### 2024-12-12 - eLibrary, FAQ & Careers Pages (Phase 8)
+
+**Added:**
+- eLibrary page with two-column layout (sidebar + document list + reading panel)
+- FAQ page with accordion interface (20 questions, 4 categories)
+- Careers page with job listings system and company benefits
+- eLibrary CSV-based CMS with auto PDF detection
+- eLibrary parser with validation (kebab-case IDs, date format, sections)
+- 12 placeholder eLibrary documents (4 standards, 5 publications, 3 newsletters)
+- 20 FAQ items across Services, Pricing, Technical, and General categories
+- 8 company benefits with icons and descriptions
+- Job listing data structure (currently empty, ready for use)
+
+**Components Created:**
+- `ELibrarySidebar.tsx` - Section filtering and search
+- `DocumentList.tsx` - Compact document list with metadata
+- `ReadingPanel.tsx` - Full document display with PDF downloads
+- `FAQAccordion.tsx` - Animated accordion with Framer Motion
+- `JobCard.tsx` - Job listing card with modal trigger
+- `JobModal.tsx` - Full job details modal with application link
+
+**Pages Created:**
+- `/elibrary` - Two-column eLibrary page
+- `/faq` - FAQ page with search and filtering
+- `/careers` - Careers page with benefits and job listings
+
+**Navigation Updates:**
+- Header: Changed "Blog" → "eLibrary", added "FAQ" and "Careers" (8 total links)
+- Footer: Updated Company section with same changes
+
+**Documentation:**
+- Created `docs/elibrary-management.md` - Complete eLibrary management guide
+
+**Bug Fixes:**
+- Fixed async/await in `loadSectionMetadata()` (elibrary-parser.ts:212)
+- Fixed async/await in `loadEquipmentCategoryMetadata()` (equipment-parser.ts:267)
+
+**Technical:**
+- Build pipeline integration for eLibrary
+- CSV validation and PDF auto-detection
+- Type-safe data structures for all three systems
+- Mobile responsive layouts (stacks vertically on mobile)
+- Framer Motion animations for accordions and modals
+
 ### 2025-12-08 - Project Photos & Gallery System (Phase 6)
 
 **Added:**
@@ -782,7 +979,18 @@ export function withBasePath(path: string): string {
 
 ## Version History
 
-- **v1.1.1** (2025-12-09) - BasePath Fix for Image Loading
+- **v1.2.0** (2024-12-12) - eLibrary, FAQ & Careers Pages
+  - eLibrary page with two-column layout
+  - FAQ page with 20 questions and accordion
+  - Careers page with job listings system
+  - Navigation updates (Blog → eLibrary, added FAQ/Careers)
+  - CSV-based CMS for eLibrary
+  - Complete eLibrary documentation
+  - Fixed async bugs in parsers
+  - 9 new components created
+  - 3 new pages implemented
+
+- **v1.1.1** (2024-12-09) - BasePath Fix for Image Loading
   - Fixed 404 errors for project images
   - Created `withBasePath()` utility function
   - Updated all components to use basePath prefix
@@ -790,14 +998,14 @@ export function withBasePath(path: string): string {
   - Environment variable configuration
   - Images now load correctly in all environments
 
-- **v1.1.0** (2025-12-08) - Project Photos & Gallery System
+- **v1.1.0** (2024-12-08) - Project Photos & Gallery System
   - Image carousel with Embla
   - Project modal with photo gallery
   - Featured projects on homepage
   - Image previews in map popups
   - Full photo display system complete
 
-- **v1.0.0** (2025-11-28) - Initial release
+- **v1.0.0** (2024-11-28) - Initial release
   - Core features complete
   - Documentation published
   - Ready for content population
@@ -805,8 +1013,8 @@ export function withBasePath(path: string): string {
 ---
 
 **Project Status:** ✅ On Track
-**Technical Status:** ✅ Complete (Phase 1-7, Image Loading Fixed)
-**Content Status:** ⏳ Awaiting Real Data
-**Deployment Status:** ⏳ Pending Content & Production Testing
+**Technical Status:** ✅ Complete (Phase 1-8, All Pages Implemented)
+**Content Status:** ⏳ Awaiting Testing & Real Data
+**Deployment Status:** ⏳ Ready for Testing, Pending Content Population
 
-**Next Milestone:** Content Population & Production Deployment
+**Next Milestone:** Test Dev Server → Populate Content → Production Deployment

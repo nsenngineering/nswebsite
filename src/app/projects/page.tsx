@@ -16,6 +16,7 @@ import ProjectModal from '@/components/projects/ProjectModal';
 import type { Project } from '@/types/project';
 import projectsDataRaw from '@/data/generated/projects.json';
 import Input from '@/components/ui/Input';
+import { getAllCategories, getCategoryGradient, getCategoryLabel, getCategoryStats } from '@/lib/categories';
 
 // Type assertion for imported JSON
 const projectsData = projectsDataRaw as { projects: Project[] };
@@ -47,13 +48,11 @@ const ProjectMap = dynamic(
 );
 
 const projects: Project[] = projectsData.projects;
+
+// Generate project categories dynamically from categories.json
 const projectCategories = [
   { id: 'all', label: 'All Projects' },
-  { id: 'pile-testing', label: 'Pile Testing' },
-  { id: 'tunnel-road', label: 'Tunnel & Road' },
-  { id: 'hydropower', label: 'Hydropower' },
-  { id: 'transmission', label: 'Transmission Lines' },
-  { id: 'ndt', label: 'NDT Services' },
+  ...getAllCategories().map(cat => ({ id: cat.id, label: cat.label }))
 ];
 
 export default function ProjectsPage() {
@@ -61,6 +60,9 @@ export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedProjectId, setHighlightedProjectId] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
+  // Calculate category stats
+  const categoryStats = getCategoryStats(projects);
 
   const filteredProjects = projects.filter((project) => {
     const matchesCategory = selectedCategory === 'all' || project.category === selectedCategory;
@@ -70,28 +72,6 @@ export default function ProjectsPage() {
       project.location.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
-
-  const getCategoryColor = (category: Project['category']) => {
-    const colors = {
-      'pile-testing': 'from-purple-500 to-purple-700',
-      'tunnel-road': 'from-purple-600 to-purple-800',
-      'hydropower': 'from-purple-400 to-purple-600',
-      'transmission': 'from-purple-700 to-purple-900',
-      'ndt': 'from-indigo-600 to-purple-700'
-    };
-    return colors[category];
-  };
-
-  const getCategoryLabel = (category: Project['category']) => {
-    const labels = {
-      'pile-testing': 'Pile Testing',
-      'tunnel-road': 'Tunnel & Road',
-      'hydropower': 'Hydropower',
-      'transmission': 'Transmission',
-      'ndt': 'NDT'
-    };
-    return labels[category];
-  };
 
   // Map interaction handlers
   const handleMarkerClick = (projectId: string) => {
@@ -279,36 +259,14 @@ export default function ProjectsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
-              <div>
-                <div className="text-4xl font-bold text-primary-600 mb-2">
-                  {projects.filter(p => p.category === 'pile-testing').length}
+              {getAllCategories().map((category) => (
+                <div key={category.id}>
+                  <div className="text-4xl font-bold text-primary-600 mb-2">
+                    {categoryStats[category.id] || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">{category.label}</div>
                 </div>
-                <div className="text-sm text-gray-600">Pile Testing Projects</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-primary-600 mb-2">
-                  {projects.filter(p => p.category === 'tunnel-road').length}
-                </div>
-                <div className="text-sm text-gray-600">Tunnel & Road Projects</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-primary-600 mb-2">
-                  {projects.filter(p => p.category === 'hydropower').length}
-                </div>
-                <div className="text-sm text-gray-600">Hydropower Projects</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-primary-600 mb-2">
-                  {projects.filter(p => p.category === 'transmission').length}
-                </div>
-                <div className="text-sm text-gray-600">Transmission Lines</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-primary-600 mb-2">
-                  {projects.filter(p => p.category === 'ndt').length}
-                </div>
-                <div className="text-sm text-gray-600">NDT Projects</div>
-              </div>
+              ))}
             </div>
           </FadeIn>
         </div>

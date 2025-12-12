@@ -1,8 +1,12 @@
 import fs from 'fs-extra';
 import path from 'path';
 import type { Project } from './project-parser.js';
+import type { Equipment } from '../../src/types/equipment.js';
+import type { ELibraryDocument } from '../../src/types/elibrary.js';
 
 const CONTENT_ROOT = path.join(process.cwd(), 'content', 'projects');
+const EQUIPMENT_CONTENT_ROOT = path.join(process.cwd(), 'content', 'equipment');
+const ELIBRARY_CONTENT_ROOT = path.join(process.cwd(), 'content', 'elibrary');
 
 /**
  * Check if a media file exists
@@ -138,4 +142,248 @@ export async function copyProjectMedia(projects: Project[]): Promise<void> {
   }
 
   console.log(`✅ Copied ${copiedCount} media files to public/projects/`);
+}
+
+// ==================== EQUIPMENT MEDIA VALIDATION ====================
+
+/**
+ * Check if an equipment file exists
+ */
+async function checkEquipmentFileExists(
+  equipmentId: string,
+  filePath: string,
+  fileType: 'image' | 'spec-sheet'
+): Promise<boolean> {
+  const fullPath = path.join(EQUIPMENT_CONTENT_ROOT, filePath);
+  const exists = await fs.pathExists(fullPath);
+
+  if (!exists) {
+    console.warn(
+      `⚠️  Warning: ${fileType} file not found\n` +
+      `   Equipment: ${equipmentId}\n` +
+      `   File: ${fullPath}\n` +
+      `   Expected location: content/equipment/${filePath}`
+    );
+  }
+
+  return exists;
+}
+
+/**
+ * Validate all media files for a single equipment item
+ */
+async function validateEquipmentMediaItem(equipment: Equipment): Promise<{
+  missingImages: string[];
+  missingSpecSheet: boolean;
+}> {
+  const missingImages: string[] = [];
+  let missingSpecSheet = false;
+
+  // Check images
+  for (const imagePath of equipment.media.images) {
+    const exists = await checkEquipmentFileExists(equipment.id, imagePath, 'image');
+    if (!exists) {
+      missingImages.push(imagePath);
+    }
+  }
+
+  // Check hero image if specified
+  if (equipment.media.heroImage) {
+    const exists = await checkEquipmentFileExists(equipment.id, equipment.media.heroImage, 'image');
+    if (!exists && !missingImages.includes(equipment.media.heroImage)) {
+      missingImages.push(equipment.media.heroImage);
+    }
+  }
+
+  // Check spec sheet
+  if (equipment.media.specSheet) {
+    const exists = await checkEquipmentFileExists(equipment.id, equipment.media.specSheet, 'spec-sheet');
+    if (!exists) {
+      missingSpecSheet = true;
+    }
+  }
+
+  return { missingImages, missingSpecSheet };
+}
+
+/**
+ * Validate media files for all equipment
+ */
+export async function validateAllEquipmentMedia(equipment: Equipment[]): Promise<void> {
+  console.log('\n📁 Validating equipment media files...');
+
+  let totalMissingImages = 0;
+  let totalMissingSpecSheets = 0;
+
+  for (const item of equipment) {
+    const { missingImages, missingSpecSheet } = await validateEquipmentMediaItem(item);
+    totalMissingImages += missingImages.length;
+    if (missingSpecSheet) totalMissingSpecSheets++;
+  }
+
+  if (totalMissingImages > 0 || totalMissingSpecSheets > 0) {
+    console.warn(
+      `\n⚠️  Equipment media validation warnings:\n` +
+      `   Missing images: ${totalMissingImages}\n` +
+      `   Missing spec sheets: ${totalMissingSpecSheets}\n` +
+      `   Note: This is a warning, not an error. Build will continue.`
+    );
+  } else {
+    console.log('✅ All equipment media files found');
+  }
+}
+
+/**
+ * Copy equipment media files from content to public folder
+ */
+export async function copyEquipmentMedia(equipment: Equipment[]): Promise<void> {
+  console.log('\n📦 Copying equipment media files to public folder...');
+
+  const PUBLIC_ROOT = path.join(process.cwd(), 'public', 'equipment');
+
+  // Ensure public/equipment directory exists
+  await fs.ensureDir(PUBLIC_ROOT);
+
+  let copiedCount = 0;
+
+  for (const item of equipment) {
+    const contentEquipmentDir = path.join(EQUIPMENT_CONTENT_ROOT, item.id);
+    const publicEquipmentDir = path.join(PUBLIC_ROOT, item.id);
+
+    // Check if equipment folder exists in content
+    const equipmentDirExists = await fs.pathExists(contentEquipmentDir);
+
+    if (!equipmentDirExists) {
+      // No media folder for this equipment, skip
+      continue;
+    }
+
+    // Copy images folder if it exists
+    const imagesDir = path.join(contentEquipmentDir, 'images');
+    if (await fs.pathExists(imagesDir)) {
+      await fs.copy(imagesDir, path.join(publicEquipmentDir, 'images'), {
+        overwrite: true
+      });
+      const imageFiles = await fs.readdir(imagesDir);
+      copiedCount += imageFiles.length;
+    }
+
+    // Copy spec-sheet folder if it exists
+    const specSheetDir = path.join(contentEquipmentDir, 'spec-sheet');
+    if (await fs.pathExists(specSheetDir)) {
+      await fs.copy(specSheetDir, path.join(publicEquipmentDir, 'spec-sheet'), {
+        overwrite: true
+      });
+      const specFiles = await fs.readdir(specSheetDir);
+      copiedCount += specFiles.length;
+    }
+  }
+
+  console.log(`✅ Copied ${copiedCount} equipment media files to public/equipment/`);
+}
+
+// ==================== ELIBRARY FILE VALIDATION ====================
+
+/**
+ * Check if an eLibrary file exists
+ */
+async function checkELibraryFileExists(
+  documentId: string,
+  filePath: string
+): Promise<boolean> {
+  const fullPath = path.join(ELIBRARY_CONTENT_ROOT, filePath);
+  const exists = await fs.pathExists(fullPath);
+
+  if (!exists) {
+    console.warn(
+      `⚠️  Warning: file not found\n` +
+      `   Document: ${documentId}\n` +
+      `   File: ${fullPath}\n` +
+      `   Expected location: content/elibrary/${filePath}`
+    );
+  }
+
+  return exists;
+}
+
+/**
+ * Validate all files for a single eLibrary document
+ */
+async function validateELibraryDocument(document: ELibraryDocument): Promise<{
+  missingFile: boolean;
+}> {
+  let missingFile = false;
+
+  // Check PDF file if specified
+  if (document.fileUrl) {
+    const exists = await checkELibraryFileExists(document.id, document.fileUrl);
+    if (!exists) {
+      missingFile = true;
+    }
+  }
+
+  return { missingFile };
+}
+
+/**
+ * Validate files for all eLibrary documents
+ */
+export async function validateAllELibraryFiles(documents: ELibraryDocument[]): Promise<void> {
+  console.log('\n📁 Validating eLibrary files...');
+
+  let totalMissingFiles = 0;
+
+  for (const document of documents) {
+    const { missingFile } = await validateELibraryDocument(document);
+    if (missingFile) totalMissingFiles++;
+  }
+
+  if (totalMissingFiles > 0) {
+    console.warn(
+      `\n⚠️  eLibrary file validation warnings:\n` +
+      `   Missing files: ${totalMissingFiles}\n` +
+      `   Note: This is a warning, not an error. Build will continue.`
+    );
+  } else {
+    console.log('✅ All eLibrary files found');
+  }
+}
+
+/**
+ * Copy eLibrary files from content to public folder
+ */
+export async function copyELibraryFiles(documents: ELibraryDocument[]): Promise<void> {
+  console.log('\n📦 Copying eLibrary files to public folder...');
+
+  const PUBLIC_ROOT = path.join(process.cwd(), 'public', 'elibrary');
+
+  // Ensure public/elibrary directory exists
+  await fs.ensureDir(PUBLIC_ROOT);
+
+  let copiedCount = 0;
+
+  for (const document of documents) {
+    const contentDocumentDir = path.join(ELIBRARY_CONTENT_ROOT, document.id);
+    const publicDocumentDir = path.join(PUBLIC_ROOT, document.id);
+
+    // Check if document folder exists in content
+    const documentDirExists = await fs.pathExists(contentDocumentDir);
+
+    if (!documentDirExists) {
+      // No files folder for this document, skip
+      continue;
+    }
+
+    // Copy files folder if it exists
+    const filesDir = path.join(contentDocumentDir, 'files');
+    if (await fs.pathExists(filesDir)) {
+      await fs.copy(filesDir, path.join(publicDocumentDir, 'files'), {
+        overwrite: true
+      });
+      const files = await fs.readdir(filesDir);
+      copiedCount += files.length;
+    }
+  }
+
+  console.log(`✅ Copied ${copiedCount} eLibrary files to public/elibrary/`);
 }
