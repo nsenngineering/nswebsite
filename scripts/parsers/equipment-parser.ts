@@ -264,7 +264,7 @@ export async function loadEquipmentCategoryMetadata(): Promise<EquipmentCategory
 
   try {
     const { parseCSVFile } = await import('./csv-parser.js');
-    const records = parseCSVFile(CATEGORIES_CSV);
+    const records = await parseCSVFile(CATEGORIES_CSV);
 
     return records.map(record => ({
       id: validateCategory(record.id, 'categories.csv'),

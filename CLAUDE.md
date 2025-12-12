@@ -503,6 +503,185 @@ docs/                                    # User documentation
 
 ---
 
+## eLibrary, FAQ & Careers Pages Implementation ✅
+
+### Overview
+Implemented a complete transformation of the blog/knowledge-center into an eLibrary with two-column layout, plus FAQ and Careers pages. All three pages are fully functional with CSV-based content management for eLibrary.
+
+### Implementation Complete (December 2024)
+
+**1. eLibrary Page (CSV-Based CMS)**
+   - **Two-Column Layout:**
+     - Left: Sidebar with section filtering and search
+     - Middle: Document list (30% width)
+     - Right: Reading panel (70% width)
+   - **Three Sections:** Standards, Publications, Newsletters
+   - **Features:**
+     - Real-time search across titles, summaries, content, tags
+     - Section filtering with document counts
+     - Featured document badges
+     - PDF download functionality
+     - Category badges and metadata display
+     - Responsive: stacks vertically on mobile
+
+   - **CSV Structure:**
+     - `content/elibrary/documents.csv` - 12 placeholder documents
+     - `content/elibrary/sections.csv` - Section metadata (icons, descriptions)
+     - Auto-detection of PDF files from filesystem
+     - Build pipeline integration with validation
+
+   - **Build System:**
+     - Parser: `scripts/parsers/elibrary-parser.ts`
+     - Validation: Kebab-case IDs, date format (YYYY-MM-DD), section types
+     - Media handling: Auto-copy PDFs to `public/elibrary/`
+     - Generated output: `src/data/generated/elibrary.json`
+
+**2. FAQ Page (Data-Based)**
+   - **20 Questions** across 4 categories:
+     - Services & Testing (6 questions)
+     - Pricing & Quotes (3 questions)
+     - Technical Questions (4 questions)
+     - General (7 questions)
+
+   - **Features:**
+     - Accordion interface with smooth animations
+     - Category filtering tabs with counts
+     - Real-time search functionality
+     - One-item-open-at-a-time accordion
+     - Contact CTA section with phone/email links
+
+   - **Data Structure:**
+     - File: `src/data/faq.ts`
+     - TypeScript interfaces for FAQItem and FAQCategory
+     - Icon mapping for category badges
+
+**3. Careers Page (Data-Based)**
+   - **Company Benefits Section:**
+     - 8 benefit cards with icons and descriptions
+     - Grid layout (4 columns on desktop)
+
+   - **Job Listings:**
+     - Currently showing "No Openings" placeholder
+     - Ready-to-use JobCard and JobModal components
+     - Email application integration
+     - Support for full-time, part-time, contract positions
+
+   - **Features:**
+     - "Why Work With Us" culture section
+     - Benefits showcase with icons
+     - Job listing cards with modal details
+     - Contact section with email/phone/address
+     - Ready for job additions via `src/data/careers.ts`
+
+   - **Data Structure:**
+     - File: `src/data/careers.ts`
+     - JobListing interface with requirements, responsibilities, benefits
+     - companyBenefits array (8 items)
+     - jobListings array (currently empty, example provided)
+
+**4. Navigation Updates**
+   - **Header:**
+     - Changed "Blog" → "eLibrary"
+     - Added "FAQ" link
+     - Added "Careers" link
+     - Total: 8 navigation items (Home, Services, Projects, Equipment, About, eLibrary, FAQ, Careers)
+
+   - **Footer:**
+     - Updated Company section with same changes
+     - All links functional
+
+**5. Components Created**
+
+   **eLibrary:**
+   - `src/components/elibrary/ELibrarySidebar.tsx` - Filtering and search
+   - `src/components/elibrary/DocumentList.tsx` - Compact document list
+   - `src/components/elibrary/ReadingPanel.tsx` - Full document display
+   - `src/app/elibrary/page.tsx` - Main eLibrary page
+
+   **FAQ:**
+   - `src/components/faq/FAQAccordion.tsx` - Animated accordion
+   - `src/app/faq/page.tsx` - FAQ page with search and filtering
+
+   **Careers:**
+   - `src/components/careers/JobCard.tsx` - Job listing card
+   - `src/components/careers/JobModal.tsx` - Full job details modal
+   - `src/app/careers/page.tsx` - Careers page
+
+**6. Documentation**
+   - **eLibrary Management Guide:** `docs/elibrary-management.md`
+     - How to add/edit/delete documents
+     - CSV column descriptions
+     - PDF file requirements
+     - Document ID guidelines (kebab-case)
+     - Date format requirements
+     - Tagging best practices
+     - Troubleshooting guide
+     - Complete workflow examples
+
+**Technical Stack Additions:**
+- Framer Motion (accordion animations, modals)
+- Lucide React icons (expanded usage)
+- CSV parsing for eLibrary content
+- Type-safe data structures for FAQ and Careers
+
+**File Structure:**
+```
+content/elibrary/
+├── documents.csv              # 12 placeholder documents
+├── sections.csv               # Section metadata
+└── {document-id}/files/       # PDF files (auto-detected)
+
+src/data/
+├── faq.ts                     # 20 FAQ items
+├── careers.ts                 # Job listings + benefits
+└── generated/elibrary.json    # Auto-generated
+
+src/components/
+├── elibrary/                  # 3 components
+├── faq/                       # 1 component
+└── careers/                   # 2 components
+
+src/app/
+├── elibrary/page.tsx          # eLibrary page
+├── faq/page.tsx               # FAQ page
+└── careers/page.tsx           # Careers page
+
+docs/
+└── elibrary-management.md     # Complete guide
+```
+
+**Current Status:**
+- ✅ eLibrary CSV structure and parser complete
+- ✅ Build pipeline integration working
+- ✅ All UI components implemented
+- ✅ Three pages fully functional
+- ✅ Navigation updated (Header + Footer)
+- ✅ Documentation complete
+- ✅ Mobile responsive layouts
+- ⏳ Ready for real document/PDF uploads
+- ⏳ Ready for job listings when positions open
+
+**How to Manage Content:**
+
+**eLibrary:**
+1. Edit `content/elibrary/documents.csv` in Excel
+2. Add PDFs to `content/elibrary/{doc-id}/files/`
+3. Run `npm run build:content`
+4. Documents appear on website automatically
+
+**FAQ:**
+1. Edit `src/data/faq.ts`
+2. Add/modify questions in `faqData` array
+3. No build step needed (immediate on dev server)
+
+**Careers:**
+1. Edit `src/data/careers.ts`
+2. Add jobs to `jobListings` array
+3. Set `active: true` for open positions
+4. No build step needed (immediate on dev server)
+
+---
+
 ## Build System Architecture
 
 For detailed technical documentation on how the image build pipeline works, see:
@@ -519,6 +698,6 @@ This architecture is **extensible** and can be replicated for other content type
 
 ---
 
-**Last Updated**: 2025-12-09
-**Status**: Phase 1-6 Complete - Map & Photo Gallery System Ready
-**Next Step**: Populate with Real GPS Coordinates & Project Images
+**Last Updated**: 2024-12-12
+**Status**: Phase 1-6 Complete + eLibrary/FAQ/Careers Pages Implemented
+**Next Step**: Test all pages in dev server, then populate with real content

@@ -2,9 +2,11 @@ import fs from 'fs-extra';
 import path from 'path';
 import type { Project } from './project-parser.js';
 import type { Equipment } from '../../src/types/equipment.js';
+import type { ELibraryDocument } from '../../src/types/elibrary.js';
 
 const CONTENT_ROOT = path.join(process.cwd(), 'content', 'projects');
 const EQUIPMENT_CONTENT_ROOT = path.join(process.cwd(), 'content', 'equipment');
+const ELIBRARY_CONTENT_ROOT = path.join(process.cwd(), 'content', 'elibrary');
 
 /**
  * Check if a media file exists
@@ -278,4 +280,110 @@ export async function copyEquipmentMedia(equipment: Equipment[]): Promise<void> 
   }
 
   console.log(`✅ Copied ${copiedCount} equipment media files to public/equipment/`);
+}
+
+// ==================== ELIBRARY FILE VALIDATION ====================
+
+/**
+ * Check if an eLibrary file exists
+ */
+async function checkELibraryFileExists(
+  documentId: string,
+  filePath: string
+): Promise<boolean> {
+  const fullPath = path.join(ELIBRARY_CONTENT_ROOT, filePath);
+  const exists = await fs.pathExists(fullPath);
+
+  if (!exists) {
+    console.warn(
+      `⚠️  Warning: file not found\n` +
+      `   Document: ${documentId}\n` +
+      `   File: ${fullPath}\n` +
+      `   Expected location: content/elibrary/${filePath}`
+    );
+  }
+
+  return exists;
+}
+
+/**
+ * Validate all files for a single eLibrary document
+ */
+async function validateELibraryDocument(document: ELibraryDocument): Promise<{
+  missingFile: boolean;
+}> {
+  let missingFile = false;
+
+  // Check PDF file if specified
+  if (document.fileUrl) {
+    const exists = await checkELibraryFileExists(document.id, document.fileUrl);
+    if (!exists) {
+      missingFile = true;
+    }
+  }
+
+  return { missingFile };
+}
+
+/**
+ * Validate files for all eLibrary documents
+ */
+export async function validateAllELibraryFiles(documents: ELibraryDocument[]): Promise<void> {
+  console.log('\n📁 Validating eLibrary files...');
+
+  let totalMissingFiles = 0;
+
+  for (const document of documents) {
+    const { missingFile } = await validateELibraryDocument(document);
+    if (missingFile) totalMissingFiles++;
+  }
+
+  if (totalMissingFiles > 0) {
+    console.warn(
+      `\n⚠️  eLibrary file validation warnings:\n` +
+      `   Missing files: ${totalMissingFiles}\n` +
+      `   Note: This is a warning, not an error. Build will continue.`
+    );
+  } else {
+    console.log('✅ All eLibrary files found');
+  }
+}
+
+/**
+ * Copy eLibrary files from content to public folder
+ */
+export async function copyELibraryFiles(documents: ELibraryDocument[]): Promise<void> {
+  console.log('\n📦 Copying eLibrary files to public folder...');
+
+  const PUBLIC_ROOT = path.join(process.cwd(), 'public', 'elibrary');
+
+  // Ensure public/elibrary directory exists
+  await fs.ensureDir(PUBLIC_ROOT);
+
+  let copiedCount = 0;
+
+  for (const document of documents) {
+    const contentDocumentDir = path.join(ELIBRARY_CONTENT_ROOT, document.id);
+    const publicDocumentDir = path.join(PUBLIC_ROOT, document.id);
+
+    // Check if document folder exists in content
+    const documentDirExists = await fs.pathExists(contentDocumentDir);
+
+    if (!documentDirExists) {
+      // No files folder for this document, skip
+      continue;
+    }
+
+    // Copy files folder if it exists
+    const filesDir = path.join(contentDocumentDir, 'files');
+    if (await fs.pathExists(filesDir)) {
+      await fs.copy(filesDir, path.join(publicDocumentDir, 'files'), {
+        overwrite: true
+      });
+      const files = await fs.readdir(filesDir);
+      copiedCount += files.length;
+    }
+  }
+
+  console.log(`✅ Copied ${copiedCount} eLibrary files to public/elibrary/`);
 }
