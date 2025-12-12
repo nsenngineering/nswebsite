@@ -10,7 +10,7 @@ import { getAllEquipmentCategories } from '@/lib/equipment-categories';
 import type { Equipment } from '@/types/equipment';
 
 export default function EquipmentPage() {
-  const equipment: Equipment[] = equipmentData.equipment;
+  const equipment = equipmentData.equipment as Equipment[];
   const categories = getAllEquipmentCategories();
 
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);

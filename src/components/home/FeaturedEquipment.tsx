@@ -11,8 +11,8 @@ import { withBasePath } from '@/lib/utils';
 const equipmentData = equipmentDataRaw as { equipment: Equipment[] };
 const featuredEquipment = equipmentData.equipment.filter(e => e.featured);
 
-const getCategoryLabel = (category: Equipment['category']) => {
-  const labels = {
+const getCategoryLabel = (category: Equipment['category']): string => {
+  const labels: Record<Equipment['category'], string> = {
     'pile-testing': 'Pile Testing',
     'drilling': 'Drilling',
     'laboratory': 'Laboratory',
@@ -22,8 +22,8 @@ const getCategoryLabel = (category: Equipment['category']) => {
   return labels[category];
 };
 
-const getCategoryColor = (category: Equipment['category']) => {
-  const colors = {
+const getCategoryColor = (category: Equipment['category']): string => {
+  const colors: Record<Equipment['category'], string> = {
     'pile-testing': 'from-purple-500 to-purple-700',
     'drilling': 'from-purple-600 to-purple-800',
     'laboratory': 'from-purple-400 to-purple-600',

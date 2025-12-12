@@ -13,8 +13,8 @@ interface ProjectModalProps {
   onClose: () => void;
 }
 
-const getCategoryColor = (category: Project['category']) => {
-  const colors = {
+const getCategoryColor = (category: Project['category']): string => {
+  const colors: Record<Project['category'], string> = {
     'pile-testing': 'bg-purple-100 text-purple-700',
     'tunnel-road': 'bg-purple-200 text-purple-800',
     'hydropower': 'bg-purple-50 text-purple-600',
@@ -24,8 +24,8 @@ const getCategoryColor = (category: Project['category']) => {
   return colors[category];
 };
 
-const getCategoryLabel = (category: Project['category']) => {
-  const labels = {
+const getCategoryLabel = (category: Project['category']): string => {
+  const labels: Record<Project['category'], string> = {
     'pile-testing': 'Pile Testing',
     'tunnel-road': 'Tunnel & Road',
     'hydropower': 'Hydropower',

@@ -2,7 +2,7 @@ import equipmentData from '@/data/generated/equipment.json';
 import type { Equipment, EquipmentCategoryInfo, EquipmentCategory } from '@/types/equipment';
 
 // Extract category metadata from generated data
-export const equipmentCategories: EquipmentCategoryInfo[] = equipmentData.categoryMetadata;
+export const equipmentCategories = equipmentData.categoryMetadata as EquipmentCategoryInfo[];
 
 /**
  * Get all equipment categories for filter dropdowns
