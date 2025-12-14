@@ -6,6 +6,7 @@ import { parseCSVFile } from './parsers/csv-parser.js';
 import { parseProjects, extractCategories } from './parsers/project-parser.js';
 import { validateAllMedia, copyProjectMedia, validateAllEquipmentMedia, copyEquipmentMedia, validateAllELibraryFiles, copyELibraryFiles } from './parsers/validate-media.js';
 import { parseHeroCarousel, copyHeroImages } from './parsers/hero-carousel-parser.js';
+import { parseMilestones, copyMilestoneImages } from './parsers/milestone-parser.js';
 import { parseTeam, copyTeamImages } from './parsers/team-parser.js';
 import { parseEquipmentList, extractEquipmentCategories, loadEquipmentCategoryMetadata } from './parsers/equipment-parser.js';
 import { parseELibraryDocuments, extractSectionCounts, loadSectionMetadata } from './parsers/elibrary-parser.js';
@@ -14,6 +15,7 @@ const CSV_PATH = path.join(process.cwd(), 'content', 'projects', 'projects.csv')
 const OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'projects.json');
 const CATEGORIES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'categories.json');
 const HERO_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'hero-carousel.json');
+const MILESTONES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'milestones.json');
 const TEAM_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'team.json');
 const EQUIPMENT_CSV_PATH = path.join(process.cwd(), 'content', 'equipment', 'equipment.csv');
 const EQUIPMENT_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'equipment.json');
@@ -120,6 +122,21 @@ async function buildContent() {
     await fs.ensureDir(path.dirname(HERO_OUTPUT_PATH));
     await fs.writeJSON(HERO_OUTPUT_PATH, heroCarousel, { spaces: 2 });
     console.log(`✅ Generated: ${path.relative(process.cwd(), HERO_OUTPUT_PATH)}`);
+
+    // Step 8b: Parse milestones
+    console.log('\n🏛️  Building milestones timeline...');
+    const milestones = await parseMilestones();
+
+    // Step 8c: Copy milestone images to public folder
+    await copyMilestoneImages(milestones);
+
+    // Step 8d: Generate milestones JSON output
+    console.log('\n💾 Generating milestones JSON...');
+    await fs.ensureDir(path.dirname(MILESTONES_OUTPUT_PATH));
+    await fs.writeJSON(MILESTONES_OUTPUT_PATH, milestones, { spaces: 2 });
+    console.log(`✅ Generated: ${path.relative(process.cwd(), MILESTONES_OUTPUT_PATH)}`);
+    console.log(`   Timeline: ${milestones.startYear} - ${milestones.endYear}`);
+    console.log(`   Milestones: ${milestones.milestones.length}`);
 
     // Step 9: Parse team
     console.log('\n👥 Building team...');

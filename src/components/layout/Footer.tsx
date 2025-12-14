@@ -1,7 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { siteConfig } from '@/data/site-config';
+import { withBasePath } from '@/lib/utils';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -31,8 +33,13 @@ const Footer: React.FC = () => {
           {/* Company Info */}
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">NS</span>
+              <div className="relative w-12 h-12 flex-shrink-0">
+                <Image
+                  src={withBasePath('/logo/ns-logo.jpg')}
+                  alt="NS Engineering Logo"
+                  fill
+                  className="object-contain"
+                />
               </div>
               <div>
                 <div className="font-bold text-xl text-white">

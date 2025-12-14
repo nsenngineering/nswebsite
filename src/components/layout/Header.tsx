@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
 import { siteConfig } from '@/data/site-config';
 import Button from '@/components/ui/Button';
+import { withBasePath } from '@/lib/utils';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -39,8 +41,14 @@ const Header: React.FC = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">NS</span>
+            <div className="relative w-12 h-12 flex-shrink-0">
+              <Image
+                src={withBasePath('/logo/ns-logo.jpg')}
+                alt="NS Engineering Logo"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
             <div className="hidden sm:block">
               <div className="font-bold text-xl text-gray-900">
