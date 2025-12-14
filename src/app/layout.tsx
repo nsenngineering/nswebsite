@@ -8,6 +8,16 @@ import { siteConfig } from "@/data/site-config";
 export const metadata: Metadata = {
   title: siteConfig.name,
   description: siteConfig.description,
+  icons: {
+    icon: '/logo/ns-logo.jpg',
+    apple: '/logo/ns-logo.jpg',
+  },
+  openGraph: {
+    title: siteConfig.name,
+    description: siteConfig.description,
+    images: ['/logo/ns-logo.jpg'],
+    type: 'website',
+  },
 };
 
 export default function RootLayout({

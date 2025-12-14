@@ -1,0 +1,238 @@
+FINAL HERO SECTION DESIGN – “LIVING EVOLUTION TIMELINE”
+
+Tagline
+
+Constantly evolving, foundation you can trust
+
+Design intent
+Bold, innovative, photo-led hero that visually encodes growth over time, driven entirely by CSV data and future-proof by default.
+
+1. Layout Rules (Locked)
+Desktop (Primary Experience)
+
+Diagonal timeline (bottom-left → top-right)
+
+Signifies growth, progress, momentum
+
+Timeline always visible but secondary to photo
+
+Mobile
+
+Timeline becomes horizontal
+
+Swipe-based interaction
+
+Same data, same behavior, different geometry
+
+2. Visual Hierarchy (Photo-First)
+
+Priority order:
+
+Hero background photo (dominant)
+
+Tagline
+
+Year + title + description
+
+Timeline + thumbnails
+
+This ensures:
+
+Emotional impact first
+
+Story second
+
+Navigation third
+
+3. Background Stage (Main Photo)
+Behavior
+
+Only one photo visible at a time
+
+Covers full hero area
+
+Dark gradient overlay for text legibility (bottom or left-heavy)
+
+Transition Animation
+
+When active milestone changes (auto or click):
+
+Crossfade (opacity)
+
+Subtle zoom-in on incoming image
+
+Duration: 700–800ms
+
+Easing: smooth, confident (no bounce)
+
+This feels premium, not gimmicky.
+
+4. Timeline Design (Desktop)
+Structure
+
+Single diagonal line
+
+Anchors:
+
+Left end: 2015
+
+Right end: Current Year (computed dynamically)
+
+No intermediate years shown.
+
+Milestones (n = 5–15+)
+
+Each milestone is:
+
+A small, minimal node sitting on the diagonal line
+
+Default state:
+
+Neutral dot / minimal square
+
+No year label
+
+Low visual noise
+
+5. Thumbnail Interaction (Key Feature)
+
+This is where the “bold & innovative” feel comes in.
+
+Hover (Desktop)
+
+When user hovers over a timeline node:
+
+A preview thumbnail pops out
+
+Animation:
+
+Scale up
+
+Slight lift off the line
+
+Full color image
+
+Position:
+
+Offset above the diagonal path
+
+This preview does NOT change background yet
+
+Click
+
+Background stage updates to that image
+
+Timeline node becomes active
+
+Preview thumbnail becomes the active visual anchor
+
+Active Node
+
+Larger than others
+
+Strong accent border
+
+Full color
+
+Slight glow / emphasis
+
+This creates:
+
+Explore → Preview → Commit
+which is excellent UX.
+
+6. Text System (Dynamic, 2–3 Lines)
+
+For the active milestone only:
+
+Year (large, subtle, bold)
+
+Title (strong headline)
+
+Description (2–3 lines, clamped)
+
+Text animation on change:
+
+Year fades in
+
+Title slides/fades
+
+Description staggers slightly
+
+Always readable, never dominant over photo.
+
+7. Auto-Play Behavior (Locked)
+
+Auto-advance every 4 seconds
+
+Direction: chronological
+
+Behavior:
+
+Pauses on hover
+
+Pauses on click
+
+Does not fight user interaction
+
+Auto-play restarts only if:
+
+User leaves hero area (optional, but recommended)
+
+8. Mobile Experience (Adapted, Not Compromised)
+Layout
+
+Background photo stays dominant
+
+Text stacked vertically
+
+Timeline becomes horizontal strip at bottom
+
+Interaction
+
+Swipe left/right to change milestone
+
+Tap thumbnail to activate
+
+No hover previews (obviously)
+
+Auto-play
+
+Same 4-second logic
+
+Stops on touch
+
+9. Data-Driven Rules (CSV-Based)
+
+Your CSV controls:
+
+Number of milestones
+
+Order (by year)
+
+Title + description
+
+Images
+
+Default (featured) frame
+
+The system computes:
+
+Start year = min(year)
+
+End year = current year (system date)
+
+Timeline spacing automatically
+
+Adding a 2026 row:
+➡️ Timeline stretches
+➡️ End label updates
+➡️ No code changes
+
+10. Edge Cases (Handled by Design)
+
+5 items → timeline still feels balanced
+
+15 items → nodes get tighter, hover previews still usable
+
+Mixed image types → neutralized by consistent overlay & transitions
