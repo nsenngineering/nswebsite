@@ -17,6 +17,7 @@ import Button from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import FadeIn from '@/components/animations/FadeIn';
 import Link from 'next/link';
+import servicesData from '@/data/generated/services.json';
 
 interface ServiceDetail {
   id: string;
@@ -31,7 +32,117 @@ interface ServiceDetail {
   color: string;
 }
 
-const services: ServiceDetail[] = [
+// Icon mapping
+const iconMap: Record<string, React.ElementType> = {
+  Hammer,
+  Beaker,
+  Box,
+  Drill,
+  Waves,
+  Shield
+};
+
+// Color mapping for categories
+const categoryColors: Record<string, string> = {
+  'pile-testing': 'from-purple-500 to-purple-700',
+  'soil-laboratory': 'from-purple-600 to-purple-800',
+  'rock-laboratory': 'from-purple-400 to-purple-600',
+  'drilling': 'from-purple-700 to-purple-900',
+  'geophysical': 'from-purple-500 to-indigo-700',
+  'ndt': 'from-indigo-600 to-purple-700'
+};
+
+// Transform individual services into category-level data
+function transformServicesData(): ServiceDetail[] {
+  const { services: individualServices, categories } = servicesData;
+
+  return categories.map(category => {
+    // Get all services in this category
+    const categoryServices = individualServices.filter(s => s.category === category.id);
+
+    // Extract capabilities (service names become capabilities)
+    const capabilities = categoryServices.map(s => s.name);
+
+    // Extract all unique equipment
+    const equipment = Array.from(
+      new Set(categoryServices.flatMap(s => s.equipmentUsed))
+    );
+
+    // Extract all unique deliverables
+    const deliverables = Array.from(
+      new Set(categoryServices.flatMap(s => s.typicalDeliverables))
+    );
+
+    return {
+      id: category.id,
+      icon: iconMap[category.icon] || Shield,
+      title: category.name,
+      subtitle: category.description,
+      description: categoryServices[0]?.fullDescription || category.description,
+      capabilities,
+      equipment,
+      applications: [], // Can be populated from project data later
+      deliverables,
+      color: categoryColors[category.id] || 'from-purple-500 to-purple-700'
+    };
+  });
+}
+
+// Hardcoded applications data (can be moved to CSV later)
+const applicationsByCategory: Record<string, string[]> = {
+  'pile-testing': [
+    'Bridges and Flyovers',
+    'High-rise Buildings',
+    'Transmission Towers',
+    'Industrial Structures',
+    'Hydropower Projects'
+  ],
+  'soil-laboratory': [
+    'Foundation Design',
+    'Road & Pavement Design',
+    'Embankment Construction',
+    'Slope Stability Analysis',
+    'Earthwork Quality Control'
+  ],
+  'rock-laboratory': [
+    'Tunnel Design',
+    'Dam Foundations',
+    'Rock Slope Engineering',
+    'Quarry Assessment',
+    'Underground Excavation'
+  ],
+  'drilling': [
+    'Deep Foundation Design',
+    'Tunnel Investigations',
+    'Dam Site Studies',
+    'Hydropower Projects',
+    'Landslide Investigation'
+  ],
+  'geophysical': [
+    'Seismic Site Classification',
+    'Bedrock Depth Mapping',
+    'Groundwater Exploration',
+    'Tunnel Route Selection',
+    'Landslide Characterization'
+  ],
+  'ndt': [
+    'Building Structural Audit',
+    'Bridge Assessment',
+    'Post-Earthquake Evaluation',
+    'Quality Control',
+    'Renovation Planning'
+  ]
+};
+
+// Generate services from CSV data
+const rawServices = transformServicesData();
+const services: ServiceDetail[] = rawServices.map(service => ({
+  ...service,
+  applications: applicationsByCategory[service.id] || []
+}));
+
+// Keeping hardcoded as backup (to be removed after CSV verification)
+const servicesBackup: ServiceDetail[] = [
   {
     id: 'pile-testing',
     icon: Hammer,

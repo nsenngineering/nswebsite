@@ -1,14 +1,13 @@
-import React from 'react';
-import HeroCarousel from '@/components/home/HeroCarousel';
-import HeroSection from '@/components/home/HeroSection';
+import EvolutionTimeline from '@/components/home/EvolutionTimeline';
+import RotatingMetrics from '@/components/home/RotatingMetrics';
 import ServiceCards from '@/components/home/ServiceCards';
 import FeaturedProjects from '@/components/home/FeaturedProjects';
 
 export default function Home() {
   return (
     <>
-      <HeroCarousel />
-      <HeroSection />
+      <EvolutionTimeline />
+      <RotatingMetrics />
       <ServiceCards />
       <FeaturedProjects />
     </>

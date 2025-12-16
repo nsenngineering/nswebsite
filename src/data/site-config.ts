@@ -25,16 +25,15 @@ export const siteConfig = {
   },
 
   social: {
-    facebook: '',
-    linkedin: '',
-    instagram: '',
-    twitter: '',
+    facebook: 'https://www.facebook.com/nsengineering',
+    linkedin: 'https://www.linkedin.com/company/ns-engineering',
+    instagram: 'https://www.instagram.com/nsengineering',
+    tiktok: 'https://www.tiktok.com/@nsengineering',
   },
 
   stats: {
     yearsOfExperience: 10,
     projectsCompleted: 100, // Conservative estimate based on brochure
-    equipmentCount: 20, // Based on comprehensive lab and field equipment
     teamSize: 50, // Based on team list in brochure
     drillingCapacity: '700m', // Maximum depth
   },

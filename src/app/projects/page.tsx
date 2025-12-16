@@ -47,7 +47,7 @@ const ProjectMap = dynamic(
   }
 );
 
-const projects: Project[] = projectsData.projects;
+const projects = projectsData.projects as Project[];
 
 // Generate project categories dynamically from categories.json
 const projectCategories = [

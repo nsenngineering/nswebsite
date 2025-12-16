@@ -13,8 +13,8 @@ import { withBasePath } from '@/lib/utils';
 const projectsData = projectsDataRaw as { projects: Project[] };
 const featuredProjects = projectsData.projects.filter(p => p.featured);
 
-const getCategoryLabel = (category: Project['category']) => {
-  const labels = {
+const getCategoryLabel = (category: Project['category']): string => {
+  const labels: Record<Project['category'], string> = {
     'pile-testing': 'Pile Testing',
     'tunnel-road': 'Tunnel & Road',
     'hydropower': 'Hydropower',
@@ -34,7 +34,7 @@ export default function FeaturedProjects() {
 
   return (
     <>
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
           <div className="text-center mb-12">

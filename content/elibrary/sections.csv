@@ -1,0 +1,4 @@
+id,label,description,icon,order
+standards,Standards,Industry standards and testing protocols for geotechnical engineering,FileText,1
+publications,Publications,Technical papers and research articles from our team and industry experts,BookOpen,2
+newsletters,Newsletters,Company newsletters with project updates and team news,Newspaper,3

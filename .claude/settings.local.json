@@ -5,7 +5,8 @@
       "Bash(cat:*)",
       "Bash(find:*)",
       "Bash(node:*)",
-      "Bash(xargs ls:*)"
+      "Bash(xargs ls:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

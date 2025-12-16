@@ -11,6 +11,7 @@ interface ImageCarouselProps {
   heroImage?: string;
   alt: string;
   projectId: string;
+  basePath?: string;
   onImageClick?: (index: number) => void;
   className?: string;
 }
@@ -20,6 +21,7 @@ export default function ImageCarousel({
   heroImage,
   alt,
   projectId,
+  basePath = '/projects',
   onImageClick,
   className = ''
 }: ImageCarouselProps) {
@@ -97,7 +99,7 @@ export default function ImageCarousel({
               )}
 
               <motion.img
-                src={withBasePath(`/projects/${image}`)}
+                src={withBasePath(`${basePath}/${image}`)}
                 alt={`${alt} - Image ${index + 1}`}
                 className="w-full h-[300px] md:h-[400px] lg:h-[500px] object-cover cursor-pointer"
                 loading={index === 0 ? 'eager' : 'lazy'}
@@ -159,7 +161,7 @@ export default function ImageCarousel({
                 aria-label={`View image ${index + 1}`}
               >
                 <img
-                  src={withBasePath(`/projects/${image}`)}
+                  src={withBasePath(`${basePath}/${image}`)}
                   alt={`Thumbnail ${index + 1}`}
                   className="w-full h-full object-cover"
                   loading="lazy"

@@ -4,24 +4,29 @@ Professional website for NS Engineering, a geotechnical and engineering services
 
 ## Features
 
-- Interactive service showcase (Pile Testing, Soil/Rock Laboratory, Drilling, Geophysical Surveys)
-- Project portfolio with filterable gallery
-- Equipment catalog with specifications
-- Interactive project location map
-- Knowledge center (blog)
-- Contact/RFQ form
-- Fully responsive design
-- Optimized for performance and SEO
+- **Interactive Service Showcase** - Pile Testing, Soil/Rock Laboratory, Drilling, Geophysical Surveys
+- **Project Portfolio** - 32+ projects with filterable gallery and image carousels
+- **Interactive Map** - Leaflet map with project locations, clustering, and popups
+- **Equipment Catalog** - Specifications and capabilities of all testing equipment
+- **eLibrary** - Technical documents organized into Standards, Publications, and Newsletters
+- **FAQ Page** - 20+ frequently asked questions with accordion interface
+- **Careers Page** - Job listings and company benefits showcase
+- **Contact/RFQ Form** - Multi-step request for quotation
+- **CSV-Based CMS** - Easy content management for projects and eLibrary
+- **Fully Responsive** - Optimized for mobile, tablet, and desktop
+- **Performance & SEO** - Static site generation with Next.js
 
 ## Tech Stack
 
-- **Framework**: Next.js 14+ (App Router) with static export
+- **Framework**: Next.js 16 (App Router) with static export
 - **Styling**: Tailwind CSS v4
-- **Language**: TypeScript
-- **Animations**: Framer Motion
-- **Maps**: React Leaflet
+- **Language**: TypeScript (100% typed)
+- **Animations**: Framer Motion (modals, accordions, transitions)
+- **Maps**: React Leaflet + Leaflet Cluster
+- **Carousel**: Embla Carousel (image galleries)
 - **Icons**: Lucide React
 - **Forms**: React Hook Form + Zod
+- **Build Tools**: csv-parse, tsx, fs-extra
 
 ## Getting Started
 
@@ -88,28 +93,59 @@ For production, the basePath is automatically set based on `NODE_ENV`.
 
 ```
 src/
-├── app/                 # Next.js pages
+├── app/                 # Next.js pages (App Router)
+│   ├── page.tsx        # Homepage
+│   ├── projects/       # Projects + interactive map
+│   ├── elibrary/       # eLibrary page
+│   ├── faq/            # FAQ page
+│   ├── careers/        # Careers page
+│   └── ...             # Other pages
 ├── components/          # React components
 │   ├── layout/         # Header, Footer
 │   ├── home/           # Homepage components
-│   ├── services/       # Service cards, modals
-│   ├── projects/       # Project components
-│   ├── equipment/      # Equipment catalog
+│   ├── projects/       # ProjectCard, ProjectModal
+│   ├── elibrary/       # Sidebar, DocumentList, ReadingPanel
+│   ├── faq/            # FAQAccordion
+│   ├── careers/        # JobCard, JobModal
 │   ├── map/            # Leaflet map components
-│   ├── ui/             # Reusable UI components
+│   ├── ui/             # Reusable UI (Button, Card, ImageCarousel)
 │   └── animations/     # Animation wrappers
-├── data/               # Static data files
+├── data/               # Static & generated data
+│   ├── faq.ts          # FAQ data (20 questions)
+│   ├── careers.ts      # Careers data (benefits + jobs)
 │   └── generated/      # Auto-generated from CSV (gitignored)
+│       ├── projects.json
+│       └── elibrary.json
 ├── types/              # TypeScript interfaces
-└── lib/                # Utility functions (including withBasePath)
-content/                # Content management (git tracked)
-└── projects/
-    ├── projects.csv    # Master project data
-    └── {project-id}/   # Per-project media folders
-        ├── images/     # Project photos
-        └── pdfs/       # Case studies
+│   ├── project.ts
+│   └── elibrary.ts
+└── lib/                # Utility functions (withBasePath, etc.)
+
+content/                # Content management (git tracked, CSV-based)
+├── projects/
+│   ├── projects.csv    # Master project data (32 projects)
+│   └── {project-id}/   # Per-project media folders
+│       ├── images/     # Project photos
+│       └── pdfs/       # Case studies
+└── elibrary/
+    ├── documents.csv   # eLibrary documents (12 documents)
+    ├── sections.csv    # Section metadata
+    └── {document-id}/  # Per-document folders
+        └── files/      # PDF files
+
 scripts/                # Build scripts
-└── parsers/           # CSV parsing & validation
+├── build-content.ts    # Main orchestrator
+└── parsers/            # CSV parsing & validation
+    ├── csv-parser.ts
+    ├── project-parser.ts
+    ├── elibrary-parser.ts
+    └── validate-media.ts
+
+docs/                   # User documentation
+├── content-management.md
+├── adding-projects.md
+├── gps-coordinates.md
+└── elibrary-management.md
 ```
 
 ## Customization
@@ -126,21 +162,37 @@ Update company information in `src/data/site-config.ts`
 
 ## Content Management
 
-### Adding Projects
+The website uses a CSV-based content management system for easy editing without code changes.
 
-The website uses a CSV-based content management system:
+### Adding Projects
 
 1. Edit `content/projects/projects.csv` in Excel or Google Sheets
 2. Add project images to `content/projects/{project-id}/images/`
 3. Run `npm run build:content` to process and validate
 4. Images are automatically copied to `public/projects/`
 
-See `docs/content-management.md` for detailed instructions.
+See `docs/content-management.md` and `docs/adding-projects.md` for detailed instructions.
+
+### Managing eLibrary
+
+1. Edit `content/elibrary/documents.csv` in Excel or Google Sheets
+2. Add PDFs to `content/elibrary/{document-id}/files/`
+3. Run `npm run build:content` to process and validate
+4. PDFs are automatically copied to `public/elibrary/`
+
+The eLibrary supports three sections: **Standards**, **Publications**, and **Newsletters**.
+
+See `docs/elibrary-management.md` for complete guide.
+
+### Managing FAQ & Careers
+
+- **FAQ**: Edit `src/data/faq.ts` to add/modify questions (no build step needed)
+- **Careers**: Edit `src/data/careers.ts` to add job listings (no build step needed)
 
 ### Build Commands
 
 ```bash
-npm run build:content  # Parse CSV, validate, copy media
+npm run build:content  # Parse CSV, validate, copy media (projects + eLibrary)
 npm run dev            # Run dev server (also builds content)
 npm run build          # Production build (also builds content)
 ```

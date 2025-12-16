@@ -2,15 +2,22 @@
 
 import path from 'path';
 import fs from 'fs-extra';
+import { parseCSVFile } from './parsers/csv-parser.js';
 import { parseProjectsFromSource, extractCategories } from './parsers/project-parser.js';
-import { validateAllMedia, copyProjectMedia } from './parsers/validate-media.js';
+import { validateAllMedia, copyProjectMedia, validateAllELibraryFiles, copyELibraryFiles } from './parsers/validate-media.js';
 import { parseHeroCarousel, copyHeroImages } from './parsers/hero-carousel-parser.js';
+import { parseMilestones, copyMilestoneImages } from './parsers/milestone-parser.js';
 import { parseTeam, copyTeamImages } from './parsers/team-parser.js';
+import { parseELibraryDocuments, extractSectionCounts, loadSectionMetadata } from './parsers/elibrary-parser.js';
+import { parseServices } from './parsers/services-parser.js';
 
 const OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'projects.json');
 const CATEGORIES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'categories.json');
 const HERO_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'hero-carousel.json');
+const MILESTONES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'milestones.json');
 const TEAM_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'team.json');
+const ELIBRARY_CSV_PATH = path.join(process.cwd(), 'content', 'elibrary', 'documents.csv');
+const ELIBRARY_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'elibrary.json');
 
 interface GeneratedOutput {
   projects: any[];
@@ -108,6 +115,29 @@ async function buildContent() {
     await fs.writeJSON(HERO_OUTPUT_PATH, heroCarousel, { spaces: 2 });
     console.log(`✅ Generated: ${path.relative(process.cwd(), HERO_OUTPUT_PATH)}`);
 
+    // Step 8b: Parse milestones
+    console.log('\n🏛️  Building milestones timeline...');
+    const milestones = await parseMilestones();
+
+    // Step 8c: Copy milestone images to public folder
+    await copyMilestoneImages(milestones);
+
+    // Step 8d: Generate milestones JSON output
+    console.log('\n💾 Generating milestones JSON...');
+    await fs.ensureDir(path.dirname(MILESTONES_OUTPUT_PATH));
+    await fs.writeJSON(MILESTONES_OUTPUT_PATH, milestones, { spaces: 2 });
+    console.log(`✅ Generated: ${path.relative(process.cwd(), MILESTONES_OUTPUT_PATH)}`);
+    console.log(`   Timeline: ${milestones.startYear} - ${milestones.endYear}`);
+    console.log(`   Milestones: ${milestones.milestones.length}`);
+
+    // Step 8d: Generate milestones JSON output
+    console.log('\n💾 Generating milestones JSON...');
+    await fs.ensureDir(path.dirname(MILESTONES_OUTPUT_PATH));
+    await fs.writeJSON(MILESTONES_OUTPUT_PATH, milestones, { spaces: 2 });
+    console.log(`✅ Generated: ${path.relative(process.cwd(), MILESTONES_OUTPUT_PATH)}`);
+    console.log(`   Timeline: ${milestones.startYear} - ${milestones.endYear}`);
+    console.log(`   Milestones: ${milestones.milestones.length}`);
+
     // Step 8: Parse team
     console.log('\n👥 Building team...');
     const team = await parseTeam();
@@ -120,6 +150,54 @@ async function buildContent() {
     await fs.ensureDir(path.dirname(TEAM_OUTPUT_PATH));
     await fs.writeJSON(TEAM_OUTPUT_PATH, team, { spaces: 2 });
     console.log(`✅ Generated: ${path.relative(process.cwd(), TEAM_OUTPUT_PATH)}`);
+
+    // Step 14: Parse eLibrary CSV
+    console.log('\n📚 Building eLibrary...');
+    const elibraryRecords = await parseCSVFile(ELIBRARY_CSV_PATH);
+    console.log(`   Found ${elibraryRecords.length} documents in CSV`);
+
+    const elibraryDocs = await parseELibraryDocuments(elibraryRecords);
+    console.log();
+
+    // Step 15: Validate and copy eLibrary files
+    await validateAllELibraryFiles(elibraryDocs);
+    await copyELibraryFiles(elibraryDocs);
+
+    // Step 16: Generate eLibrary JSON
+    console.log('\n💾 Generating eLibrary JSON...');
+
+    const sectionCounts = extractSectionCounts(elibraryDocs);
+    const sectionMetadata = await loadSectionMetadata();
+
+    const elibraryOutput = {
+      documents: elibraryDocs,
+      sections: sectionCounts,
+      sectionInfo: sectionMetadata,
+      metadata: {
+        totalDocuments: elibraryDocs.length,
+        lastUpdated: new Date().toISOString(),
+        buildVersion: '1.0.0'
+      }
+    };
+
+    await fs.ensureDir(path.dirname(ELIBRARY_OUTPUT_PATH));
+    await fs.writeJSON(ELIBRARY_OUTPUT_PATH, elibraryOutput, { spaces: 2 });
+    console.log(`✅ Generated: ${path.relative(process.cwd(), ELIBRARY_OUTPUT_PATH)}`);
+
+    // eLibrary summary
+    console.log('\n📊 eLibrary Summary:');
+    console.log(`   Total documents: ${elibraryDocs.length}`);
+    console.log(`   Sections:`);
+    for (const [sectionId, count] of Object.entries(sectionCounts)) {
+      const sectionInfo = sectionMetadata.find(s => s.id === sectionId);
+      const label = sectionInfo?.label || sectionId;
+      console.log(`      ${label} (${sectionId}): ${count}`);
+    }
+    console.log(`   Featured documents: ${elibraryDocs.filter(d => d.featured).length}`);
+
+    // Step 17: Parse services
+    console.log('\n🔧 Building services catalog...');
+    parseServices();
 
     console.log('\n✅ Content build complete!\n');
     process.exit(0);
