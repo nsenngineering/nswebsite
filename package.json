@@ -4,8 +4,14 @@
   "private": true,
   "scripts": {
     "build:content": "tsx scripts/build-content.ts",
+    "build:content:local": "cross-env CONTENT_SOURCE_MODE=csv tsx scripts/build-content.ts",
+    "build:content:cloud": "cross-env CONTENT_SOURCE_MODE=sheets tsx scripts/build-content.ts",
     "prebuild": "npm run build:content",
     "dev": "npm run build:content && next dev",
+    "dev:local": "npm run build:content:local && cross-env CONTENT_SOURCE_MODE=csv next dev",
+    "dev:cloud": "npm run build:content:cloud && cross-env CONTENT_SOURCE_MODE=sheets next dev",
+    "build:local": "npm run build:content:local && cross-env CONTENT_SOURCE_MODE=csv next build",
+    "build:cloud": "npm run build:content:cloud && cross-env CONTENT_SOURCE_MODE=sheets next build",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -36,6 +42,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "baseline-browser-mapping": "^2.9.5",
+    "cross-env": "^7.0.3",
     "csv-parse": "^6.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.5",
