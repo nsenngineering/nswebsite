@@ -115,14 +115,14 @@ async function buildContent() {
     await fs.writeJSON(HERO_OUTPUT_PATH, heroCarousel, { spaces: 2 });
     console.log(`✅ Generated: ${path.relative(process.cwd(), HERO_OUTPUT_PATH)}`);
 
-    // Step 8b: Parse milestones
+    // Step 8: Parse milestones
     console.log('\n🏛️  Building milestones timeline...');
     const milestones = await parseMilestones();
 
-    // Step 8c: Copy milestone images to public folder
+    // Step 9: Copy milestone images to public folder
     await copyMilestoneImages(milestones);
 
-    // Step 8d: Generate milestones JSON output
+    // Step 10: Generate milestones JSON output
     console.log('\n💾 Generating milestones JSON...');
     await fs.ensureDir(path.dirname(MILESTONES_OUTPUT_PATH));
     await fs.writeJSON(MILESTONES_OUTPUT_PATH, milestones, { spaces: 2 });
@@ -130,22 +130,14 @@ async function buildContent() {
     console.log(`   Timeline: ${milestones.startYear} - ${milestones.endYear}`);
     console.log(`   Milestones: ${milestones.milestones.length}`);
 
-    // Step 8d: Generate milestones JSON output
-    console.log('\n💾 Generating milestones JSON...');
-    await fs.ensureDir(path.dirname(MILESTONES_OUTPUT_PATH));
-    await fs.writeJSON(MILESTONES_OUTPUT_PATH, milestones, { spaces: 2 });
-    console.log(`✅ Generated: ${path.relative(process.cwd(), MILESTONES_OUTPUT_PATH)}`);
-    console.log(`   Timeline: ${milestones.startYear} - ${milestones.endYear}`);
-    console.log(`   Milestones: ${milestones.milestones.length}`);
-
-    // Step 8: Parse team
+    // Step 11: Parse team
     console.log('\n👥 Building team...');
     const team = await parseTeam();
 
-    // Step 9: Copy team images to public folder
+    // Step 12: Copy team images to public folder
     await copyTeamImages(team);
 
-    // Step 10: Generate team JSON output
+    // Step 13: Generate team JSON output
     console.log('\n💾 Generating team JSON...');
     await fs.ensureDir(path.dirname(TEAM_OUTPUT_PATH));
     await fs.writeJSON(TEAM_OUTPUT_PATH, team, { spaces: 2 });
