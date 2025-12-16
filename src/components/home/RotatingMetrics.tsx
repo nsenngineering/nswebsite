@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Briefcase, Wrench, ArrowRight, LucideIcon } from 'lucide-react';
+import { Trophy, Briefcase, ArrowRight, LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
 
@@ -36,22 +36,12 @@ const metricsData: MetricCard[] = [
     description: 'Successful projects across roads, bridges, hydropower, and infrastructure',
     gradient: 'from-primary-700 to-primary-900',
     href: '/projects'
-  },
-  {
-    id: 'equipment',
-    icon: 'Wrench',
-    value: '15+',
-    label: 'Advanced Equipment',
-    description: 'State-of-the-art testing tools including PDA, PIT, drilling rigs, and laboratory instruments',
-    gradient: 'from-primary-600 to-primary-800',
-    href: '/equipment'
   }
 ];
 
 const iconMap: Record<string, LucideIcon> = {
   Trophy,
-  Briefcase,
-  Wrench
+  Briefcase
 };
 
 // ===== UTILITY FUNCTIONS =====
@@ -323,11 +313,10 @@ function MobileCarousel({
           <button
             key={index}
             onClick={() => handleDotClick(index)}
-            className={`h-2 rounded-full transition-all ${
-              index === activeIndex
+            className={`h-2 rounded-full transition-all ${index === activeIndex
                 ? 'bg-primary-600 w-8'
                 : 'bg-gray-300 w-2'
-            }`}
+              }`}
             aria-label={`Go to metric ${index + 1}`}
           />
         ))}
@@ -371,18 +360,16 @@ function MetricCardContent({
       {/* Icon */}
       <div className="flex justify-center mb-6">
         <motion.div
-          className={`w-32 h-32 rounded-full flex items-center justify-center ${
-            isActive ? 'bg-secondary-400/20' : 'bg-white/30'
-          }`}
+          className={`w-32 h-32 rounded-full flex items-center justify-center ${isActive ? 'bg-secondary-400/20' : 'bg-white/30'
+            }`}
           animate={iconPulseAnimation}
           transition={iconPulseTransition}
         >
           <Icon
-            className={`w-20 h-20 ${
-              isActive
+            className={`w-20 h-20 ${isActive
                 ? 'text-secondary-400 drop-shadow-[0_0_16px_rgba(250,204,21,0.5)]'
                 : 'text-white'
-            }`}
+              }`}
           />
         </motion.div>
       </div>

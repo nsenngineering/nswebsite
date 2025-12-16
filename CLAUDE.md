@@ -121,7 +121,7 @@ Leading provider of geotechnical investigation, in-situ & laboratory testing ser
 - Hero section with field operations imagery
 - Message: "Nepal's Trusted Partner for Geotechnical, Pile Testing & Material Investigations"
 - Interactive service cards (6 categories)
-- Statistics: 10+ years, 100+ projects, 15+ equipment
+- Statistics: 10+ years, 100+ projects
 - Featured projects section
 
 #### 2. Services Section
@@ -129,7 +129,6 @@ Leading provider of geotechnical investigation, in-situ & laboratory testing ser
 - Modals with:
   - Technical diagrams (PDA signals, wave reflections)
   - Process steps
-  - Equipment used
   - Typical deliverables
 - Tab navigation for 6 service categories
 
@@ -139,27 +138,17 @@ Leading provider of geotechnical investigation, in-situ & laboratory testing ser
   - Service type (pile testing, drilling, lab, geophysical)
   - Industry (roads, bridges, hydropower, buildings)
   - Year (2014 onwards)
-- Project cards with: name, client, scope, photos, equipment, outcomes
+- Project cards with: name, client, scope, photos, outcomes
 - Case study modals with downloadable PDFs
 
-#### 4. Equipment Section
-- Equipment catalog with:
-  - Photos
-  - Technical specifications
-  - Test capacity
-  - Downloadable spec sheets
-- Categories: Pile Testing, Drilling, Laboratory, Geophysical, Field Testing
-- Carousel for each equipment
-- "Request this equipment for a job" button
-
-#### 5. About Us Section
+#### 4. About Us Section
 - Company story (10+ years of experience)
 - Team grid with photos and roles
 - Areas of operation
 - Industries served
 - Accreditations/affiliations
 
-#### 6. Contact/RFQ Page
+#### 5. Contact/RFQ Page
 - Multi-step form:
   1. Service type selection
   2. Project details (location, timeline)
@@ -170,14 +159,14 @@ Leading provider of geotechnical investigation, in-situ & laboratory testing ser
 - WhatsApp button
 - Email, phone, address
 
-#### 7. Project Map Page
+#### 6. Project Map Page
 - Interactive Leaflet map centered on Nepal
 - Custom markers color-coded by project type
 - Click marker → project popup
 - Filters by category
 - Search/locate projects
 
-#### 8. Knowledge Center (Blog)
+#### 7. Knowledge Center (Blog)
 - Case studies
 - Testing guides
 - Industry insights
@@ -185,10 +174,8 @@ Leading provider of geotechnical investigation, in-situ & laboratory testing ser
 - SEO focus: "geotechnical testing Nepal", "pile testing", etc.
 
 ### Optional Advanced Features (Phase 2/3)
-- Equipment scheduling calendar
 - Client dashboard/portal (login, file upload, progress tracking, reports, invoices)
 - Instant quotation estimator
-- Real-time equipment availability
 - ERPNext integration for full ERP functionality
 
 ## Technical Implementation
@@ -228,7 +215,7 @@ Leading provider of geotechnical investigation, in-situ & laboratory testing ser
 ### Visual Style Guidelines
 - Use real field photos (NO stock photos)
 - Show machines, instruments, technicians
-- Project sites and lab equipment
+- Project sites and laboratory facilities
 - Thin-line technical illustrations for diagrams
 - Ample whitespace, minimal clutter
 
@@ -249,20 +236,20 @@ Leading provider of geotechnical investigation, in-situ & laboratory testing ser
 ### To Do 📋
 1. **Immediate**: Read compressed_brochure.pdf to understand actual company details
 2. **Week 1 Remaining**: Services page, About page
-3. **Week 2**: Projects page, Equipment catalog, Contact form
+3. **Week 2**: Projects page, Contact form
 4. **Week 3**: Project map, Blog, SEO, Performance optimization, Launch
 
 ## Key Insights
 
 ### What Makes This Project Unique
 1. **Technical Audience** - Engineers, project managers, contractors
-2. **Trust & Credibility** - Projects and equipment showcase are critical
+2. **Trust & Credibility** - Projects showcase are critical
 3. **Educational Value** - Many clients may not understand testing methods
 4. **Nepal Context** - Local expertise in challenging terrain/seismic zones
 5. **Real Evidence** - Field photos and project data build trust
 
 ### Critical Success Factors
-1. **Visual Proof** - Show actual equipment and project sites
+1. **Visual Proof** - Show actual project sites and testing operations
 2. **Technical Accuracy** - Service descriptions must be precise
 3. **Easy Navigation** - Engineers need quick access to info
 4. **Mobile Friendly** - Site visits often checked on mobile
@@ -270,7 +257,7 @@ Leading provider of geotechnical investigation, in-situ & laboratory testing ser
 
 ### Content Priorities
 1. Real project photos from the field
-2. Equipment specifications and capabilities
+2. Service capabilities and testing standards
 3. Completed project portfolio with client names
 4. Team credentials and expertise
 5. Contact information prominently displayed
@@ -584,10 +571,10 @@ Implemented a complete transformation of the blog/knowledge-center into an eLibr
      - Changed "Blog" → "eLibrary"
      - Added "FAQ" link
      - Added "Careers" link
-     - Total: 8 navigation items (Home, Services, Projects, Equipment, About, eLibrary, FAQ, Careers)
+     - Total: 7 navigation items (Home, Services, Projects, About, eLibrary, FAQ, Careers)
 
    - **Footer:**
-     - Updated Company section with same changes
+     - Updated Company section
      - All links functional
 
 **5. Components Created**
@@ -694,7 +681,7 @@ The build system uses a **5-stage automated pipeline** (Source → Parse → Val
 - Generates TypeScript-compatible JSON for components
 - Provides graceful fallbacks for missing images
 
-This architecture is **extensible** and can be replicated for other content types (team members, equipment, services) following the same pattern.
+This architecture is **extensible** and can be replicated for other content types (team members, services) following the same pattern.
 
 ---
 

@@ -1,6 +1,5 @@
 import path from 'path';
 import fs from 'fs-extra';
-import sharp from 'sharp';
 import { parseCSVFile } from './csv-parser.js';
 import type { Milestone, MilestonesConfig } from '../../src/types/milestone.js';
 
@@ -109,55 +108,35 @@ export async function parseMilestones(): Promise<MilestonesConfig> {
 }
 
 /**
- * Process and optimize milestone images with Sharp
+ * Copy milestone images to public folder
  */
 export async function copyMilestoneImages(config: MilestonesConfig): Promise<void> {
-  console.log('\n📂 Processing milestone images with Sharp...');
+  console.log('\n📂 Copying milestone images to public folder...');
 
   const publicHeroDir = path.join(process.cwd(), 'public', 'hero');
 
   // Ensure public/hero directory exists
   await fs.ensureDir(publicHeroDir);
 
-  let processedCount = 0;
-  let missingCount = 0;
+  let copiedCount = 0;
+  let skippedCount = 0;
 
   for (const milestone of config.milestones) {
     const sourcePath = path.join(HERO_IMAGES_DIR, milestone.image);
-
-    // Ensure output is always .jpg
-    const outputFilename = milestone.image.replace(/\.(png|webp|jpeg)$/i, '.jpg');
-    const destPath = path.join(publicHeroDir, outputFilename);
+    const destPath = path.join(publicHeroDir, milestone.image);
 
     // Check if source exists
     if (await fs.pathExists(sourcePath)) {
-      try {
-        // Process image with Sharp: resize to 2400x1200 with center crop
-        await sharp(sourcePath)
-          .resize(2400, 1200, {
-            fit: 'cover',
-            position: 'center'
-          })
-          .jpeg({
-            quality: 85,
-            progressive: true
-          })
-          .toFile(destPath);
-
-        processedCount++;
-      } catch (error) {
-        console.warn(`⚠️  Error processing image for ${milestone.year}: ${milestone.image}`);
-        console.warn(`   ${error}`);
-        missingCount++;
-      }
+      await fs.copy(sourcePath, destPath, { overwrite: true });
+      copiedCount++;
     } else {
-      console.warn(`⚠️  Missing image for ${milestone.year}: ${milestone.image}`);
-      missingCount++;
+      console.warn(`⚠️  Skipped: ${milestone.image} (not found)`);
+      skippedCount++;
     }
   }
 
-  console.log(`✅ Processed ${processedCount} milestone images (2400x1200, center crop, quality 85)`);
-  if (missingCount > 0) {
-    console.log(`⚠️  Missing or failed ${missingCount} images (will use fallback)`);
+  console.log(`✅ Copied ${copiedCount} images`);
+  if (skippedCount > 0) {
+    console.log(`⚠️  Skipped ${skippedCount} images (not found)`);
   }
 }

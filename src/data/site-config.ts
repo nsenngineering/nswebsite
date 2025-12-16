@@ -34,7 +34,6 @@ export const siteConfig = {
   stats: {
     yearsOfExperience: 10,
     projectsCompleted: 100, // Conservative estimate based on brochure
-    equipmentCount: 20, // Based on comprehensive lab and field equipment
     teamSize: 50, // Based on team list in brochure
     drillingCapacity: '700m', // Maximum depth
   },

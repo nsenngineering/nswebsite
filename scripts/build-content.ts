@@ -4,11 +4,10 @@ import path from 'path';
 import fs from 'fs-extra';
 import { parseCSVFile } from './parsers/csv-parser.js';
 import { parseProjects, extractCategories } from './parsers/project-parser.js';
-import { validateAllMedia, copyProjectMedia, validateAllEquipmentMedia, copyEquipmentMedia, validateAllELibraryFiles, copyELibraryFiles } from './parsers/validate-media.js';
+import { validateAllMedia, copyProjectMedia, validateAllELibraryFiles, copyELibraryFiles } from './parsers/validate-media.js';
 import { parseHeroCarousel, copyHeroImages } from './parsers/hero-carousel-parser.js';
 import { parseMilestones, copyMilestoneImages } from './parsers/milestone-parser.js';
 import { parseTeam, copyTeamImages } from './parsers/team-parser.js';
-import { parseEquipmentList, extractEquipmentCategories, loadEquipmentCategoryMetadata } from './parsers/equipment-parser.js';
 import { parseELibraryDocuments, extractSectionCounts, loadSectionMetadata } from './parsers/elibrary-parser.js';
 import { parseServices } from './parsers/services-parser.js';
 
@@ -18,8 +17,6 @@ const CATEGORIES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generate
 const HERO_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'hero-carousel.json');
 const MILESTONES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'milestones.json');
 const TEAM_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'team.json');
-const EQUIPMENT_CSV_PATH = path.join(process.cwd(), 'content', 'equipment', 'equipment.csv');
-const EQUIPMENT_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'equipment.json');
 const ELIBRARY_CSV_PATH = path.join(process.cwd(), 'content', 'elibrary', 'documents.csv');
 const ELIBRARY_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'elibrary.json');
 
@@ -152,51 +149,7 @@ async function buildContent() {
     await fs.writeJSON(TEAM_OUTPUT_PATH, team, { spaces: 2 });
     console.log(`✅ Generated: ${path.relative(process.cwd(), TEAM_OUTPUT_PATH)}`);
 
-    // Step 12: Parse equipment CSV
-    console.log('\n🔧 Building equipment catalog...');
-    const equipmentRecords = await parseCSVFile(EQUIPMENT_CSV_PATH);
-    console.log(`   Found ${equipmentRecords.length} equipment items in CSV`);
-
-    const equipment = await parseEquipmentList(equipmentRecords);
-    console.log();
-
-    // Step 13: Validate and copy equipment media
-    await validateAllEquipmentMedia(equipment);
-    await copyEquipmentMedia(equipment);
-
-    // Step 14: Generate equipment JSON output
-    console.log('\n💾 Generating equipment JSON...');
-
-    const equipmentCategories = extractEquipmentCategories(equipment);
-    const equipmentCategoryMetadata = await loadEquipmentCategoryMetadata();
-
-    const equipmentOutput = {
-      equipment,
-      categories: equipmentCategories,
-      categoryMetadata: equipmentCategoryMetadata,
-      metadata: {
-        totalEquipment: equipment.length,
-        lastUpdated: new Date().toISOString(),
-        buildVersion: '1.0.0'
-      }
-    };
-
-    await fs.ensureDir(path.dirname(EQUIPMENT_OUTPUT_PATH));
-    await fs.writeJSON(EQUIPMENT_OUTPUT_PATH, equipmentOutput, { spaces: 2 });
-    console.log(`✅ Generated: ${path.relative(process.cwd(), EQUIPMENT_OUTPUT_PATH)}`);
-
-    // Equipment summary
-    console.log('\n📊 Equipment Summary:');
-    console.log(`   Total equipment: ${equipment.length}`);
-    console.log(`   Categories:`);
-    for (const [categoryId, count] of Object.entries(equipmentCategories)) {
-      const categoryInfo = equipmentCategoryMetadata.find(c => c.id === categoryId);
-      const label = categoryInfo?.label || categoryId;
-      console.log(`      ${label} (${categoryId}): ${count}`);
-    }
-    console.log(`   Featured equipment: ${equipment.filter(e => e.featured).length}`);
-
-    // Step 15: Parse eLibrary CSV
+    // Step 14: Parse eLibrary CSV
     console.log('\n📚 Building eLibrary...');
     const elibraryRecords = await parseCSVFile(ELIBRARY_CSV_PATH);
     console.log(`   Found ${elibraryRecords.length} documents in CSV`);
@@ -204,11 +157,11 @@ async function buildContent() {
     const elibraryDocs = await parseELibraryDocuments(elibraryRecords);
     console.log();
 
-    // Step 16: Validate and copy eLibrary files
+    // Step 15: Validate and copy eLibrary files
     await validateAllELibraryFiles(elibraryDocs);
     await copyELibraryFiles(elibraryDocs);
 
-    // Step 17: Generate eLibrary JSON
+    // Step 16: Generate eLibrary JSON
     console.log('\n💾 Generating eLibrary JSON...');
 
     const sectionCounts = extractSectionCounts(elibraryDocs);
@@ -240,7 +193,7 @@ async function buildContent() {
     }
     console.log(`   Featured documents: ${elibraryDocs.filter(d => d.featured).length}`);
 
-    // Step 18: Parse services
+    // Step 17: Parse services
     console.log('\n🔧 Building services catalog...');
     parseServices();
 

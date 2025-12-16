@@ -19,7 +19,6 @@ const Footer: React.FC = () => {
     company: [
       { name: 'About Us', href: '/about' },
       { name: 'Our Projects', href: '/projects' },
-      { name: 'Equipment', href: '/equipment' },
       { name: 'eLibrary', href: '/elibrary' },
       { name: 'FAQ', href: '/faq' },
       { name: 'Careers', href: '/careers' },
