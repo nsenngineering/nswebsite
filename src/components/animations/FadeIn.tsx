@@ -24,7 +24,7 @@ const FadeIn: React.FC<FadeInProps> = ({
       transition={{
         duration,
         delay,
-        ease: 'easeOut',
+        ease: [0, 0, 0.2, 1],
       }}
       className={className}
     >
