@@ -127,8 +127,6 @@ export default function RotatingMetrics() {
   return (
     <section
       className="relative bg-white py-16 md:py-24"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Mobile: Heading (centered, before cards) */}
@@ -205,6 +203,7 @@ export default function RotatingMetrics() {
             metricsData={metricsData}
             activeIndex={activeIndex}
             setActiveIndex={setActiveIndex}
+            setIsPaused={setIsPaused}
           />
 
           {/* Mobile CTAs */}
@@ -284,12 +283,19 @@ function DesktopStack({
 function MobileCarousel({
   metricsData,
   activeIndex,
-  setActiveIndex
+  setActiveIndex,
+  setIsPaused
 }: {
   metricsData: MetricCard[];
   activeIndex: number;
   setActiveIndex: (index: number) => void;
+  setIsPaused: (paused: boolean) => void;
 }) {
+  const handleDotClick = (index: number) => {
+    setActiveIndex(index);
+    setIsPaused(true);
+  };
+
   return (
     <div>
       {/* Active Card */}
@@ -316,7 +322,7 @@ function MobileCarousel({
         {metricsData.map((_, index) => (
           <button
             key={index}
-            onClick={() => setActiveIndex(index)}
+            onClick={() => handleDotClick(index)}
             className={`h-2 rounded-full transition-all ${
               index === activeIndex
                 ? 'bg-primary-600 w-8'
