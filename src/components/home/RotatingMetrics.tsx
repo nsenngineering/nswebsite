@@ -349,7 +349,7 @@ function MetricCardContent({
   const iconPulseTransition = {
     duration: 2,
     repeat: Infinity,
-    ease: "easeInOut"
+    ease: [0.42, 0, 0.58, 1] as const
   };
 
   return (
