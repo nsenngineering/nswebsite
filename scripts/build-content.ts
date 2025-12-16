@@ -10,6 +10,7 @@ import { parseMilestones, copyMilestoneImages } from './parsers/milestone-parser
 import { parseTeam, copyTeamImages } from './parsers/team-parser.js';
 import { parseEquipmentList, extractEquipmentCategories, loadEquipmentCategoryMetadata } from './parsers/equipment-parser.js';
 import { parseELibraryDocuments, extractSectionCounts, loadSectionMetadata } from './parsers/elibrary-parser.js';
+import { parseServices } from './parsers/services-parser.js';
 
 const CSV_PATH = path.join(process.cwd(), 'content', 'projects', 'projects.csv');
 const OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'projects.json');
@@ -238,6 +239,10 @@ async function buildContent() {
       console.log(`      ${label} (${sectionId}): ${count}`);
     }
     console.log(`   Featured documents: ${elibraryDocs.filter(d => d.featured).length}`);
+
+    // Step 18: Parse services
+    console.log('\n🔧 Building services catalog...');
+    parseServices();
 
     console.log('\n✅ Content build complete!\n');
     process.exit(0);
