@@ -32,12 +32,27 @@ export function getPlaceholderImage(category: ProjectCategory): string {
  * Currently returns the path as-is since we're using custom domains
  * (stage.nsengineering.com and nsengineering.com) which serve from root.
  *
+ * Supports both local paths and external URLs (e.g., Cloudflare R2).
+ * Only prepends basePath to relative paths, not to full URLs.
+ *
  * Kept for future flexibility - can set NEXT_PUBLIC_BASE_PATH if needed.
  *
- * @param path - The path to return (with optional basePath prefix)
- * @returns Path with basePath prefix if NEXT_PUBLIC_BASE_PATH is set
+ * @param path - The path or URL to return (with optional basePath prefix)
+ * @returns Path with basePath prefix if NEXT_PUBLIC_BASE_PATH is set and path is relative
+ *
+ * @example
+ * // Local path with basePath
+ * withBasePath('/projects/image.jpg') // => '/subfolder/projects/image.jpg' (if basePath = '/subfolder')
+ *
+ * // R2 URL (unchanged)
+ * withBasePath('https://cdn.example.com/image.jpg') // => 'https://cdn.example.com/image.jpg'
  */
 export function withBasePath(path: string): string {
+  // Skip basePath for absolute URLs (http:// or https://)
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
   return basePath ? `${basePath}${path}` : path;
 }

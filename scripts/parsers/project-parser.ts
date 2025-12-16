@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { CSVRecord, parseSemicolonArray, parseBoolean, parseNumber } from './csv-parser.js';
 import { parseCategoriesCSV, CategoryConfig } from './category-parser.js';
+import { fetchProjectsWithFallback, SheetRow } from './google-sheets-parser.js';
 
 export interface Project {
   id: string;
@@ -40,6 +41,31 @@ const NEPAL_LAT_MIN = 26.3479;
 const NEPAL_LAT_MAX = 30.4227;
 const NEPAL_LNG_MIN = 80.0884;
 const NEPAL_LNG_MAX = 88.2015;
+
+/**
+ * Check if R2 mode is enabled
+ */
+function isR2Mode(): boolean {
+  return !!process.env.NEXT_PUBLIC_R2_BASE_URL && process.env.NEXT_PUBLIC_R2_BASE_URL !== 'https://pub-XXXXX.r2.dev';
+}
+
+/**
+ * Construct media URL (R2 or local path)
+ * @param projectId - Project ID
+ * @param mediaType - Type of media (images, pdfs)
+ * @param filename - File name
+ * @returns Full URL (R2) or relative path (local)
+ */
+function constructMediaUrl(projectId: string, mediaType: 'images' | 'pdfs', filename: string): string {
+  if (isR2Mode()) {
+    const R2_BASE_URL = process.env.NEXT_PUBLIC_R2_BASE_URL!;
+    const R2_BASE_PATH = process.env.R2_BASE_PATH || 'projects';
+    return `${R2_BASE_URL}/${R2_BASE_PATH}/${projectId}/${mediaType}/${filename}`;
+  } else {
+    // Local mode - return relative path (will be copied to public/)
+    return `${projectId}/${mediaType}/${filename}`;
+  }
+}
 
 /**
  * Validate required field exists
@@ -99,6 +125,7 @@ function validateProjectId(id: string): void {
 
 /**
  * Auto-detect images from filesystem when CSV is empty
+ * Note: In R2 mode, filesystem auto-detection is skipped
  */
 async function autoDetectImages(
   projectId: string,
@@ -110,7 +137,18 @@ async function autoDetectImages(
     return { images: csvImages, heroImage: csvHeroImage };
   }
 
-  // Otherwise, scan filesystem
+  // In R2 mode, skip filesystem detection (images are in R2, not local)
+  if (isR2Mode()) {
+    if (csvImages.length === 0) {
+      console.warn(
+        `⚠️  Warning: Project "${projectId}" has no images specified in CSV/Sheets.\n` +
+        `   In R2 mode, images must be listed in the images column.`
+      );
+    }
+    return { images: [], heroImage: undefined };
+  }
+
+  // Local mode: scan filesystem for images
   const CONTENT_ROOT = path.join(process.cwd(), 'content', 'projects');
   const imagesDir = path.join(CONTENT_ROOT, projectId, 'images');
 
@@ -163,6 +201,28 @@ async function autoDetectImages(
 }
 
 /**
+ * Convert SheetRow to CSVRecord format
+ */
+function sheetRowToCSVRecord(row: SheetRow): CSVRecord {
+  return {
+    id: row.id,
+    title: row.title,
+    client: row.client,
+    category: row.category,
+    year: row.year.toString(),
+    location_name: row.location_name,
+    location_district: row.location_district || '',
+    coordinates_lat: row.coordinates_lat.toString(),
+    coordinates_lng: row.coordinates_lng.toString(),
+    scope: row.scope,
+    images: row.images,
+    pdfs: row.pdfs,
+    hero_image: row.hero_image,
+    featured: row.featured.toString(),
+  };
+}
+
+/**
  * Parse a single project from CSV record
  */
 export async function parseProject(record: CSVRecord): Promise<Project> {
@@ -195,10 +255,10 @@ export async function parseProject(record: CSVRecord): Promise<Project> {
   // Auto-detect images from filesystem if CSV is empty
   const { images, heroImage } = await autoDetectImages(id, csvImages, csvHeroImage);
 
-  // Construct full media paths (projectId/images/filename)
-  const imagesPaths = images.map(img => `${id}/images/${img}`);
-  const pdfsPaths = pdfs.map(pdf => `${id}/pdfs/${pdf}`);
-  const heroImagePath = heroImage ? `${id}/images/${heroImage}` : undefined;
+  // Construct full media URLs/paths (R2 or local)
+  const imagesPaths = images.map(img => constructMediaUrl(id, 'images', img));
+  const pdfsPaths = pdfs.map(pdf => constructMediaUrl(id, 'pdfs', pdf));
+  const heroImagePath = heroImage ? constructMediaUrl(id, 'images', heroImage) : undefined;
 
   const featured = parseBoolean(record.featured);
 
@@ -249,6 +309,23 @@ export async function parseProjects(records: CSVRecord[]): Promise<Project[]> {
 
   console.log(`✅ Successfully parsed ${projects.length} projects`);
   return projects;
+}
+
+/**
+ * Parse all projects from Google Sheets or CSV (with fallback)
+ * This is the main entry point for parsing projects
+ */
+export async function parseProjectsFromSource(): Promise<Project[]> {
+  console.log('📦 Loading project data...');
+
+  // Fetch from Google Sheets or CSV fallback
+  const sheetRows = await fetchProjectsWithFallback();
+
+  // Convert sheet rows to CSV record format
+  const records = sheetRows.map(row => sheetRowToCSVRecord(row));
+
+  // Parse using existing logic
+  return parseProjects(records);
 }
 
 /**
