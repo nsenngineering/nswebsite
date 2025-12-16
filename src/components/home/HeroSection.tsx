@@ -42,7 +42,7 @@ const HeroSection: React.FC = () => {
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
               <Button size="lg" className="group">
                 Request a Quote
@@ -54,24 +54,6 @@ const HeroSection: React.FC = () => {
                 Our Services
               </Button>
             </Link>
-          </div>
-
-          {/* Statistics */}
-          <div className="flex flex-wrap justify-center items-center gap-6 md:gap-8">
-            <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-secondary-400">100+</div>
-              <div className="text-sm text-purple-200 mt-1">Projects Completed</div>
-            </div>
-            <div className="hidden sm:block w-px h-12 bg-white/30" />
-            <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-secondary-400">700m</div>
-              <div className="text-sm text-purple-200 mt-1">Drilling Capacity</div>
-            </div>
-            <div className="hidden sm:block w-px h-12 bg-white/30" />
-            <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-secondary-400">50+</div>
-              <div className="text-sm text-purple-200 mt-1">Team Members</div>
-            </div>
           </div>
         </motion.div>
       </div>

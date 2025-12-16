@@ -55,7 +55,7 @@ export default function EvolutionTimeline() {
 
   return (
     <section
-      className="relative w-full h-[70vh] md:h-[80vh] lg:h-[90vh] overflow-hidden"
+      className="relative w-full h-[70vh] md:h-[80vh] lg:h-[90vh] overflow-x-hidden"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -113,7 +113,7 @@ export default function EvolutionTimeline() {
       />
 
       {/* Active Milestone Info - Desktop Only */}
-      <div className="hidden md:block absolute bottom-0 left-0 right-0 z-20 pb-12">
+      <div className="hidden md:block absolute bottom-0 left-0 right-0 z-20 pb-12 pointer-events-none">
         <div className="max-w-2xl ml-auto mr-8 px-4 sm:px-6 lg:px-8">
           <AnimatePresence mode="wait">
             <motion.div
@@ -190,11 +190,11 @@ function DiagonalTimeline({
   onClick: (index: number) => void;
 }) {
   return (
-    <div className="hidden md:block absolute inset-0 z-10 pointer-events-none">
-      <div className="relative w-full h-full">
+    <div className="hidden md:block absolute inset-0 z-10 pointer-events-none overflow-visible">
+      <div className="relative w-full h-full overflow-visible">
         {/* Curved Growth Arrow with Tagline Inside */}
         <svg
-          className="absolute inset-0 w-full h-full"
+          className="absolute inset-0 w-full h-full pointer-events-none"
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           style={{ shapeRendering: 'geometricPrecision' }}
@@ -292,6 +292,9 @@ function DiagonalTimeline({
           const isActive = index === activeIndex;
           const isHovered = index === hoveredIndex;
 
+          // Bottom nodes (y > 60%) should show thumbnails ABOVE to stay visible
+          const isBottomNode = y > 60;
+
           return (
             <div
               key={milestone.year}
@@ -299,7 +302,8 @@ function DiagonalTimeline({
               style={{
                 left: `${x}%`,
                 top: `${y}%`,
-                transform: 'translate(-50%, -50%)'
+                transform: 'translate(-50%, -50%)',
+                zIndex: 50 // Ensure thumbnails appear above other elements
               }}
               onMouseEnter={() => onHover(index)}
               onMouseLeave={() => onHover(null)}
@@ -309,11 +313,14 @@ function DiagonalTimeline({
               <AnimatePresence>
                 {isHovered && !isActive && (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                    initial={{ opacity: 0, scale: 0.8, y: isBottomNode ? 10 : -10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                    exit={{ opacity: 0, scale: 0.8, y: isBottomNode ? 10 : -10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2"
+                    className={`absolute left-1/2 -translate-x-1/2 ${
+                      isBottomNode ? 'bottom-full mb-3' : 'top-full mt-3'
+                    }`}
+                    style={{ zIndex: 9999 }}
                   >
                     <div className="relative w-32 h-20 rounded-lg overflow-hidden shadow-2xl ring-2 ring-white/50">
                       <img
@@ -322,7 +329,9 @@ function DiagonalTimeline({
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                    <div className={`absolute left-1/2 -translate-x-1/2 whitespace-nowrap ${
+                      isBottomNode ? 'top-full mt-1' : 'bottom-full mb-1'
+                    }`}>
                       <div className="text-xs font-semibold text-white bg-black/60 px-2 py-1 rounded">
                         {milestone.year}
                       </div>
@@ -428,7 +437,7 @@ function HorizontalTimeline({
                 <button
                   key={milestone.year}
                   onClick={() => onClick(index)}
-                  className={`relative rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-white/80 ${
+                  className={`relative rounded-full transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/80 ${
                     isActive
                       ? 'w-5 h-5 bg-secondary-400 ring-4 ring-white/60 shadow-[0_0_20px_rgba(250,204,21,0.8)]'
                       : 'w-3 h-3 bg-white/60 active:bg-white/90'

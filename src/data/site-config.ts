@@ -25,10 +25,10 @@ export const siteConfig = {
   },
 
   social: {
-    facebook: '',
-    linkedin: '',
-    instagram: '',
-    twitter: '',
+    facebook: 'https://www.facebook.com/nsengineering',
+    linkedin: 'https://www.linkedin.com/company/ns-engineering',
+    instagram: 'https://www.instagram.com/nsengineering',
+    tiktok: 'https://www.tiktok.com/@nsengineering',
   },
 
   stats: {
