@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { CSVRecord, parseSemicolonArray, parseBoolean, parseNumber } from './csv-parser.js';
 import { parseCategoriesCSV, CategoryConfig } from './category-parser.js';
-import { fetchProjectsWithFallback, SheetRow } from './google-sheets-parser.js';
+import { fetchDataWithFallback } from './data-source.js';
 
 export interface Project {
   id: string;
@@ -200,27 +200,6 @@ async function autoDetectImages(
   }
 }
 
-/**
- * Convert SheetRow to CSVRecord format
- */
-function sheetRowToCSVRecord(row: SheetRow): CSVRecord {
-  return {
-    id: row.id,
-    title: row.title,
-    client: row.client,
-    category: row.category,
-    year: row.year.toString(),
-    location_name: row.location_name,
-    location_district: row.location_district || '',
-    coordinates_lat: row.coordinates_lat.toString(),
-    coordinates_lng: row.coordinates_lng.toString(),
-    scope: row.scope,
-    images: row.images,
-    pdfs: row.pdfs,
-    hero_image: row.hero_image,
-    featured: row.featured.toString(),
-  };
-}
 
 /**
  * Parse a single project from CSV record
@@ -318,11 +297,14 @@ export async function parseProjects(records: CSVRecord[]): Promise<Project[]> {
 export async function parseProjectsFromSource(): Promise<Project[]> {
   console.log('📦 Loading project data...');
 
-  // Fetch from Google Sheets or CSV fallback
-  const sheetRows = await fetchProjectsWithFallback();
+  const PROJECTS_CSV_PATH = path.join(process.cwd(), 'content', 'projects', 'projects.csv');
 
-  // Convert sheet rows to CSV record format
-  const records = sheetRows.map(row => sheetRowToCSVRecord(row));
+  // Fetch from Google Sheets or CSV fallback
+  const records = await fetchDataWithFallback(
+    PROJECTS_CSV_PATH,
+    'Projects',
+    'GOOGLE_SHEET_TAB_PROJECTS'
+  );
 
   // Parse using existing logic
   return parseProjects(records);

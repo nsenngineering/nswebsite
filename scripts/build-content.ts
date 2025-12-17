@@ -2,7 +2,7 @@
 
 import path from 'path';
 import fs from 'fs-extra';
-import { parseCSVFile } from './parsers/csv-parser.js';
+import { fetchDataWithFallback } from './parsers/data-source.js';
 import { parseProjectsFromSource, extractCategories } from './parsers/project-parser.js';
 import { validateAllMedia, copyProjectMedia, validateAllELibraryFiles, copyELibraryFiles } from './parsers/validate-media.js';
 import { parseHeroCarousel, copyHeroImages } from './parsers/hero-carousel-parser.js';
@@ -10,6 +10,7 @@ import { parseMilestones, copyMilestoneImages } from './parsers/milestone-parser
 import { parseTeam, copyTeamImages } from './parsers/team-parser.js';
 import { parseELibraryDocuments, extractSectionCounts, loadSectionMetadata } from './parsers/elibrary-parser.js';
 import { parseServices } from './parsers/services-parser.js';
+import { exportAllSheetsToCSV, shouldExportToCSV } from './parsers/csv-exporter.js';
 
 const OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'projects.json');
 const CATEGORIES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'categories.json');
@@ -143,10 +144,14 @@ async function buildContent() {
     await fs.writeJSON(TEAM_OUTPUT_PATH, team, { spaces: 2 });
     console.log(`✅ Generated: ${path.relative(process.cwd(), TEAM_OUTPUT_PATH)}`);
 
-    // Step 14: Parse eLibrary CSV
+    // Step 14: Parse eLibrary data (Sheets or CSV)
     console.log('\n📚 Building eLibrary...');
-    const elibraryRecords = await parseCSVFile(ELIBRARY_CSV_PATH);
-    console.log(`   Found ${elibraryRecords.length} documents in CSV`);
+    const elibraryRecords = await fetchDataWithFallback(
+      ELIBRARY_CSV_PATH,
+      'ElibraryDocuments',
+      'GOOGLE_SHEET_TAB_ELIBRARY'
+    );
+    console.log(`   Found ${elibraryRecords.length} documents`);
 
     const elibraryDocs = await parseELibraryDocuments(elibraryRecords);
     console.log();
@@ -189,7 +194,12 @@ async function buildContent() {
 
     // Step 17: Parse services
     console.log('\n🔧 Building services catalog...');
-    parseServices();
+    await parseServices();
+
+    // Step 18: Export Sheets to CSV for version control (cloud mode only)
+    if (shouldExportToCSV()) {
+      await exportAllSheetsToCSV();
+    }
 
     console.log('\n✅ Content build complete!\n');
     process.exit(0);

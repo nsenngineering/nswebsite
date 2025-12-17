@@ -7,7 +7,10 @@
       "Bash(node:*)",
       "Bash(xargs ls:*)",
       "Bash(npm run build:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npm install:*)",
+      "Bash(sort echo \"\" echo \"📄 Root Documentation Files:\" ls -1 *.md echo \"\" echo \"🔐 Environment Files:\" ls -1 .env* echo \"\" echo \"📊 Files Changed:\" git status --short)",
+      "Bash(du:*)"
     ],
     "deny": [],
     "ask": []

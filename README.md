@@ -1,223 +1,378 @@
 # NS Engineering & Geotechnical Services Website
 
-Professional website for NS Engineering, a geotechnical and engineering services company in Nepal.
+Professional website for NS Engineering & Geotechnical Services Pvt. Ltd., a leading geotechnical and engineering services company in Nepal.
 
-## Features
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com)
+[![Next.js](https://img.shields.io/badge/Next.js-16.0-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue)](https://www.typescriptlang.org/)
 
-- **Interactive Service Showcase** - Pile Testing, Soil/Rock Laboratory, Drilling, Geophysical Surveys
-- **Project Portfolio** - 32+ projects with filterable gallery and image carousels
-- **Interactive Map** - Leaflet map with project locations, clustering, and popups
-- **Equipment Catalog** - Specifications and capabilities of all testing equipment
-- **eLibrary** - Technical documents organized into Standards, Publications, and Newsletters
-- **FAQ Page** - 20+ frequently asked questions with accordion interface
-- **Careers Page** - Job listings and company benefits showcase
-- **Contact/RFQ Form** - Multi-step request for quotation
-- **CSV-Based CMS** - Easy content management for projects and eLibrary
-- **Fully Responsive** - Optimized for mobile, tablet, and desktop
-- **Performance & SEO** - Static site generation with Next.js
+---
 
-## Tech Stack
+## 🌟 Features
 
-- **Framework**: Next.js 16 (App Router) with static export
-- **Styling**: Tailwind CSS v4
-- **Language**: TypeScript (100% typed)
-- **Animations**: Framer Motion (modals, accordions, transitions)
-- **Maps**: React Leaflet + Leaflet Cluster
-- **Carousel**: Embla Carousel (image galleries)
-- **Icons**: Lucide React
-- **Forms**: React Hook Form + Zod
-- **Build Tools**: csv-parse, tsx, fs-extra
+### Core Features
+- **Interactive Service Showcase** - Pile Testing, Soil/Rock Laboratory, Drilling, Geophysical Surveys, NDT
+- **Project Portfolio** - 49+ projects with filterable gallery and photo carousels
+- **Interactive Map** - Leaflet map with GPS locations, marker clustering, and detailed popups
+- **Evolution Timeline** - Company history from 2015-2025 with milestone showcase
+- **eLibrary** - Technical documents (standards, publications, newsletters) with search
+- **FAQ System** - 20+ questions with accordion interface and category filtering
+- **Careers Portal** - Job listings with benefits showcase and application system
+- **Contact/RFQ Form** - Multi-step request for quotation with validation
 
-## Getting Started
+### Content Management
+- **Google Sheets Integration** - Team edits content in familiar spreadsheet interface
+- **CSV Version Control** - Git tracks all changes with professional audit trail
+- **Dual Build Modes** - Local (CSV) and Cloud (Google Sheets) build options
+- **Automatic Fallback** - Builds succeed even if Sheets API fails
 
-### Development
+### Technical Excellence
+- **Static Site Generation** - Lightning-fast performance with Next.js 16
+- **100% TypeScript** - Fully typed for reliability
+- **Responsive Design** - Mobile-first, works on all devices
+- **SEO Optimized** - Meta tags, structured data, semantic HTML
+- **Performance** - Lazy loading, image optimization, code splitting
 
-1. Install dependencies:
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+ and npm
+- Git
+- (Optional) Google Cloud account for Sheets integration
+
+### Installation
+
 ```bash
+# Clone repository
+git clone https://github.com/yourusername/ns-engineering-website.git
+cd ns-engineering-website
+
+# Install dependencies
 npm install
-```
 
-2. Run the development server:
-```bash
+# Copy environment template
+cp .env.local.example .env.local
+
+# Start development server
 npm run dev
 ```
 
-3. Open [http://localhost:3000](http://localhost:3000) in your browser
+Open [http://localhost:3000](http://localhost:3000) to view the site.
 
-### Build
+---
 
-To create a production build:
+## 📚 Documentation
+
+**→ [Complete Documentation Index](./docs/README.md)**
+
+### Quick Links
+
+- **Setup**: [Google Sheets Setup](./docs/setup/GOOGLE_SHEETS_SETUP.md)
+- **Workflow**: [Content Management Workflow](./docs/guides/content-workflow.md)
+- **Guides**: [Adding Projects](./docs/guides/adding-projects.md) | [eLibrary Management](./docs/guides/elibrary-management.md)
+- **Technical**: [Build Modes](./docs/technical/BUILD_MODES.md) | [Cloudflare R2](./docs/technical/CLOUDFLARE_R2_MIGRATION.md)
+
+---
+
+## 🛠 Tech Stack
+
+### Framework & Core
+- **Next.js 16** - React framework with App Router and static export
+- **TypeScript** - Type-safe development
+- **Tailwind CSS v4** - Utility-first CSS framework
+- **Framer Motion** - Animations and transitions
+
+### Features & Integrations
+- **React Leaflet** - Interactive maps with clustering
+- **Embla Carousel** - Touch-friendly image carousels
+- **React Hook Form + Zod** - Form validation
+- **Lucide React** - Icon system
+- **Google Sheets API** - Content management
+- **CSV Parse/Stringify** - Data processing
+
+### Build Tools
+- **tsx** - TypeScript execution
+- **csv-parse** - CSV parsing
+- **fs-extra** - File system utilities
+- **cross-env** - Cross-platform env variables
+- **dotenv-cli** - Environment file loading
+
+---
+
+## 🏗 Build Commands
+
+### Development
 
 ```bash
+# Local mode (uses CSV files)
+npm run dev:local
+
+# Cloud mode (uses Google Sheets)
+npm run dev:cloud
+
+# Default (auto-detects mode)
+npm run dev
+```
+
+### Production
+
+```bash
+# Build with local CSV
+npm run build:local
+
+# Build with Google Sheets
+npm run build:cloud
+
+# Default production build
 npm run build
 ```
 
-This generates a static export in the `out` directory.
-
-### Preview Production Build
+### Content Management
 
 ```bash
+# Build content from local CSV
+npm run build:content:local
+
+# Build content from Google Sheets + export to CSV
+npm run build:content:cloud
+```
+
+---
+
+## 📁 Project Structure
+
+```
+ns-engineering-website/
+├── content/                    # Content source files (CSV)
+│   ├── projects/              # Project data + images
+│   ├── homepage_hero/         # Hero carousel + milestones
+│   ├── team/                  # Team member data
+│   ├── elibrary/              # Documents + sections
+│   ├── services/              # Service catalog
+│   └── categories/            # Category definitions
+│
+├── docs/                       # Documentation
+│   ├── setup/                 # Setup & configuration guides
+│   ├── guides/                # User guides
+│   ├── technical/             # Technical documentation
+│   └── archive/               # Historical docs
+│
+├── scripts/                    # Build scripts
+│   ├── parsers/               # Content parsers
+│   └── build-content.ts       # Main build orchestrator
+│
+├── src/
+│   ├── app/                   # Next.js pages (App Router)
+│   ├── components/            # React components
+│   ├── data/
+│   │   ├── generated/         # Auto-generated JSON (gitignored)
+│   │   ├── faq.ts             # FAQ data
+│   │   └── careers.ts         # Job listings
+│   ├── lib/                   # Utilities
+│   └── types/                 # TypeScript types
+│
+├── public/                     # Static assets
+│   ├── projects/              # Project images (gitignored)
+│   ├── elibrary/              # PDF files (gitignored)
+│   └── images/                # Static images
+│
+├── .env.local                  # Local environment (gitignored)
+├── .env.cloud                  # Cloud environment (gitignored)
+├── .env.local.example          # Local env template
+├── .env.cloud.example          # Cloud env template
+└── package.json
+```
+
+---
+
+## 🔧 Configuration
+
+### Environment Files
+
+Create from templates:
+
+```bash
+# Local development (CSV mode)
+cp .env.local.example .env.local
+
+# Cloud mode (Google Sheets)
+cp .env.cloud.example .env.cloud
+# Then add your Google Sheet ID and credentials
+```
+
+See [Google Sheets Setup](./docs/setup/GOOGLE_SHEETS_SETUP.md) for detailed configuration.
+
+### Build Modes
+
+| Mode | Data Source | Command | Use Case |
+|------|-------------|---------|----------|
+| **Local** | CSV files | `npm run dev:local` | Offline development |
+| **Cloud** | Google Sheets | `npm run dev:cloud` | Team collaboration |
+
+See [Build Modes Guide](./docs/technical/BUILD_MODES.md) for comparison.
+
+---
+
+## 🚢 Deployment
+
+### GitHub Pages (Current)
+
+Automatically deploys on push to `cloudflare` branch:
+
+```bash
+git push origin cloudflare
+```
+
+GitHub Actions runs build and deploys to GitHub Pages.
+
+### Custom Domain Setup
+
+1. Add CNAME file to `public/` directory
+2. Configure DNS A/CNAME records
+3. Enable HTTPS in GitHub Pages settings
+
+---
+
+## 📝 Content Management
+
+### For Non-Technical Team
+
+1. Open [Google Sheet](https://docs.google.com/spreadsheets/d/1xwrA9RXDq77tCHkeeOGwmjMXYgcT07keR_0qRkBctRI/edit)
+2. Edit content directly
+3. Changes auto-save
+4. Done! (Developer syncs weekly)
+
+### For Developers
+
+```bash
+# 1. Fetch latest from Sheets and export to CSV
+npm run build:content:cloud
+
+# 2. Review changes
+git diff content/
+
+# 3. Commit with descriptive message
+git add content/
+git commit -m "Content sync: Added 3 new projects"
+
+# 4. Deploy
+git push
+```
+
+See [Content Workflow](./docs/guides/content-workflow.md) for complete guide.
+
+---
+
+## 🧪 Testing
+
+```bash
+# Build and test locally
 npm run build
 npx serve@latest out
+
+# Open http://localhost:3000
 ```
 
-## Deployment
+### Production Checklist
 
-The site is automatically deployed to GitHub Pages when changes are pushed to the `main` branch.
+- [ ] All content builds successfully
+- [ ] Images load correctly
+- [ ] Maps display project markers
+- [ ] Forms validate properly
+- [ ] Links work (internal & external)
+- [ ] Mobile responsive
+- [ ] SEO meta tags present
+- [ ] Performance metrics acceptable
 
-### BasePath Configuration
+---
 
-The project uses a conditional basePath for GitHub Pages deployment:
+## 🤝 Contributing
 
-- **Development** (`npm run dev`): No basePath, runs at `http://localhost:3000`
-- **Production** (`npm run build`): Adds `/nswebsite` basePath for GitHub Pages
+### Adding New Features
 
-All image and asset URLs use the `withBasePath()` utility from `src/lib/utils.ts` to automatically handle this prefix.
+1. Create feature branch: `git checkout -b feature/new-feature`
+2. Make changes and test locally
+3. Update documentation if needed
+4. Commit with clear messages
+5. Push and create pull request
 
-### Environment Variables
+### Content Updates
 
-Create a `.env.local` file for development (already configured):
-```bash
-NEXT_PUBLIC_BASE_PATH=
-```
+1. Edit Google Sheets or CSV files
+2. Run `npm run build:content:cloud`
+3. Review changes with `git diff`
+4. Commit with descriptive message
+5. Push to deploy
 
-For production, the basePath is automatically set based on `NODE_ENV`.
+---
 
-### Manual Deployment
+## 🐛 Troubleshooting
 
-1. Ensure GitHub Pages is enabled in repository settings
-2. Set source to "GitHub Actions"
-3. Push to main branch - GitHub Actions will build and deploy automatically
+### Build Failures
 
-## Project Structure
+**"Sheet tab not found"**
+- Check tab names in Google Sheets match exactly (case-sensitive)
+- See [Sheet Tab Mapping](./docs/setup/SHEET_TAB_MAPPING.md)
 
-```
-src/
-├── app/                 # Next.js pages (App Router)
-│   ├── page.tsx        # Homepage
-│   ├── projects/       # Projects + interactive map
-│   ├── elibrary/       # eLibrary page
-│   ├── faq/            # FAQ page
-│   ├── careers/        # Careers page
-│   └── ...             # Other pages
-├── components/          # React components
-│   ├── layout/         # Header, Footer
-│   ├── home/           # Homepage components
-│   ├── projects/       # ProjectCard, ProjectModal
-│   ├── elibrary/       # Sidebar, DocumentList, ReadingPanel
-│   ├── faq/            # FAQAccordion
-│   ├── careers/        # JobCard, JobModal
-│   ├── map/            # Leaflet map components
-│   ├── ui/             # Reusable UI (Button, Card, ImageCarousel)
-│   └── animations/     # Animation wrappers
-├── data/               # Static & generated data
-│   ├── faq.ts          # FAQ data (20 questions)
-│   ├── careers.ts      # Careers data (benefits + jobs)
-│   └── generated/      # Auto-generated from CSV (gitignored)
-│       ├── projects.json
-│       └── elibrary.json
-├── types/              # TypeScript interfaces
-│   ├── project.ts
-│   └── elibrary.ts
-└── lib/                # Utility functions (withBasePath, etc.)
+**"Missing credentials"**
+- Ensure `.env.cloud` exists with valid `GOOGLE_SHEET_ID`
+- Check `google-credentials.json` is in project root
 
-content/                # Content management (git tracked, CSV-based)
-├── projects/
-│   ├── projects.csv    # Master project data (32 projects)
-│   └── {project-id}/   # Per-project media folders
-│       ├── images/     # Project photos
-│       └── pdfs/       # Case studies
-└── elibrary/
-    ├── documents.csv   # eLibrary documents (12 documents)
-    ├── sections.csv    # Section metadata
-    └── {document-id}/  # Per-document folders
-        └── files/      # PDF files
+### Content Issues
 
-scripts/                # Build scripts
-├── build-content.ts    # Main orchestrator
-└── parsers/            # CSV parsing & validation
-    ├── csv-parser.ts
-    ├── project-parser.ts
-    ├── elibrary-parser.ts
-    └── validate-media.ts
+**Changes not reflecting**
+- Run `npm run build:content:cloud` to sync
+- Clear browser cache
 
-docs/                   # User documentation
-├── content-management.md
-├── adding-projects.md
-├── gps-coordinates.md
-└── elibrary-management.md
-```
+**Images not loading**
+- Check file paths in CSV
+- Ensure images exist in `content/` directories
+- Run build to copy to `public/`
 
-## Customization
+See [Documentation](./docs/README.md) for more help.
 
-### Colors
+---
 
-Edit brand colors in `src/app/globals.css`:
-- Primary: Blue (#1890ff)
-- Secondary: Teal (#13c2c2)
+## 📊 Project Status
 
-### Content
+- ✅ **Core Features**: Complete (Projects, Services, eLibrary, FAQ, Careers)
+- ✅ **Google Sheets Integration**: Complete (9/9 sheets)
+- ✅ **CSV Version Control**: Complete
+- ✅ **Interactive Map**: Complete with clustering
+- ✅ **Photo Galleries**: Complete with carousels
+- ✅ **Evolution Timeline**: Complete
+- 🔄 **Cloudflare R2**: Planned for Phase 2
+- 🔄 **Automated Sync**: Planned for Phase 2
 
-Update company information in `src/data/site-config.ts`
+---
 
-## Content Management
+## 📄 License
 
-The website uses a CSV-based content management system for easy editing without code changes.
+© 2024 NS Engineering & Geotechnical Services Pvt. Ltd. All rights reserved.
 
-### Adding Projects
+---
 
-1. Edit `content/projects/projects.csv` in Excel or Google Sheets
-2. Add project images to `content/projects/{project-id}/images/`
-3. Run `npm run build:content` to process and validate
-4. Images are automatically copied to `public/projects/`
+## 📞 Contact
 
-See `docs/content-management.md` and `docs/adding-projects.md` for detailed instructions.
+**NS Engineering & Geotechnical Services Pvt. Ltd.**
+- **Address**: Bishal Niwash, 4th Cross, Jwagal, Lalitpur, Nepal
+- **Phone**: +977-01-5260121, +977-9851228995
+- **Email**: info@nsengineering.com.np
+- **Website**: www.nsengineering.com.np
 
-### Managing eLibrary
+---
 
-1. Edit `content/elibrary/documents.csv` in Excel or Google Sheets
-2. Add PDFs to `content/elibrary/{document-id}/files/`
-3. Run `npm run build:content` to process and validate
-4. PDFs are automatically copied to `public/elibrary/`
+## 🙏 Acknowledgments
 
-The eLibrary supports three sections: **Standards**, **Publications**, and **Newsletters**.
+- Built with [Next.js](https://nextjs.org/)
+- Maps by [Leaflet](https://leafletjs.com/)
+- Icons by [Lucide](https://lucide.dev/)
+- Hosted on [GitHub Pages](https://pages.github.com/)
 
-See `docs/elibrary-management.md` for complete guide.
+---
 
-### Managing FAQ & Careers
-
-- **FAQ**: Edit `src/data/faq.ts` to add/modify questions (no build step needed)
-- **Careers**: Edit `src/data/careers.ts` to add job listings (no build step needed)
-
-### Build Commands
-
-```bash
-npm run build:content  # Parse CSV, validate, copy media (projects + eLibrary)
-npm run dev            # Run dev server (also builds content)
-npm run build          # Production build (also builds content)
-```
-
-## Troubleshooting
-
-### Images Not Loading (404 Errors)
-
-If you see 404 errors for project images:
-
-1. **Check basePath**: The `withBasePath()` utility should be used for all image/PDF URLs
-2. **Verify build**: Run `npm run build:content` to ensure images are copied to `public/projects/`
-3. **Check file paths**: Image paths in CSV should match actual filenames (case-sensitive)
-4. **Environment**: Ensure `.env.local` exists with `NEXT_PUBLIC_BASE_PATH=` for development
-
-### Build Errors
-
-- **CSV validation errors**: Check error messages for specific issues (missing fields, invalid coordinates, etc.)
-- **Media not found**: Ensure images exist in `content/projects/{id}/images/` before running build
-- **TypeScript errors**: Run `npm run build` to catch type issues early
-
-## Future Enhancements
-
-- ERPNext integration for client portal
-- Real-time equipment availability
-- Multi-step RFQ form
-- Interactive project timeline
-- Advanced search and filtering
+**Last Updated**: 2024-12-17
+**Version**: 1.0.0
+**Status**: Production Ready 🚀

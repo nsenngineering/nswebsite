@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
-import { parseCSVFile, parseNumber } from './csv-parser.js';
+import { parseNumber } from './csv-parser.js';
+import { fetchDataWithFallback } from './data-source.js';
 import type { TeamMember, TeamConfig } from '../../src/types/team.js';
 
 const TEAM_CSV_PATH = path.join(process.cwd(), 'content', 'team', 'team.csv');
@@ -66,10 +67,14 @@ async function autoDetectImage(memberName: string): Promise<string | undefined> 
  * Parse team CSV and auto-detect images
  */
 export async function parseTeam(): Promise<TeamConfig> {
-  console.log('👥 Parsing team CSV...');
+  console.log('👥 Parsing team data...');
 
-  // Read CSV file
-  const records = await parseCSVFile(TEAM_CSV_PATH) as unknown as TeamCSVRecord[];
+  // Fetch from Sheets or CSV
+  const records = await fetchDataWithFallback(
+    TEAM_CSV_PATH,
+    'Team',
+    'GOOGLE_SHEET_TAB_TEAM'
+  ) as unknown as TeamCSVRecord[];
 
   if (records.length === 0) {
     throw new Error('Team CSV is empty');

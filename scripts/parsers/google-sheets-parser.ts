@@ -1,248 +1,172 @@
 /**
  * Google Sheets Parser
  *
- * Fetches project data from Google Sheets via the Google Sheets API.
- * Falls back to local CSV if Sheets API is unavailable.
+ * Generic parser for fetching data from Google Sheets via the Google Sheets API.
+ * Supports multiple sheet tabs for different content types (projects, hero, team, etc).
  *
  * @module scripts/parsers/google-sheets-parser
  */
 
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
-import fs from 'fs';
+import fs from 'fs-extra';
 import path from 'path';
-import { parse } from 'csv-parse/sync';
 
 /**
- * Row structure from Google Sheets
- * Maps directly to CSV columns
+ * Generic row structure from Google Sheets
+ * Returns key-value pairs matching column headers
  */
-export interface SheetRow {
-  id: string;
-  title: string;
-  client: string;
-  category: string;
-  year: number;
-  location_name: string;
-  location_district: string;
-  coordinates_lat: number;
-  coordinates_lng: number;
-  scope: string;
-  images: string;
-  pdfs: string;
-  hero_image: string;
-  featured: boolean;
-}
+export type SheetRow = Record<string, string>;
 
 /**
- * Fetches project data from Google Sheets
- *
- * Prerequisites:
- * - Google Cloud project with Sheets API enabled
- * - Service account created and JSON key downloaded
- * - Sheet shared with service account email (Viewer access)
- * - Environment variables configured:
- *   - GOOGLE_SHEET_ID or GOOGLE_APPLICATION_CREDENTIALS
- *   - GOOGLE_SERVICE_ACCOUNT_EMAIL
- *   - GOOGLE_PRIVATE_KEY
- *
- * @returns Array of project rows from the sheet
- * @throws Error if authentication fails or sheet cannot be loaded
+ * Create authenticated Google Sheets client
+ * Supports two authentication methods:
+ * 1. Credentials file (GOOGLE_APPLICATION_CREDENTIALS) - local dev
+ * 2. Environment variables (GOOGLE_SERVICE_ACCOUNT_EMAIL + GOOGLE_PRIVATE_KEY) - CI/CD
  */
-export async function fetchProjectsFromSheet(): Promise<SheetRow[]> {
-  console.log('📊 Fetching projects from Google Sheets...');
+async function createSheetsClient(spreadsheetId: string): Promise<GoogleSpreadsheet> {
+  const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
 
-  // 1. Authenticate with service account
   let serviceAccountAuth: JWT;
 
-  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    // Option A: Use credentials file path (simpler for local dev)
-    const credentialsPath = path.resolve(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+  // Method 1: Use credentials file (local development)
+  if (credentialsPath) {
+    const fullPath = path.resolve(credentialsPath);
 
-    if (!fs.existsSync(credentialsPath)) {
+    if (!await fs.pathExists(fullPath)) {
       throw new Error(
-        `Credentials file not found at: ${credentialsPath}\n` +
+        `Credentials file not found: ${fullPath}\n` +
         'Please download your service account JSON from Google Cloud Console.'
       );
     }
 
-    const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf-8'));
+    console.log(`📝 Using credentials file: ${path.basename(fullPath)}`);
+    const credentials = await fs.readJSON(fullPath);
 
     serviceAccountAuth = new JWT({
       email: credentials.client_email,
       key: credentials.private_key,
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
-  } else {
-    // Option B: Use environment variables (better for CI/CD)
-    const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY;
-
-    if (!email || !privateKey) {
-      throw new Error(
-        'Missing Google Sheets credentials.\n' +
-        'Either set GOOGLE_APPLICATION_CREDENTIALS path, or both:\n' +
-        '  - GOOGLE_SERVICE_ACCOUNT_EMAIL\n' +
-        '  - GOOGLE_PRIVATE_KEY'
-      );
-    }
-
+  }
+  // Method 2: Use environment variables (CI/CD)
+  else if (serviceAccountEmail && privateKey) {
+    console.log('📝 Using environment variable credentials');
     serviceAccountAuth = new JWT({
-      email,
+      email: serviceAccountEmail,
       key: privateKey.replace(/\\n/g, '\n'), // Handle escaped newlines
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
   }
-
-  // 2. Validate Sheet ID
-  const sheetId = process.env.GOOGLE_SHEET_ID;
-  if (!sheetId) {
+  // No credentials found
+  else {
     throw new Error(
-      'Missing GOOGLE_SHEET_ID environment variable.\n' +
+      'Google Sheets credentials not found!\n' +
+      'Please set either:\n' +
+      '  - GOOGLE_APPLICATION_CREDENTIALS (path to JSON file)\n' +
+      '  OR\n' +
+      '  - GOOGLE_SERVICE_ACCOUNT_EMAIL + GOOGLE_PRIVATE_KEY (env vars)'
+    );
+  }
+
+  // Create and authenticate the document
+  const doc = new GoogleSpreadsheet(spreadsheetId, serviceAccountAuth);
+
+  try {
+    await doc.loadInfo();
+    console.log(`✅ Connected to Google Sheet: "${doc.title}"`);
+    return doc;
+  } catch (error) {
+    throw new Error(
+      `Failed to load Google Sheet.\n` +
+      `Sheet ID: ${spreadsheetId}\n` +
+      `Make sure:\n` +
+      `  1. The sheet exists and is accessible\n` +
+      `  2. The service account has Viewer access\n` +
+      `  3. Google Sheets API is enabled in Google Cloud Console\n\n` +
+      `Original error: ${error instanceof Error ? error.message : error}`
+    );
+  }
+}
+
+/**
+ * Fetch rows from a specific sheet tab
+ * @param sheetName - Name of the tab/sheet to fetch
+ * @returns Array of row objects (keys = column headers, values = cell content)
+ */
+export async function fetchSheetData(sheetName: string): Promise<SheetRow[]> {
+  // Get Sheet ID from environment
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  if (!spreadsheetId) {
+    throw new Error(
+      'GOOGLE_SHEET_ID not set!\n' +
+      'Add it to your .env.cloud file.\n' +
       'Get the ID from your sheet URL: https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit'
     );
   }
 
-  // 3. Load sheet
-  const doc = new GoogleSpreadsheet(sheetId, serviceAccountAuth);
-
   try {
-    await doc.loadInfo();
-    console.log(`✅ Loaded sheet: "${doc.title}"`);
-  } catch (error) {
-    throw new Error(
-      `Failed to load Google Sheet.\n` +
-      `Sheet ID: ${sheetId}\n` +
-      `Make sure:\n` +
-      `  1. The sheet exists and is accessible\n` +
-      `  2. The service account (${serviceAccountAuth.email}) has Viewer access\n` +
-      `  3. Sheets API is enabled in Google Cloud Console\n\n` +
-      `Original error: ${error}`
-    );
-  }
+    console.log(`📊 Fetching data from Google Sheets tab: "${sheetName}"`);
 
-  // 4. Get first sheet (or sheet by name)
-  const sheet = doc.sheetsByIndex[0]; // or doc.sheetsByTitle['Projects']
+    const doc = await createSheetsClient(spreadsheetId);
 
-  if (!sheet) {
-    throw new Error(
-      `No worksheets found in the Google Sheet.\n` +
-      `Sheet ID: ${sheetId}\n` +
-      `Make sure the sheet contains at least one worksheet.`
-    );
-  }
-
-  console.log(`📄 Reading worksheet: "${sheet.title}"`);
-
-  // 5. Fetch rows
-  const rows = await sheet.getRows();
-  console.log(`📦 Found ${rows.length} projects in sheet`);
-
-  // 6. Convert rows to objects
-  const projects: SheetRow[] = rows.map((row, index) => {
-    try {
-      return {
-        id: row.get('id') || '',
-        title: row.get('title') || '',
-        client: row.get('client') || '',
-        category: row.get('category') || '',
-        year: parseInt(row.get('year') || '0', 10),
-        location_name: row.get('location_name') || '',
-        location_district: row.get('location_district') || '',
-        coordinates_lat: parseFloat(row.get('coordinates_lat') || '0'),
-        coordinates_lng: parseFloat(row.get('coordinates_lng') || '0'),
-        scope: row.get('scope') || '',
-        images: row.get('images') || '',
-        pdfs: row.get('pdfs') || '',
-        hero_image: row.get('hero_image') || '',
-        featured: row.get('featured') === 'TRUE' || row.get('featured') === 'true' || false,
-      };
-    } catch (error) {
-      console.error(`⚠️  Error parsing row ${index + 2}:`, error);
-      throw new Error(`Failed to parse row ${index + 2}: ${error}`);
+    // Get the specific sheet by name
+    const sheet = doc.sheetsByTitle[sheetName];
+    if (!sheet) {
+      const availableTabs = Object.keys(doc.sheetsByTitle).join(', ');
+      throw new Error(
+        `Sheet tab "${sheetName}" not found!\n` +
+        `Available tabs: ${availableTabs || '(none)'}\n` +
+        `Please check your tab names in Google Sheets.`
+      );
     }
-  });
 
-  return projects;
-}
+    console.log(`   Rows: ${sheet.rowCount}, Columns: ${sheet.columnCount}`);
 
-/**
- * Fetches projects with automatic fallback to local CSV
- *
- * Tries Google Sheets first, falls back to CSV if:
- * - Sheets API credentials are missing
- * - Network error
- * - Permission error
- * - Any other Sheets-related error
- *
- * @returns Array of project rows (from Sheets or CSV)
- */
-export async function fetchProjectsWithFallback(): Promise<SheetRow[]> {
-  // Check content source mode
-  const sourceMode = process.env.CONTENT_SOURCE_MODE || 'csv';
+    // Fetch all rows
+    const rows = await sheet.getRows();
 
-  if (sourceMode === 'csv') {
-    console.log('📋 Content source mode: CSV (using local file)');
-    return fetchProjectsFromCSV();
-  }
-
-  // Try Google Sheets
-  try {
-    return await fetchProjectsFromSheet();
-  } catch (error) {
-    console.warn('⚠️  Failed to fetch from Google Sheets, falling back to local CSV');
-    console.error(error instanceof Error ? error.message : error);
-    return fetchProjectsFromCSV();
-  }
-}
-
-/**
- * Reads project data from local CSV file (fallback)
- *
- * @returns Array of project rows from CSV
- * @throws Error if CSV file doesn't exist or cannot be parsed
- */
-function fetchProjectsFromCSV(): SheetRow[] {
-  const csvPath = path.join(process.cwd(), 'content/projects/projects.csv');
-
-  if (!fs.existsSync(csvPath)) {
-    throw new Error(
-      `CSV file not found at: ${csvPath}\n` +
-      'Please ensure content/projects/projects.csv exists.'
-    );
-  }
-
-  try {
-    const csvContent = fs.readFileSync(csvPath, 'utf-8');
-    const records = parse(csvContent, {
-      columns: true,
-      skip_empty_lines: true,
-      trim: true,
+    // Convert rows to plain objects
+    const data: SheetRow[] = rows.map(row => {
+      const obj: SheetRow = {};
+      // Get all column headers and their values
+      sheet.headerValues.forEach(header => {
+        obj[header] = row.get(header) || '';
+      });
+      return obj;
     });
 
-    console.log(`📦 Loaded ${records.length} projects from local CSV`);
+    console.log(`✅ Fetched ${data.length} rows from "${sheetName}"`);
+    return data;
 
-    // Convert CSV records to SheetRow format
-    return records.map((record: any) => ({
-      id: record.id || '',
-      title: record.title || '',
-      client: record.client || '',
-      category: record.category || '',
-      year: parseInt(record.year || '0', 10),
-      location_name: record.location_name || '',
-      location_district: record.location_district || '',
-      coordinates_lat: parseFloat(record.coordinates_lat || '0'),
-      coordinates_lng: parseFloat(record.coordinates_lng || '0'),
-      scope: record.scope || '',
-      images: record.images || '',
-      pdfs: record.pdfs || '',
-      hero_image: record.hero_image || '',
-      featured: record.featured === 'TRUE' || record.featured === 'true' || false,
-    }));
   } catch (error) {
     throw new Error(
-      `Failed to parse CSV file at: ${csvPath}\n` +
-      `Original error: ${error}`
+      `Failed to fetch data from Google Sheets tab "${sheetName}"\n` +
+      `${error instanceof Error ? error.message : error}`
     );
   }
+}
+
+/**
+ * Check if we should use Google Sheets as data source
+ */
+export function shouldUseSheets(): boolean {
+  return process.env.CONTENT_SOURCE_MODE === 'sheets';
+}
+
+/**
+ * Get sheet tab name from environment with fallback to default
+ * Allows customizing tab names via environment variables
+ */
+export function getSheetTabName(defaultName: string, envVarName?: string): string {
+  if (envVarName) {
+    const customName = process.env[envVarName];
+    if (customName) {
+      console.log(`   Using custom tab name from ${envVarName}: "${customName}"`);
+      return customName;
+    }
+  }
+  return defaultName;
 }

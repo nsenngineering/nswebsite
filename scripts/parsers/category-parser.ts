@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import { parseCSVFile, CSVRecord } from './csv-parser.js';
+import { fetchDataWithFallback } from './data-source.js';
 
 export interface CategoryConfig {
   id: string;
@@ -12,7 +13,7 @@ export interface CategoryConfig {
 }
 
 /**
- * Parse categories from CSV file
+ * Parse categories from CSV file or Google Sheets
  */
 export async function parseCategoriesCSV(): Promise<CategoryConfig[]> {
   const CSV_PATH = path.join(process.cwd(), 'content', 'categories', 'categories.csv');
@@ -24,8 +25,12 @@ export async function parseCategoriesCSV(): Promise<CategoryConfig[]> {
   }
 
   try {
-    // Parse CSV using existing parseCSVFile utility
-    const records: CSVRecord[] = await parseCSVFile(CSV_PATH);
+    // Fetch from Google Sheets (with CSV fallback) or CSV directly
+    const records: CSVRecord[] = await fetchDataWithFallback(
+      CSV_PATH,
+      'ProjectCategories',
+      'GOOGLE_SHEET_TAB_CATEGORIES'
+    );
 
     // Validate and transform
     return records.map((record, index) => {

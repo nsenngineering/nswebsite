@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.local.example
+!.env.cloud.example
 
 # Google Cloud credentials (NEVER commit these!)
 google-credentials.json
@@ -47,3 +49,22 @@ next-env.d.ts
 # generated content
 /src/data/generated/
 /public/projects/
+/public/elibrary/
+/public/homepage_hero/
+/public/team/
+
+# development files
+.claude/
+*.log
+.vscode/settings.json
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
