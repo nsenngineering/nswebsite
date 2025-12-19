@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { CSVRecord, parseSemicolonArray, parseBoolean } from './csv-parser.js';
 import { fetchDataWithFallback } from './data-source.js';
+import { isR2Mode, constructR2Url } from './r2-utils.js';
 import type { ELibraryDocument, ELibrarySection, ELibrarySectionInfo } from '../../src/types/elibrary.js';
 
 /**
@@ -135,7 +136,14 @@ export async function parseDocument(record: CSVRecord): Promise<ELibraryDocument
   const fileUrl = await autoDetectFiles(id, csvFileUrl);
 
   // Construct full file path if available
-  const fileUrlPath = fileUrl ? `${id}/files/${fileUrl}` : undefined;
+  let fileUrlPath: string | undefined;
+  if (fileUrl) {
+    if (isR2Mode()) {
+      fileUrlPath = constructR2Url('elibrary', `${id}/files/${fileUrl}`);
+    } else {
+      fileUrlPath = `${id}/files/${fileUrl}`;
+    }
+  }
 
   const featured = parseBoolean(record.featured);
 

@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import { CSVRecord, parseSemicolonArray, parseBoolean, parseNumber } from './csv-parser.js';
 import { parseCategoriesCSV, CategoryConfig } from './category-parser.js';
 import { fetchDataWithFallback } from './data-source.js';
+import { isR2Mode, constructR2Url } from './r2-utils.js';
 
 export interface Project {
   id: string;
@@ -43,13 +44,6 @@ const NEPAL_LNG_MIN = 80.0884;
 const NEPAL_LNG_MAX = 88.2015;
 
 /**
- * Check if R2 mode is enabled
- */
-function isR2Mode(): boolean {
-  return !!process.env.NEXT_PUBLIC_R2_BASE_URL && process.env.NEXT_PUBLIC_R2_BASE_URL !== 'https://pub-XXXXX.r2.dev';
-}
-
-/**
  * Construct media URL (R2 or local path)
  * @param projectId - Project ID
  * @param mediaType - Type of media (images, pdfs)
@@ -58,9 +52,8 @@ function isR2Mode(): boolean {
  */
 function constructMediaUrl(projectId: string, mediaType: 'images' | 'pdfs', filename: string): string {
   if (isR2Mode()) {
-    const R2_BASE_URL = process.env.NEXT_PUBLIC_R2_BASE_URL!;
-    const R2_BASE_PATH = process.env.R2_BASE_PATH || 'projects';
-    return `${R2_BASE_URL}/${R2_BASE_PATH}/${projectId}/${mediaType}/${filename}`;
+    // Use shared R2 utility to construct URL
+    return constructR2Url(`projects/${projectId}`, filename, mediaType);
   } else {
     // Local mode - return relative path (will be copied to public/)
     return `${projectId}/${mediaType}/${filename}`;

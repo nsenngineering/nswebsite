@@ -9,6 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { Service, ServiceCategory } from '../../src/types/service';
 import { fetchDataWithFallback } from './data-source.js';
+import { isR2Mode, constructR2Url } from './r2-utils.js';
 
 interface ServiceCSVRow {
   id: string;
@@ -104,10 +105,23 @@ async function parseServicesCSV(): Promise<Service[]> {
       : [];
 
     // Handle image path
-    const imagePath = row.image ? `/images/services/${row.image}` : '/images/services/placeholder.jpg';
+    let imagePath: string;
+    if (row.image) {
+      imagePath = isR2Mode()
+        ? constructR2Url('services', row.image, 'images')
+        : `/images/services/${row.image}`;
+    } else {
+      imagePath = isR2Mode()
+        ? constructR2Url('services', 'placeholder.jpg', 'images')
+        : '/images/services/placeholder.jpg';
+    }
 
     // Handle optional diagram path
-    const diagramPath = row.diagram ? `/images/diagrams/${row.diagram}` : undefined;
+    const diagramPath = row.diagram
+      ? (isR2Mode()
+          ? constructR2Url('services', row.diagram, 'diagrams')
+          : `/images/diagrams/${row.diagram}`)
+      : undefined;
 
     return {
       id: row.id,
@@ -161,6 +175,12 @@ async function parseCategoriesCSV() {
 function copyMediaFiles(services: Service[]): void {
   console.log('📁 Copying media files...');
 
+  // Skip copying in R2 mode
+  if (isR2Mode()) {
+    console.log('⏭️  R2 Mode: Skipping services media copy (files served from R2)');
+    return;
+  }
+
   // Ensure public directories exist
   if (!fs.existsSync(PUBLIC_SERVICES_DIR)) {
     fs.mkdirSync(PUBLIC_SERVICES_DIR, { recursive: true });
@@ -202,7 +222,7 @@ function copyMediaFiles(services: Service[]): void {
     }
   }
 
-  console.log(`✅ Copied ${imagesCopied} images and ${diagramsCopied} diagrams`);
+  console.log(`✅ Copied ${imagesCopied} images and ${diagramsCopied} diagrams to public/images/`);
 }
 
 /**

@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import { fetchDataWithFallback } from './data-source.js';
+import { isR2Mode, constructR2Url } from './r2-utils.js';
 import type { HeroCarouselImage, HeroCarouselConfig } from '../../src/types/hero-carousel.js';
 
 const HERO_CSV_PATH = path.join(process.cwd(), 'content', 'homepage_hero', 'hero_carousel.csv');
@@ -96,7 +97,9 @@ export async function parseHeroCarousel(): Promise<HeroCarouselConfig> {
       order: index + 1,
       filename,
       alt,
-      path: `/hero/${filename}`
+      path: isR2Mode()
+        ? constructR2Url('hero', filename)
+        : `/hero/${filename}`
     };
   });
 
@@ -112,6 +115,12 @@ export async function parseHeroCarousel(): Promise<HeroCarouselConfig> {
  */
 export async function copyHeroImages(config: HeroCarouselConfig): Promise<void> {
   console.log('\n📂 Copying hero images to public folder...');
+
+  // Skip copying in R2 mode
+  if (isR2Mode()) {
+    console.log('⏭️  R2 Mode: Skipping hero image copy (images served from R2)');
+    return;
+  }
 
   const publicHeroDir = path.join(process.cwd(), 'public', 'hero');
 
@@ -135,7 +144,7 @@ export async function copyHeroImages(config: HeroCarouselConfig): Promise<void> 
     }
   }
 
-  console.log(`✅ Copied ${copiedCount} images`);
+  console.log(`✅ Copied ${copiedCount} images to public/hero/`);
   if (skippedCount > 0) {
     console.log(`⚠️  Skipped ${skippedCount} images (not found)`);
   }

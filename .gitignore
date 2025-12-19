@@ -52,6 +52,29 @@ next-env.d.ts
 /public/elibrary/
 /public/homepage_hero/
 /public/team/
+/public/services/
+/public/hero/
+
+# media files (synced to R2, not tracked in Git)
+# Projects
+content/projects/*/images/
+content/projects/*/pdfs/
+
+# Homepage Hero
+content/homepage_hero/images/
+
+# Team
+content/team/images/
+
+# Services
+content/services/*/images/
+content/services/*/diagrams/
+
+# eLibrary
+content/elibrary/*/files/
+
+# Keep CSV files (version controlled)
+!content/**/*.csv
 
 # development files
 .claude/

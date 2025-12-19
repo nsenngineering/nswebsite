@@ -10,7 +10,11 @@
       "Bash(ls:*)",
       "Bash(npm install:*)",
       "Bash(sort echo \"\" echo \"📄 Root Documentation Files:\" ls -1 *.md echo \"\" echo \"🔐 Environment Files:\" ls -1 .env* echo \"\" echo \"📊 Files Changed:\" git status --short)",
-      "Bash(du:*)"
+      "Bash(du:*)",
+      "Bash(git -C /Users/chance/Documents/ns-engineering-website log --oneline -10)",
+      "Bash(grep:*)",
+      "Bash(git -C /Users/chance/Documents/ns-engineering-website branch -a)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

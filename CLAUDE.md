@@ -207,6 +207,21 @@ git push origin cloudflare
 # GitHub Actions auto-deploys to GitHub Pages
 ```
 
+**What Happens Automatically**:
+1. Syncs media from Google Drive → Cloudflare R2 (via rclone)
+2. Exports Google Sheets → CSV files
+3. Builds website with R2 CDN URLs
+4. Deploys to GitHub Pages
+5. Commits CSV updates to Git
+
+**Media Workflow** (rclone):
+- Team uploads media to Google Drive `content/` folder
+- GitHub Actions syncs to Cloudflare R2 on every push
+- Website loads images from R2 CDN
+- CSV files remain in Git for version control
+
+See [rclone Sync Documentation](./docs/technical/RCLONE_SYNC.md) for setup details.
+
 ---
 
 ## Key Design Patterns

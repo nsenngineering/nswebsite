@@ -11,6 +11,7 @@ import { parseTeam, copyTeamImages } from './parsers/team-parser.js';
 import { parseELibraryDocuments, extractSectionCounts, loadSectionMetadata } from './parsers/elibrary-parser.js';
 import { parseServices } from './parsers/services-parser.js';
 import { exportAllSheetsToCSV, shouldExportToCSV } from './parsers/csv-exporter.js';
+import { isR2Mode, validateR2Config } from './parsers/r2-utils.js';
 
 const OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'projects.json');
 const CATEGORIES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'categories.json');
@@ -48,6 +49,16 @@ function categorizeProjects(projects: any[]): Record<string, number> {
  */
 async function buildContent() {
   console.log('🔨 Building content...\n');
+
+  // Validate R2 configuration if enabled
+  if (isR2Mode()) {
+    try {
+      validateR2Config();
+    } catch (error) {
+      console.error('❌ R2 configuration invalid:', error);
+      process.exit(1);
+    }
+  }
 
   try {
     // Step 1: Parse projects from Google Sheets or CSV fallback

@@ -1,19 +1,12 @@
 import fs from 'fs-extra';
 import path from 'path';
+import { isR2Mode } from './r2-utils.js';
 import type { Project } from './project-parser.js';
 import type { ELibraryDocument } from '../../src/types/elibrary.js';
 
 const CONTENT_ROOT = path.join(process.cwd(), 'content', 'projects');
 
 const ELIBRARY_CONTENT_ROOT = path.join(process.cwd(), 'content', 'elibrary');
-
-/**
- * Check if R2 mode is enabled
- */
-function isR2Mode(): boolean {
-  return !!process.env.NEXT_PUBLIC_R2_BASE_URL &&
-         process.env.NEXT_PUBLIC_R2_BASE_URL !== 'https://pub-XXXXX.r2.dev';
-}
 
 /**
  * Check if a media file exists
@@ -271,6 +264,12 @@ export async function validateAllELibraryFiles(documents: ELibraryDocument[]): P
  */
 export async function copyELibraryFiles(documents: ELibraryDocument[]): Promise<void> {
   console.log('\n📦 Copying eLibrary files to public folder...');
+
+  // Skip copying in R2 mode
+  if (isR2Mode()) {
+    console.log('⏭️  R2 Mode: Skipping eLibrary file copy (files served from R2)');
+    return;
+  }
 
   const PUBLIC_ROOT = path.join(process.cwd(), 'public', 'elibrary');
 

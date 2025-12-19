@@ -225,7 +225,34 @@ Automatically deploys on push to `cloudflare` branch:
 git push origin cloudflare
 ```
 
-GitHub Actions runs build and deploys to GitHub Pages.
+GitHub Actions automatically:
+1. Syncs media from Google Drive → Cloudflare R2
+2. Exports Google Sheets → CSV files
+3. Builds website with R2 CDN URLs
+4. Deploys to GitHub Pages
+5. Commits CSV updates to Git
+
+### Media Sync Workflow (rclone)
+
+**Architecture**: Google Drive → rclone → Cloudflare R2 → Website CDN
+
+**What's Synced**:
+- Images: `.jpg`, `.png`, `.webp`
+- Documents: `.pdf`
+- Source: Google Drive `content/` folder
+- Destination: Cloudflare R2 bucket
+
+**What's NOT Synced**:
+- CSV files (version controlled in Git)
+- Managed via Google Sheets API export
+
+**Team Workflow**:
+1. Upload media to Google Drive `content/` folder
+2. Push any code changes to `cloudflare` branch
+3. GitHub Actions auto-syncs media to R2
+4. Done!
+
+See [rclone Sync Documentation](./docs/technical/RCLONE_SYNC.md) for complete setup and troubleshooting.
 
 ### Custom Domain Setup
 
