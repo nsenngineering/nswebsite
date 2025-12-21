@@ -1,6 +1,8 @@
 import path from 'path';
 import fs from 'fs-extra';
-import { parseCSVFile, parseNumber } from './csv-parser.js';
+import { parseNumber } from './csv-parser.js';
+import { fetchDataWithFallback } from './data-source.js';
+import { isR2Mode, constructR2Url } from './r2-utils.js';
 import type { TeamMember, TeamConfig } from '../../src/types/team.js';
 
 const TEAM_CSV_PATH = path.join(process.cwd(), 'content', 'team', 'team.csv');
@@ -25,9 +27,23 @@ function generateSlug(name: string): string {
 }
 
 /**
+ * Construct image path for a team member
+ */
+function constructImagePath(filename: string): string {
+  return isR2Mode()
+    ? constructR2Url('team', filename)
+    : `/team/${filename}`;
+}
+
+/**
  * Auto-detect image for a team member
  */
 async function autoDetectImage(memberName: string): Promise<string | undefined> {
+  // Skip auto-detection in R2 mode (images must be explicitly defined)
+  if (isR2Mode()) {
+    return undefined;
+  }
+
   if (!await fs.pathExists(TEAM_IMAGES_DIR)) {
     return undefined;
   }
@@ -40,7 +56,7 @@ async function autoDetectImage(memberName: string): Promise<string | undefined> 
     const filename = `${slug}${ext}`;
     const imagePath = path.join(TEAM_IMAGES_DIR, filename);
     if (await fs.pathExists(imagePath)) {
-      return `/team/${filename}`;
+      return constructImagePath(filename);
     }
   }
 
@@ -53,7 +69,7 @@ async function autoDetectImage(memberName: string): Promise<string | undefined> 
     });
 
     if (matchingFile) {
-      return `/team/${matchingFile}`;
+      return constructImagePath(matchingFile);
     }
   } catch (error) {
     // Directory doesn't exist or can't be read
@@ -66,10 +82,14 @@ async function autoDetectImage(memberName: string): Promise<string | undefined> 
  * Parse team CSV and auto-detect images
  */
 export async function parseTeam(): Promise<TeamConfig> {
-  console.log('👥 Parsing team CSV...');
+  console.log('👥 Parsing team data...');
 
-  // Read CSV file
-  const records = await parseCSVFile(TEAM_CSV_PATH) as unknown as TeamCSVRecord[];
+  // Fetch from Sheets or CSV
+  const records = await fetchDataWithFallback(
+    TEAM_CSV_PATH,
+    'Team',
+    'GOOGLE_SHEET_TAB_TEAM'
+  ) as unknown as TeamCSVRecord[];
 
   if (records.length === 0) {
     throw new Error('Team CSV is empty');
@@ -139,6 +159,12 @@ export async function parseTeam(): Promise<TeamConfig> {
 export async function copyTeamImages(config: TeamConfig): Promise<void> {
   console.log('\n📂 Copying team images to public folder...');
 
+  // Skip copying in R2 mode
+  if (isR2Mode()) {
+    console.log('⏭️  R2 Mode: Skipping team image copy (images served from R2)');
+    return;
+  }
+
   const publicTeamDir = path.join(process.cwd(), 'public', 'team');
 
   // Ensure public/team directory exists
@@ -161,7 +187,7 @@ export async function copyTeamImages(config: TeamConfig): Promise<void> {
   }
 
   if (copiedCount > 0) {
-    console.log(`✅ Copied ${copiedCount} team images`);
+    console.log(`✅ Copied ${copiedCount} team images to public/team/`);
   } else {
     console.log(`ℹ️  No team images to copy (using fallback icons)`);
   }

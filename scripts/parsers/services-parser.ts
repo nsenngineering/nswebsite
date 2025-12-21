@@ -1,14 +1,15 @@
 /**
  * Services Parser
  *
- * Parses services.csv and service-categories.csv files to generate
- * services.json for the website. Validates data and copies media files.
+ * Parses services.csv and service-categories.csv from Google Sheets or local files
+ * to generate services.json for the website. Validates data and copies media files.
  */
 
 import fs from 'fs';
 import path from 'path';
-import { parse } from 'csv-parse/sync';
 import { Service, ServiceCategory } from '../../src/types/service';
+import { fetchDataWithFallback } from './data-source.js';
+import { isR2Mode, constructR2Url } from './r2-utils.js';
 
 interface ServiceCSVRow {
   id: string;
@@ -56,21 +57,21 @@ const VALID_CATEGORIES: ServiceCategory[] = [
 ];
 
 /**
- * Parse services CSV file
+ * Parse services from Google Sheets or CSV file
  */
-function parseServicesCSV(): Service[] {
+async function parseServicesCSV(): Promise<Service[]> {
   const csvPath = path.join(CONTENT_DIR, 'services.csv');
 
   if (!fs.existsSync(csvPath)) {
     throw new Error(`Services CSV not found at: ${csvPath}`);
   }
 
-  const csvContent = fs.readFileSync(csvPath, 'utf-8');
-  const rows: ServiceCSVRow[] = parse(csvContent, {
-    columns: true,
-    skip_empty_lines: true,
-    trim: true
-  });
+  // Fetch from Google Sheets with CSV fallback
+  const rows = await fetchDataWithFallback(
+    csvPath,
+    'Services',
+    'GOOGLE_SHEET_TAB_SERVICES'
+  ) as unknown as ServiceCSVRow[];
 
   console.log(`📋 Parsing ${rows.length} services...`);
 
@@ -104,10 +105,23 @@ function parseServicesCSV(): Service[] {
       : [];
 
     // Handle image path
-    const imagePath = row.image ? `/images/services/${row.image}` : '/images/services/placeholder.jpg';
+    let imagePath: string;
+    if (row.image) {
+      imagePath = isR2Mode()
+        ? constructR2Url('services', row.image, 'images')
+        : `/images/services/${row.image}`;
+    } else {
+      imagePath = isR2Mode()
+        ? constructR2Url('services', 'placeholder.jpg', 'images')
+        : '/images/services/placeholder.jpg';
+    }
 
     // Handle optional diagram path
-    const diagramPath = row.diagram ? `/images/diagrams/${row.diagram}` : undefined;
+    const diagramPath = row.diagram
+      ? (isR2Mode()
+          ? constructR2Url('services', row.diagram, 'diagrams')
+          : `/images/diagrams/${row.diagram}`)
+      : undefined;
 
     return {
       id: row.id,
@@ -128,9 +142,9 @@ function parseServicesCSV(): Service[] {
 }
 
 /**
- * Parse service categories CSV file
+ * Parse service categories from Google Sheets or CSV file
  */
-function parseCategoriesCSV() {
+async function parseCategoriesCSV() {
   const csvPath = path.join(CONTENT_DIR, 'service-categories.csv');
 
   if (!fs.existsSync(csvPath)) {
@@ -138,12 +152,12 @@ function parseCategoriesCSV() {
     return [];
   }
 
-  const csvContent = fs.readFileSync(csvPath, 'utf-8');
-  const rows: CategoryCSVRow[] = parse(csvContent, {
-    columns: true,
-    skip_empty_lines: true,
-    trim: true
-  });
+  // Fetch from Google Sheets with CSV fallback
+  const rows = await fetchDataWithFallback(
+    csvPath,
+    'ServiceCategories',
+    'GOOGLE_SHEET_TAB_SERVICE_CATEGORIES'
+  ) as unknown as CategoryCSVRow[];
 
   console.log(`📂 Parsing ${rows.length} service categories...`);
 
@@ -160,6 +174,12 @@ function parseCategoriesCSV() {
  */
 function copyMediaFiles(services: Service[]): void {
   console.log('📁 Copying media files...');
+
+  // Skip copying in R2 mode
+  if (isR2Mode()) {
+    console.log('⏭️  R2 Mode: Skipping services media copy (files served from R2)');
+    return;
+  }
 
   // Ensure public directories exist
   if (!fs.existsSync(PUBLIC_SERVICES_DIR)) {
@@ -202,19 +222,19 @@ function copyMediaFiles(services: Service[]): void {
     }
   }
 
-  console.log(`✅ Copied ${imagesCopied} images and ${diagramsCopied} diagrams`);
+  console.log(`✅ Copied ${imagesCopied} images and ${diagramsCopied} diagrams to public/images/`);
 }
 
 /**
  * Main parser function
  */
-export function parseServices(): void {
+export async function parseServices(): Promise<void> {
   console.log('🔧 Parsing services data...\n');
 
   try {
-    // Parse CSV files
-    const services = parseServicesCSV();
-    const categories = parseCategoriesCSV();
+    // Parse from Google Sheets or CSV files
+    const services = await parseServicesCSV();
+    const categories = await parseCategoriesCSV();
 
     // Validate that all categories referenced by services exist
     const categoryIds = new Set(categories.map(c => c.id));

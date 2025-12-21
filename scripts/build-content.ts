@@ -2,16 +2,17 @@
 
 import path from 'path';
 import fs from 'fs-extra';
-import { parseCSVFile } from './parsers/csv-parser.js';
-import { parseProjects, extractCategories } from './parsers/project-parser.js';
+import { fetchDataWithFallback } from './parsers/data-source.js';
+import { parseProjectsFromSource, extractCategories } from './parsers/project-parser.js';
 import { validateAllMedia, copyProjectMedia, validateAllELibraryFiles, copyELibraryFiles } from './parsers/validate-media.js';
 import { parseHeroCarousel, copyHeroImages } from './parsers/hero-carousel-parser.js';
 import { parseMilestones, copyMilestoneImages } from './parsers/milestone-parser.js';
 import { parseTeam, copyTeamImages } from './parsers/team-parser.js';
 import { parseELibraryDocuments, extractSectionCounts, loadSectionMetadata } from './parsers/elibrary-parser.js';
 import { parseServices } from './parsers/services-parser.js';
+import { exportAllSheetsToCSV, shouldExportToCSV } from './parsers/csv-exporter.js';
+import { isR2Mode, validateR2Config } from './parsers/r2-utils.js';
 
-const CSV_PATH = path.join(process.cwd(), 'content', 'projects', 'projects.csv');
 const OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'projects.json');
 const CATEGORIES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'categories.json');
 const HERO_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'hero-carousel.json');
@@ -47,26 +48,31 @@ function categorizeProjects(projects: any[]): Record<string, number> {
  * Main build function
  */
 async function buildContent() {
-  console.log('🔨 Building content from CSV files...\n');
+  console.log('🔨 Building content...\n');
+
+  // Validate R2 configuration if enabled
+  if (isR2Mode()) {
+    try {
+      validateR2Config();
+    } catch (error) {
+      console.error('❌ R2 configuration invalid:', error);
+      process.exit(1);
+    }
+  }
 
   try {
-    // Step 1: Parse CSV
-    console.log('📄 Parsing CSV file...');
-    const records = await parseCSVFile(CSV_PATH);
-    console.log(`   Found ${records.length} records in CSV\n`);
-
-    // Step 2: Validate and transform data
-    console.log('🔍 Validating project data...');
-    const projects = await parseProjects(records);
+    // Step 1: Parse projects from Google Sheets or CSV fallback
+    console.log('🔍 Parsing and validating project data...');
+    const projects = await parseProjectsFromSource();
     console.log();
 
-    // Step 3: Validate media files
+    // Step 2: Validate media files (local mode) or R2 config (R2 mode)
     await validateAllMedia(projects);
 
-    // Step 4: Copy media to public folder
+    // Step 3: Copy media to public folder (local mode) or skip (R2 mode)
     await copyProjectMedia(projects);
 
-    // Step 5: Generate JSON output
+    // Step 4: Generate JSON output
     console.log('\n💾 Generating JSON file...');
 
     const output: GeneratedOutput = {
@@ -108,27 +114,27 @@ async function buildContent() {
     }
     console.log(`   Featured projects: ${projects.filter(p => p.featured).length}`);
 
-    // Step 6: Parse hero carousel
+    // Step 5: Parse hero carousel
     console.log('\n📸 Building hero carousel...');
     const heroCarousel = await parseHeroCarousel();
 
-    // Step 7: Copy hero images to public folder
+    // Step 6: Copy hero images to public folder
     await copyHeroImages(heroCarousel);
 
-    // Step 8: Generate hero carousel JSON output
+    // Step 7: Generate hero carousel JSON output
     console.log('\n💾 Generating hero carousel JSON...');
     await fs.ensureDir(path.dirname(HERO_OUTPUT_PATH));
     await fs.writeJSON(HERO_OUTPUT_PATH, heroCarousel, { spaces: 2 });
     console.log(`✅ Generated: ${path.relative(process.cwd(), HERO_OUTPUT_PATH)}`);
 
-    // Step 8b: Parse milestones
+    // Step 8: Parse milestones
     console.log('\n🏛️  Building milestones timeline...');
     const milestones = await parseMilestones();
 
-    // Step 8c: Copy milestone images to public folder
+    // Step 9: Copy milestone images to public folder
     await copyMilestoneImages(milestones);
 
-    // Step 8d: Generate milestones JSON output
+    // Step 10: Generate milestones JSON output
     console.log('\n💾 Generating milestones JSON...');
     await fs.ensureDir(path.dirname(MILESTONES_OUTPUT_PATH));
     await fs.writeJSON(MILESTONES_OUTPUT_PATH, milestones, { spaces: 2 });
@@ -136,23 +142,27 @@ async function buildContent() {
     console.log(`   Timeline: ${milestones.startYear} - ${milestones.endYear}`);
     console.log(`   Milestones: ${milestones.milestones.length}`);
 
-    // Step 9: Parse team
+    // Step 11: Parse team
     console.log('\n👥 Building team...');
     const team = await parseTeam();
 
-    // Step 10: Copy team images to public folder
+    // Step 12: Copy team images to public folder
     await copyTeamImages(team);
 
-    // Step 11: Generate team JSON output
+    // Step 13: Generate team JSON output
     console.log('\n💾 Generating team JSON...');
     await fs.ensureDir(path.dirname(TEAM_OUTPUT_PATH));
     await fs.writeJSON(TEAM_OUTPUT_PATH, team, { spaces: 2 });
     console.log(`✅ Generated: ${path.relative(process.cwd(), TEAM_OUTPUT_PATH)}`);
 
-    // Step 14: Parse eLibrary CSV
+    // Step 14: Parse eLibrary data (Sheets or CSV)
     console.log('\n📚 Building eLibrary...');
-    const elibraryRecords = await parseCSVFile(ELIBRARY_CSV_PATH);
-    console.log(`   Found ${elibraryRecords.length} documents in CSV`);
+    const elibraryRecords = await fetchDataWithFallback(
+      ELIBRARY_CSV_PATH,
+      'ElibraryDocuments',
+      'GOOGLE_SHEET_TAB_ELIBRARY'
+    );
+    console.log(`   Found ${elibraryRecords.length} documents`);
 
     const elibraryDocs = await parseELibraryDocuments(elibraryRecords);
     console.log();
@@ -195,7 +205,12 @@ async function buildContent() {
 
     // Step 17: Parse services
     console.log('\n🔧 Building services catalog...');
-    parseServices();
+    await parseServices();
+
+    // Step 18: Export Sheets to CSV for version control (cloud mode only)
+    if (shouldExportToCSV()) {
+      await exportAllSheetsToCSV();
+    }
 
     console.log('\n✅ Content build complete!\n');
     process.exit(0);

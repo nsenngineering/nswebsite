@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
+import { isR2Mode } from './r2-utils.js';
 import type { Project } from './project-parser.js';
 import type { ELibraryDocument } from '../../src/types/elibrary.js';
 
@@ -95,10 +96,54 @@ export async function validateAllMedia(projects: Project[]): Promise<void> {
 }
 
 /**
+ * Validate R2 configuration
+ */
+export function validateR2Config(): void {
+  console.log('\n🌩️  Validating R2 configuration...');
+
+  const r2BaseUrl = process.env.NEXT_PUBLIC_R2_BASE_URL;
+  const r2BucketName = process.env.R2_BUCKET_NAME;
+  const r2BasePath = process.env.R2_BASE_PATH;
+
+  if (!r2BaseUrl) {
+    console.warn('⚠️  Warning: NEXT_PUBLIC_R2_BASE_URL not set.');
+  } else if (r2BaseUrl === 'https://pub-XXXXX.r2.dev') {
+    console.warn(
+      '⚠️  Warning: NEXT_PUBLIC_R2_BASE_URL is set to placeholder value.\n' +
+      '   Please update with your actual R2 public URL.'
+    );
+  } else {
+    console.log(`✅ R2 Base URL configured: ${r2BaseUrl}`);
+  }
+
+  if (!r2BucketName) {
+    console.warn('⚠️  Warning: R2_BUCKET_NAME not set (using default: ns-engineering-projects)');
+  } else {
+    console.log(`✅ R2 Bucket Name: ${r2BucketName}`);
+  }
+
+  if (!r2BasePath) {
+    console.log('ℹ️  R2 Base Path not set (using default: projects)');
+  } else {
+    console.log(`✅ R2 Base Path: ${r2BasePath}`);
+  }
+}
+
+/**
  * Copy media files from content to public folder
+ * Note: Skipped in R2 mode (images served from R2 CDN)
  */
 export async function copyProjectMedia(projects: Project[]): Promise<void> {
-  console.log('\n📦 Copying media files to public folder...');
+  // Skip copying in R2 mode
+  if (isR2Mode()) {
+    console.log('\n📦 R2 Mode: Skipping local media copy');
+    console.log('ℹ️  Images will be served from:', process.env.NEXT_PUBLIC_R2_BASE_URL);
+    validateR2Config();
+    return;
+  }
+
+  // Local mode: Copy files to public folder
+  console.log('\n📦 Local Mode: Copying media files to public folder...');
 
   const PUBLIC_ROOT = path.join(process.cwd(), 'public', 'projects');
 
@@ -219,6 +264,12 @@ export async function validateAllELibraryFiles(documents: ELibraryDocument[]): P
  */
 export async function copyELibraryFiles(documents: ELibraryDocument[]): Promise<void> {
   console.log('\n📦 Copying eLibrary files to public folder...');
+
+  // Skip copying in R2 mode
+  if (isR2Mode()) {
+    console.log('⏭️  R2 Mode: Skipping eLibrary file copy (files served from R2)');
+    return;
+  }
 
   const PUBLIC_ROOT = path.join(process.cwd(), 'public', 'elibrary');
 

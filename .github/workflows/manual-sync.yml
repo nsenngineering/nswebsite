@@ -1,40 +1,26 @@
-name: Deploy to GitHub Pages
+name: Manual R2 Sync
 
 on:
-  push:
-    branches: [cloudflare]
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (test without actual sync)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 permissions:
-  contents: write  # For committing CSV updates
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
-env:
-  CONTENT_SOURCE_MODE: sheets
-  NEXT_PUBLIC_R2_BASE_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
-  R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-  GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+  contents: read
 
 jobs:
-  build-and-deploy:
+  sync:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Install rclone
         run: |
@@ -67,6 +53,14 @@ jobs:
 
       - name: Sync media files from Google Drive to R2
         run: |
+          DRY_RUN_FLAG=""
+          if [ "${{ inputs.dry_run }}" == "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+            echo "🧪 DRY RUN MODE - No files will be modified"
+          else
+            echo "🚀 LIVE SYNC MODE - Files will be synced to R2"
+          fi
+
           echo "Starting sync from Google Drive to R2..."
           rclone sync gdrive:content/ r2:${{ secrets.R2_BUCKET_NAME }}/ \
             --exclude "*.csv" \
@@ -75,34 +69,22 @@ jobs:
             --progress \
             --checksum \
             --log-level INFO \
-            --stats 30s
-          echo "Sync completed successfully!"
+            --stats 30s \
+            --verbose \
+            $DRY_RUN_FLAG
 
-      - name: Create Google credentials file
+          if [ "${{ inputs.dry_run }}" == "true" ]; then
+            echo "✅ Dry run completed - Review the output above"
+          else
+            echo "✅ Sync completed successfully!"
+          fi
+
+      - name: Display sync summary
         run: |
-          echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > google-credentials.json
-
-      - name: Export Google Sheets to CSV
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ./google-credentials.json
-        run: npm run build:content:cloud
-
-      - name: Build website
-        run: npm run build
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./out
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      - name: Commit CSV updates
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add content/**/*.csv
-          git diff --quiet && git diff --staged --quiet || \
-            (git commit -m "Update content from Google Sheets [skip ci]" && git push)
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📊 Sync Summary"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Source: Google Drive (content/)"
+          echo "Destination: R2 (${{ secrets.R2_BUCKET_NAME }})"
+          echo "Mode: ${{ inputs.dry_run == 'true' && 'DRY RUN' || 'LIVE SYNC' }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

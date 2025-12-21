@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
-import { parseCSVFile } from './csv-parser.js';
+import { fetchDataWithFallback } from './data-source.js';
+import { isR2Mode, constructR2Url } from './r2-utils.js';
 import type { Milestone, MilestonesConfig } from '../../src/types/milestone.js';
 
 const MILESTONES_CSV_PATH = path.join(process.cwd(), 'content', 'homepage_hero', 'milestones.csv');
@@ -50,18 +51,12 @@ function validateMilestone(record: MilestoneCSVRecord, index: number): void {
 export async function parseMilestones(): Promise<MilestonesConfig> {
   console.log('🏛️  Parsing milestones data...');
 
-  // Check if CSV exists
-  if (!await fs.pathExists(MILESTONES_CSV_PATH)) {
-    console.warn(`⚠️  Milestones CSV not found: ${MILESTONES_CSV_PATH}`);
-    return {
-      milestones: [],
-      startYear: new Date().getFullYear(),
-      endYear: new Date().getFullYear()
-    };
-  }
-
-  // Parse CSV
-  const records = await parseCSVFile(MILESTONES_CSV_PATH) as unknown as MilestoneCSVRecord[];
+  // Fetch from Sheets or CSV
+  const records = await fetchDataWithFallback(
+    MILESTONES_CSV_PATH,
+    'HomepageHeroMilestones',
+    'GOOGLE_SHEET_TAB_MILESTONES'
+  ) as unknown as MilestoneCSVRecord[];
 
   if (records.length === 0) {
     console.warn('⚠️  No milestones found in CSV');
@@ -86,7 +81,9 @@ export async function parseMilestones(): Promise<MilestonesConfig> {
       description: record.description.trim(),
       image: record.image.trim(),
       featured,
-      path: `/hero/${record.image.trim()}`
+      path: isR2Mode()
+        ? constructR2Url('hero', record.image.trim())
+        : `/hero/${record.image.trim()}`
     };
   });
 
@@ -113,6 +110,12 @@ export async function parseMilestones(): Promise<MilestonesConfig> {
 export async function copyMilestoneImages(config: MilestonesConfig): Promise<void> {
   console.log('\n📂 Copying milestone images to public folder...');
 
+  // Skip copying in R2 mode
+  if (isR2Mode()) {
+    console.log('⏭️  R2 Mode: Skipping milestone image copy (images served from R2)');
+    return;
+  }
+
   const publicHeroDir = path.join(process.cwd(), 'public', 'hero');
 
   // Ensure public/hero directory exists
@@ -135,7 +138,7 @@ export async function copyMilestoneImages(config: MilestonesConfig): Promise<voi
     }
   }
 
-  console.log(`✅ Copied ${copiedCount} images`);
+  console.log(`✅ Copied ${copiedCount} images to public/hero/`);
   if (skippedCount > 0) {
     console.log(`⚠️  Skipped ${skippedCount} images (not found)`);
   }
