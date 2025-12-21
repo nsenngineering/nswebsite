@@ -51,6 +51,13 @@ jobs:
           acl = public-read
           EOF
 
+      - name: Debug Google Drive visibility
+        run: |
+          echo "Listing Google Drive root (should be content folder):"
+          rclone lsd gdrive:
+          rclone ls gdrive: --max-depth 1
+
+
       - name: Sync media files from Google Drive to R2
         run: |
           DRY_RUN_FLAG=""
@@ -62,8 +69,7 @@ jobs:
           fi
 
           echo "Starting sync from Google Drive to R2..."
-          rclone sync gdrive:content/ r2:${{ secrets.R2_BUCKET_NAME }}/ \
-            --drive-root-folder-id=${{ secrets.GDRIVE_ROOT_FOLDER_ID }}
+          rclone sync gdrive: r2:${{ secrets.R2_BUCKET_NAME }}/ \
             --filter "- *.csv" \
             --filter "+ *.jpg" \
             --filter "+ *.jpeg" \
@@ -88,7 +94,7 @@ jobs:
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "📊 Sync Summary"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "Source: Google Drive (content/)"
+          echo "Source: Google Drive (root_folder_id: ${{ secrets.GDRIVE_ROOT_FOLDER_ID }})"
           echo "Destination: R2 (${{ secrets.R2_BUCKET_NAME }})"
           echo "Mode: ${{ inputs.dry_run == 'true' && 'DRY RUN' || 'LIVE SYNC' }}"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
