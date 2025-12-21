@@ -85,7 +85,6 @@ jobs:
             --checksum \
             --log-level INFO \
             --stats 30s \
-
             ${DRY_RUN_FLAG:+$DRY_RUN_FLAG}
 
           if [ "${{ inputs.dry_run }}" == "true" ]; then
