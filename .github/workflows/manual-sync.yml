@@ -63,9 +63,12 @@ jobs:
 
           echo "Starting sync from Google Drive to R2..."
           rclone sync gdrive:content/ r2:${{ secrets.R2_BUCKET_NAME }}/ \
-            --exclude "*.csv" \
-            --include "*.jpg" --include "*.jpeg" --include "*.png" --include "*.webp" \
-            --include "*.pdf" \
+            --filter "- *.csv" \
+            --filter "+ *.jpg" \
+            --filter "+ *.jpeg" \
+            --filter "+ *.png" \
+            --filter "+ *.webp" \
+            --filter "+ *.pdf" \
             --progress \
             --checksum \
             --log-level INFO \
