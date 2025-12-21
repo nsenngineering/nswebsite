@@ -63,6 +63,7 @@ jobs:
 
           echo "Starting sync from Google Drive to R2..."
           rclone sync gdrive:content/ r2:${{ secrets.R2_BUCKET_NAME }}/ \
+            --drive-root-folder-id=${{ secrets.GDRIVE_ROOT_FOLDER_ID }}
             --filter "- *.csv" \
             --filter "+ *.jpg" \
             --filter "+ *.jpeg" \
