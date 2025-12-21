@@ -15,7 +15,9 @@ export interface Service {
   processSteps: string[];
   equipmentUsed: string[];
   typicalDeliverables: string[];
-  icon: string;
-  image: string;
-  diagram?: string;
+  media: {
+    images: string[];
+    heroImage?: string;
+  };
+  featured?: boolean;
 }

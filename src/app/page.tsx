@@ -1,6 +1,6 @@
 import EvolutionTimeline from '@/components/home/EvolutionTimeline';
 import RotatingMetrics from '@/components/home/RotatingMetrics';
-import ServiceCards from '@/components/home/ServiceCards';
+import FeaturedServices from '@/components/home/FeaturedServices';
 import FeaturedProjects from '@/components/home/FeaturedProjects';
 
 export default function Home() {
@@ -8,7 +8,7 @@ export default function Home() {
     <>
       <EvolutionTimeline />
       <RotatingMetrics />
-      <ServiceCards />
+      <FeaturedServices />
       <FeaturedProjects />
     </>
   );

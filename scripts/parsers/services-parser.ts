@@ -5,11 +5,12 @@
  * to generate services.json for the website. Validates data and copies media files.
  */
 
-import fs from 'fs';
+import fs from 'fs-extra';
 import path from 'path';
 import { Service, ServiceCategory } from '../../src/types/service';
 import { fetchDataWithFallback } from './data-source.js';
 import { isR2Mode, constructR2Url } from './r2-utils.js';
+import { parseSemicolonArray, parseBoolean } from './csv-parser.js';
 
 interface ServiceCSVRow {
   id: string;
@@ -20,9 +21,9 @@ interface ServiceCSVRow {
   processSteps: string;
   equipmentUsed: string;
   typicalDeliverables: string;
-  icon: string;
-  image: string;
-  diagram: string;
+  images: string;
+  hero_image: string;
+  featured: string;
 }
 
 interface CategoryCSVRow {
@@ -44,8 +45,7 @@ interface ServicesOutput {
 
 const CONTENT_DIR = path.join(process.cwd(), 'content/services');
 const OUTPUT_DIR = path.join(process.cwd(), 'src/data/generated');
-const PUBLIC_SERVICES_DIR = path.join(process.cwd(), 'public/images/services');
-const PUBLIC_DIAGRAMS_DIR = path.join(process.cwd(), 'public/images/diagrams');
+const PUBLIC_SERVICES_DIR = path.join(process.cwd(), 'public/services');
 
 const VALID_CATEGORIES: ServiceCategory[] = [
   'pile-testing',
@@ -55,6 +55,95 @@ const VALID_CATEGORIES: ServiceCategory[] = [
   'geophysical',
   'ndt'
 ];
+
+/**
+ * Construct media URL for service images
+ */
+function constructMediaUrl(serviceId: string, filename: string): string {
+  if (isR2Mode()) {
+    return constructR2Url(`services/${serviceId}`, filename, 'images');
+  } else {
+    // Local mode - return relative path (will be copied to public/)
+    return `/services/${serviceId}/images/${filename}`;
+  }
+}
+
+/**
+ * Auto-detect images from filesystem when CSV is empty
+ * Note: In R2 mode, filesystem auto-detection is skipped
+ */
+async function autoDetectImages(
+  serviceId: string,
+  csvImages: string[],
+  csvHeroImage?: string
+): Promise<{ images: string[]; heroImage?: string }> {
+  // If CSV has images, use those (override mode)
+  if (csvImages.length > 0) {
+    return { images: csvImages, heroImage: csvHeroImage };
+  }
+
+  // In R2 mode, skip filesystem detection (images are in R2, not local)
+  if (isR2Mode()) {
+    if (csvImages.length === 0) {
+      console.warn(
+        `⚠️  Warning: Service "${serviceId}" has no images specified in CSV/Sheets.\n` +
+        `   In R2 mode, images must be listed in the images column.`
+      );
+    }
+    return { images: [], heroImage: undefined };
+  }
+
+  // Local mode: scan filesystem for images
+  const imagesDir = path.join(CONTENT_DIR, serviceId, 'images');
+
+  // Check if directory exists
+  const dirExists = await fs.pathExists(imagesDir);
+  if (!dirExists) {
+    console.warn(`⚠️  No images directory found for service: ${serviceId}`);
+    return { images: [], heroImage: undefined };
+  }
+
+  try {
+    // Read all files in directory
+    const files = await fs.readdir(imagesDir);
+
+    // Filter by image extensions
+    const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
+    const imageFiles = files
+      .filter(file => {
+        const ext = path.extname(file).toLowerCase();
+        return IMAGE_EXTENSIONS.includes(ext);
+      })
+      .sort(); // Alphabetical order
+
+    // Determine hero image
+    let heroImage: string | undefined;
+    if (csvHeroImage) {
+      // CSV hero specified - validate it exists
+      if (imageFiles.includes(csvHeroImage)) {
+        heroImage = csvHeroImage;
+      } else {
+        console.warn(
+          `⚠️  Warning: CSV hero_image "${csvHeroImage}" not found in ` +
+          `${serviceId}/images/ directory. Using first alphabetical image instead.`
+        );
+        heroImage = imageFiles.length > 0 ? imageFiles[0] : undefined;
+      }
+    } else {
+      // No CSV hero - use first alphabetical
+      heroImage = imageFiles.length > 0 ? imageFiles[0] : undefined;
+    }
+
+    return { images: imageFiles, heroImage };
+
+  } catch (error) {
+    console.error(
+      `❌ Error reading images directory for service "${serviceId}":`,
+      error instanceof Error ? error.message : error
+    );
+    return { images: [], heroImage: undefined };
+  }
+}
 
 /**
  * Parse services from Google Sheets or CSV file
@@ -75,11 +164,13 @@ async function parseServicesCSV(): Promise<Service[]> {
 
   console.log(`📋 Parsing ${rows.length} services...`);
 
-  const services: Service[] = rows.map((row, index) => {
+  const services: Service[] = [];
+
+  for (const row of rows) {
     // Validate required fields
     if (!row.id || !row.category || !row.name) {
       throw new Error(
-        `Service at row ${index + 2} is missing required fields (id, category, or name)`
+        `Service is missing required fields (id, category, or name)`
       );
     }
 
@@ -92,38 +183,29 @@ async function parseServicesCSV(): Promise<Service[]> {
     }
 
     // Parse array fields (semicolon-separated)
-    const processSteps = row.processSteps
-      ? row.processSteps.split(';').map(s => s.trim()).filter(Boolean)
-      : [];
+    const processSteps = parseSemicolonArray(row.processSteps);
+    const equipmentUsed = parseSemicolonArray(row.equipmentUsed);
+    const typicalDeliverables = parseSemicolonArray(row.typicalDeliverables);
 
-    const equipmentUsed = row.equipmentUsed
-      ? row.equipmentUsed.split(';').map(s => s.trim()).filter(Boolean)
-      : [];
+    // Parse images (semicolon-separated)
+    const csvImages = parseSemicolonArray(row.images);
+    const csvHeroImage = row.hero_image?.trim() || undefined;
 
-    const typicalDeliverables = row.typicalDeliverables
-      ? row.typicalDeliverables.split(';').map(s => s.trim()).filter(Boolean)
-      : [];
+    // Auto-detect images from filesystem if CSV empty
+    const { images: detectedImages, heroImage: detectedHeroImage } = await autoDetectImages(
+      row.id,
+      csvImages,
+      csvHeroImage
+    );
 
-    // Handle image path
-    let imagePath: string;
-    if (row.image) {
-      imagePath = isR2Mode()
-        ? constructR2Url('services', row.image, 'images')
-        : `/images/services/${row.image}`;
-    } else {
-      imagePath = isR2Mode()
-        ? constructR2Url('services', 'placeholder.jpg', 'images')
-        : '/images/services/placeholder.jpg';
-    }
+    // Construct full URLs for images
+    const imageUrls = detectedImages.map(filename => constructMediaUrl(row.id, filename));
+    const heroImageUrl = detectedHeroImage ? constructMediaUrl(row.id, detectedHeroImage) : undefined;
 
-    // Handle optional diagram path
-    const diagramPath = row.diagram
-      ? (isR2Mode()
-          ? constructR2Url('services', row.diagram, 'diagrams')
-          : `/images/diagrams/${row.diagram}`)
-      : undefined;
+    // Parse featured flag
+    const featured = parseBoolean(row.featured);
 
-    return {
+    services.push({
       id: row.id,
       category: row.category as ServiceCategory,
       name: row.name,
@@ -132,11 +214,13 @@ async function parseServicesCSV(): Promise<Service[]> {
       processSteps,
       equipmentUsed,
       typicalDeliverables,
-      icon: row.icon || 'Circle',
-      image: imagePath,
-      diagram: diagramPath
-    };
-  });
+      media: {
+        images: imageUrls,
+        heroImage: heroImageUrl
+      },
+      featured
+    });
+  }
 
   return services;
 }
@@ -170,10 +254,10 @@ async function parseCategoriesCSV() {
 }
 
 /**
- * Copy media files (images and diagrams) to public directory
+ * Copy media files (images) to public directory
  */
-function copyMediaFiles(services: Service[]): void {
-  console.log('📁 Copying media files...');
+async function copyMediaFiles(services: Service[]): Promise<void> {
+  console.log('📁 Copying service media files...');
 
   // Skip copying in R2 mode
   if (isR2Mode()) {
@@ -181,48 +265,36 @@ function copyMediaFiles(services: Service[]): void {
     return;
   }
 
-  // Ensure public directories exist
-  if (!fs.existsSync(PUBLIC_SERVICES_DIR)) {
-    fs.mkdirSync(PUBLIC_SERVICES_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(PUBLIC_DIAGRAMS_DIR)) {
-    fs.mkdirSync(PUBLIC_DIAGRAMS_DIR, { recursive: true });
-  }
-
   let imagesCopied = 0;
-  let diagramsCopied = 0;
+  let servicesProcessed = 0;
 
   for (const service of services) {
-    // Copy service image
-    if (service.image && !service.image.includes('placeholder')) {
-      const imageFilename = path.basename(service.image);
-      const sourcePath = path.join(CONTENT_DIR, service.id, 'images', imageFilename);
-      const destPath = path.join(PUBLIC_SERVICES_DIR, imageFilename);
+    if (service.media.images.length === 0) {
+      continue;
+    }
 
-      if (fs.existsSync(sourcePath)) {
-        fs.copyFileSync(sourcePath, destPath);
+    servicesProcessed++;
+
+    // Create service-specific directory in public
+    const publicServiceDir = path.join(PUBLIC_SERVICES_DIR, service.id, 'images');
+    await fs.ensureDir(publicServiceDir);
+
+    // Copy each image
+    for (const imageUrl of service.media.images) {
+      const filename = path.basename(imageUrl);
+      const sourcePath = path.join(CONTENT_DIR, service.id, 'images', filename);
+      const destPath = path.join(publicServiceDir, filename);
+
+      if (await fs.pathExists(sourcePath)) {
+        await fs.copy(sourcePath, destPath);
         imagesCopied++;
       } else {
         console.warn(`⚠️  Image not found for ${service.id}: ${sourcePath}`);
       }
     }
-
-    // Copy diagram if exists
-    if (service.diagram) {
-      const diagramFilename = path.basename(service.diagram);
-      const sourcePath = path.join(CONTENT_DIR, service.id, 'diagrams', diagramFilename);
-      const destPath = path.join(PUBLIC_DIAGRAMS_DIR, diagramFilename);
-
-      if (fs.existsSync(sourcePath)) {
-        fs.copyFileSync(sourcePath, destPath);
-        diagramsCopied++;
-      } else {
-        console.warn(`⚠️  Diagram not found for ${service.id}: ${sourcePath}`);
-      }
-    }
   }
 
-  console.log(`✅ Copied ${imagesCopied} images and ${diagramsCopied} diagrams to public/images/`);
+  console.log(`✅ Copied ${imagesCopied} images from ${servicesProcessed} services to public/services/`);
 }
 
 /**
@@ -248,7 +320,7 @@ export async function parseServices(): Promise<void> {
     }
 
     // Copy media files
-    copyMediaFiles(services);
+    await copyMediaFiles(services);
 
     // Prepare output
     const output: ServicesOutput = {
@@ -257,15 +329,15 @@ export async function parseServices(): Promise<void> {
     };
 
     // Write JSON output
-    if (!fs.existsSync(OUTPUT_DIR)) {
-      fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-    }
+    await fs.ensureDir(OUTPUT_DIR);
 
     const outputPath = path.join(OUTPUT_DIR, 'services.json');
-    fs.writeFileSync(outputPath, JSON.stringify(output, null, 2));
+    await fs.writeJson(outputPath, output, { spaces: 2 });
+
+    const featuredCount = services.filter(s => s.featured).length;
 
     console.log(`\n✅ Services data generated successfully!`);
-    console.log(`   Services: ${services.length}`);
+    console.log(`   Services: ${services.length} (${featuredCount} featured)`);
     console.log(`   Categories: ${categories.length}`);
     console.log(`   Output: ${outputPath}`);
   } catch (error) {
