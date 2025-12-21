@@ -51,7 +51,7 @@ const Header: React.FC = () => {
                 priority
               />
             </div>
-            <div className="hidden sm:block">
+            <div>
               <div className="font-bold text-xl text-gray-900">
                 {siteConfig.shortName}
               </div>
