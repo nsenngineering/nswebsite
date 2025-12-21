@@ -74,6 +74,12 @@ async function validateProjectMedia(project: Project): Promise<{
 export async function validateAllMedia(projects: Project[]): Promise<void> {
   console.log('\n📁 Validating media files...');
 
+  // Skip filesystem validation in R2 mode - files are in R2, not local
+  if (isR2Mode()) {
+    console.log('⏭️  R2 Mode: Skipping local filesystem validation (files served from R2)');
+    return;
+  }
+
   let totalMissingImages = 0;
   let totalMissingPdfs = 0;
 
@@ -240,6 +246,12 @@ async function validateELibraryDocument(document: ELibraryDocument): Promise<{
  */
 export async function validateAllELibraryFiles(documents: ELibraryDocument[]): Promise<void> {
   console.log('\n📁 Validating eLibrary files...');
+
+  // Skip filesystem validation in R2 mode - files are in R2, not local
+  if (isR2Mode()) {
+    console.log('⏭️  R2 Mode: Skipping local filesystem validation (files served from R2)');
+    return;
+  }
 
   let totalMissingFiles = 0;
 

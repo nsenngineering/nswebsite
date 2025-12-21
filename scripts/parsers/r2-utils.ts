@@ -35,20 +35,21 @@ export function validateR2Config(): void {
  * @returns Full R2 URL
  *
  * @example
+ * // With R2_BASE_PATH=nsengineering
  * constructR2Url('hero', 'IMG_2968.JPG')
- * // => 'https://pub-XXXXX.r2.dev/hero/IMG_2968.JPG'
+ * // => 'https://pub-XXXXX.r2.dev/nsengineering/hero/IMG_2968.JPG'
  *
  * @example
  * constructR2Url('team', 'arun-pandit.jpg')
- * // => 'https://pub-XXXXX.r2.dev/team/arun-pandit.jpg'
+ * // => 'https://pub-XXXXX.r2.dev/nsengineering/team/arun-pandit.jpg'
  *
  * @example
  * constructR2Url('services', 'pile-testing.jpg', 'images')
- * // => 'https://pub-XXXXX.r2.dev/services/images/pile-testing.jpg'
+ * // => 'https://pub-XXXXX.r2.dev/nsengineering/services/images/pile-testing.jpg'
  *
  * @example
  * constructR2Url('elibrary', 'is-2131-2008/files/document.pdf')
- * // => 'https://pub-XXXXX.r2.dev/elibrary/is-2131-2008/files/document.pdf'
+ * // => 'https://pub-XXXXX.r2.dev/nsengineering/elibrary/is-2131-2008/files/document.pdf'
  */
 export function constructR2Url(
   basePath: string,
@@ -56,14 +57,20 @@ export function constructR2Url(
   subPath?: string
 ): string {
   const r2BaseUrl = process.env.NEXT_PUBLIC_R2_BASE_URL!;
+  const r2Prefix = process.env.R2_BASE_PATH || '';
 
   // Remove leading/trailing slashes to avoid double slashes
+  const cleanPrefix = r2Prefix.replace(/^\/|\/$/g, '');
   const cleanBasePath = basePath.replace(/^\/|\/$/g, '');
   const cleanFilename = filename.replace(/^\/|\/$/g, '');
   const cleanSubPath = subPath?.replace(/^\/|\/$/g, '');
 
-  // Construct URL parts
-  const parts = [r2BaseUrl, cleanBasePath];
+  // Construct URL parts (include prefix if set)
+  const parts = [r2BaseUrl];
+  if (cleanPrefix) {
+    parts.push(cleanPrefix);
+  }
+  parts.push(cleanBasePath);
   if (cleanSubPath) {
     parts.push(cleanSubPath);
   }

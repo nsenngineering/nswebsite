@@ -45,6 +45,7 @@ export default function EvolutionTimeline() {
   const handleMilestoneClick = (index: number) => {
     setActiveIndex(index);
     setIsPaused(true);
+    console.log('here is the milestone click',activeMilestone)
   };
 
   return (

@@ -12,6 +12,8 @@ import { parseELibraryDocuments, extractSectionCounts, loadSectionMetadata } fro
 import { parseServices } from './parsers/services-parser.js';
 import { buildAlumni } from './parsers/alumni-parser.js';
 import { buildFAQs } from './parsers/faq-parser.js';
+import { parseCompanyInfo } from './parsers/company-info-parser.js';
+import { parseRotatingMetrics } from './parsers/rotating-metrics-parser.js';
 import { exportAllSheetsToCSV, shouldExportToCSV } from './parsers/csv-exporter.js';
 import { isR2Mode, validateR2Config } from './parsers/r2-utils.js';
 
@@ -22,6 +24,8 @@ const MILESTONES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generate
 const TEAM_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'team.json');
 const ELIBRARY_CSV_PATH = path.join(process.cwd(), 'content', 'elibrary', 'documents.csv');
 const ELIBRARY_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'elibrary.json');
+const COMPANY_INFO_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'company-info.json');
+const ROTATING_METRICS_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'rotating-metrics.json');
 
 interface GeneratedOutput {
   projects: any[];
@@ -217,7 +221,27 @@ async function buildContent() {
     console.log('\n❓ Building FAQs...');
     await buildFAQs();
 
-    // Step 20: Export Sheets to CSV for version control (cloud mode only)
+    // Step 20: Parse company info
+    console.log('\n🏢 Building company info...');
+    const companyInfo = await parseCompanyInfo();
+
+    // Step 21: Generate company info JSON output
+    console.log('\n💾 Generating company info JSON...');
+    await fs.ensureDir(path.dirname(COMPANY_INFO_OUTPUT_PATH));
+    await fs.writeJSON(COMPANY_INFO_OUTPUT_PATH, companyInfo, { spaces: 2 });
+    console.log(`✅ Generated: ${path.relative(process.cwd(), COMPANY_INFO_OUTPUT_PATH)}`);
+
+    // Step 22: Parse rotating metrics
+    console.log('\n📊 Building rotating metrics...');
+    const rotatingMetrics = await parseRotatingMetrics();
+
+    // Step 23: Generate rotating metrics JSON output
+    console.log('\n💾 Generating rotating metrics JSON...');
+    await fs.ensureDir(path.dirname(ROTATING_METRICS_OUTPUT_PATH));
+    await fs.writeJSON(ROTATING_METRICS_OUTPUT_PATH, rotatingMetrics, { spaces: 2 });
+    console.log(`✅ Generated: ${path.relative(process.cwd(), ROTATING_METRICS_OUTPUT_PATH)}`);
+
+    // Step 24: Export Sheets to CSV for version control (cloud mode only)
     if (shouldExportToCSV()) {
       await exportAllSheetsToCSV();
     }

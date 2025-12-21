@@ -10,18 +10,11 @@
 | `content/team/team.csv` | **Team** |
 | `content/elibrary/documents.csv` | **ElibraryDocuments** |
 | `content/elibrary/sections.csv` | **ElibrarySections** |
-
-## Additional Tabs (For Future Use)
-
-You also have these tabs in your Google Sheet that aren't used yet:
-
-| CSV File Location | Google Sheet Tab Name | Status |
-|-------------------|----------------------|--------|
-| `content/categories/categories.csv` | **ProjectCategories** | ⏳ Not implemented yet |
-| `content/services/service-categories.csv` | **ServiceCategories** | ⏳ Not implemented yet |
-| `content/services/services.csv` | **Services** | ⏳ Not implemented yet |
-
-**Note:** These additional tabs are ready in your Google Sheet but the website currently reads these from CSV files only. We can add Sheets support for these later if needed.
+| `content/categories/categories.csv` | **ProjectCategories** |
+| `content/services/service-categories.csv` | **ServiceCategories** |
+| `content/services/services.csv` | **Services** |
+| `content/company/company-info.csv` | **CompanyInfo** |
+| `content/rotating_metrics/metrics.csv` | **RotatingMetrics** |
 
 ## Code Configuration
 
@@ -33,6 +26,11 @@ The default tab names are now hardcoded in the parsers:
 - **Team** → `scripts/parsers/team-parser.ts`
 - **ElibraryDocuments** → `scripts/build-content.ts` + `scripts/parsers/elibrary-parser.ts`
 - **ElibrarySections** → `scripts/parsers/elibrary-parser.ts`
+- **ProjectCategories** → `scripts/parsers/category-parser.ts`
+- **ServiceCategories** → `scripts/parsers/services-parser.ts`
+- **Services** → `scripts/parsers/services-parser.ts`
+- **CompanyInfo** → `scripts/parsers/company-info-parser.ts`
+- **RotatingMetrics** → `scripts/parsers/rotating-metrics-parser.ts`
 
 ## Testing Your Setup
 
@@ -49,6 +47,37 @@ npm run build:content:cloud
 📊 Fetching data from Google Sheets tab: "Team"
 📊 Fetching data from Google Sheets tab: "ElibraryDocuments"
 📊 Fetching data from Google Sheets tab: "ElibrarySections"
+📊 Fetching data from Google Sheets tab: "ProjectCategories"
+📊 Fetching data from Google Sheets tab: "ServiceCategories"
+📊 Fetching data from Google Sheets tab: "Services"
+📊 Fetching data from Google Sheets tab: "CompanyInfo"
+📊 Fetching data from Google Sheets tab: "RotatingMetrics"
 ```
 
 If you see errors like "Sheet tab not found", double-check that your tab names match EXACTLY (case-sensitive!).
+
+## Company Info Sheet Structure
+
+The **CompanyInfo** sheet uses a key-value pair structure (2 columns):
+
+| key | value |
+|-----|-------|
+| company_name | N.S. Engineering & Geotechnical Services Pvt. Ltd. |
+| company_short_name | NS Engineering |
+| company_tagline | Constantly Evolving, Foundation You Can Trust |
+| contact_email | info@nsengineering.com.np |
+| contact_phone | +977-01-5260121 |
+| ... | ... |
+
+This format makes it easy to edit individual company details in Google Sheets.
+
+## Rotating Metrics Sheet Structure
+
+The **RotatingMetrics** sheet contains the metric cards displayed below the hero carousel:
+
+| id | icon | value | label | description | gradient | href |
+|----|------|-------|-------|-------------|----------|------|
+| experience | Trophy | 10+ | Years of Experience | Delivering excellence in geotechnical services across Nepal since 2015 | from-primary-600 to-primary-800 | /about |
+| projects | Briefcase | 100+ | Projects Completed | Successful projects across roads, bridges, hydropower, and infrastructure | from-primary-700 to-primary-900 | /projects |
+
+**Available Icons**: Trophy, Briefcase, Wrench, Users, Award, Target

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { siteConfig } from '@/data/site-config';
-import { withBasePath } from '@/lib/utils';
+import { getLogoUrl } from '@/lib/utils';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -34,7 +34,7 @@ const Footer: React.FC = () => {
             <div className="flex items-center space-x-3 mb-4">
               <div className="relative w-12 h-12 flex-shrink-0">
                 <Image
-                  src={withBasePath('/logo/ns-logo.jpg')}
+                  src={getLogoUrl()}
                   alt="NS Engineering Logo"
                   fill
                   className="object-contain"

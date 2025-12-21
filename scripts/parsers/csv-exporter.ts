@@ -97,6 +97,14 @@ export async function exportAllSheetsToCSV(): Promise<void> {
     {
       sheetTabName: process.env.GOOGLE_SHEET_TAB_SERVICES || 'Services',
       csvOutputPath: path.join(process.cwd(), 'content', 'services', 'services.csv')
+    },
+    {
+      sheetTabName: process.env.GOOGLE_SHEET_TAB_COMPANY_INFO || 'CompanyInfo',
+      csvOutputPath: path.join(process.cwd(), 'content', 'company', 'company-info.csv')
+    },
+    {
+      sheetTabName: process.env.GOOGLE_SHEET_TAB_ROTATING_METRICS || 'RotatingMetrics',
+      csvOutputPath: path.join(process.cwd(), 'content', 'rotating_metrics', 'metrics.csv')
     }
   ];
 

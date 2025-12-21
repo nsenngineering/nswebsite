@@ -4,7 +4,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { withBasePath } from '@/lib/utils';
+import { getMediaSrc } from '@/lib/utils';
 
 interface ImageCarouselProps {
   images: string[];
@@ -99,7 +99,7 @@ export default function ImageCarousel({
               )}
 
               <motion.img
-                src={withBasePath(`${basePath}/${image}`)}
+                src={getMediaSrc(image, basePath)}
                 alt={`${alt} - Image ${index + 1}`}
                 className="w-full h-[300px] md:h-[400px] lg:h-[500px] object-cover cursor-pointer"
                 loading={index === 0 ? 'eager' : 'lazy'}
@@ -161,7 +161,7 @@ export default function ImageCarousel({
                 aria-label={`View image ${index + 1}`}
               >
                 <img
-                  src={withBasePath(`${basePath}/${image}`)}
+                  src={getMediaSrc(image, basePath)}
                   alt={`Thumbnail ${index + 1}`}
                   className="w-full h-full object-cover"
                   loading="lazy"

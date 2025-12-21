@@ -5,7 +5,7 @@ import { Building2, MapPin, Calendar, CheckCircle2, Camera } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import type { Project } from '@/types/project';
-import { withBasePath } from '@/lib/utils';
+import { getMediaSrc } from '@/lib/utils';
 import { getCategoryGradient, getCategoryLabel } from '@/lib/categories';
 
 interface ProjectCardProps {
@@ -45,7 +45,7 @@ export default function ProjectCard({
           {hasImages && heroImage ? (
             <div className="relative h-[250px] overflow-hidden">
               <img
-                src={withBasePath(`/projects/${heroImage}`)}
+                src={getMediaSrc(heroImage, '/projects')}
                 alt={project.title}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 loading="lazy"

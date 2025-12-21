@@ -1,43 +1,23 @@
+/**
+ * Site Configuration
+ *
+ * This module exports company information loaded from generated JSON.
+ * The data source is content/company/company-info.csv (or Google Sheets in cloud mode).
+ *
+ * To update company info:
+ * 1. Edit content/company/company-info.csv
+ * 2. Run: npm run build:content:local (or build:content:cloud)
+ * 3. The changes will be reflected in src/data/generated/company-info.json
+ */
+
+import companyInfoData from './generated/company-info.json';
+import type { CompanyInfo } from '@/types/company-info';
+
+// Re-export the company info with additional static fields
 export const siteConfig = {
-  name: 'N.S. Engineering & Geotechnical Services Pvt. Ltd.',
-  shortName: 'NS Engineering',
-  tagline: 'Constantly Evolving, Foundation You Can Trust',
-  description: "Leading provider of geotechnical investigation, in-situ & laboratory testing services in Nepal",
-  url: 'https://www.nsengineering.com.np',
+  ...companyInfoData,
 
-  laboratory: {
-    name: 'N.S.E.G.S Laboratory',
-    location: 'Lalitpur',
-    description: 'State-of-the-art materials testing facility',
-  },
-
-  certification: {
-    iso: 'ISO 9001:2015',
-    badge: 'Certified Company',
-  },
-
-  contact: {
-    email: 'info@nsengineering.com.np',
-    phone: '+977-01-5260121',
-    phoneAlt: '+977-9851228995',
-    whatsapp: '+977-9851228995',
-    address: 'Bishal Niwash, 4th Cross, Jwagal, Lalitpur, Nepal',
-  },
-
-  social: {
-    facebook: 'https://www.facebook.com/nsengineering',
-    linkedin: 'https://www.linkedin.com/company/ns-engineering',
-    instagram: 'https://www.instagram.com/nsengineering',
-    tiktok: 'https://www.tiktok.com/@nsengineering',
-  },
-
-  stats: {
-    yearsOfExperience: 10,
-    projectsCompleted: 100, // Conservative estimate based on brochure
-    teamSize: 50, // Based on team list in brochure
-    drillingCapacity: '700m', // Maximum depth
-  },
-
+  // Static fields (not editable via CSV)
   operatingAreas: [
     'Kathmandu Valley',
     'Lalitpur',
@@ -67,4 +47,8 @@ export const siteConfig = {
     'Environmental Testing',
     'Quality Control',
   ],
+} as CompanyInfo & {
+  operatingAreas: string[];
+  industries: string[];
+  expertise: string[];
 };

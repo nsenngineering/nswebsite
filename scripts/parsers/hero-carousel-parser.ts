@@ -92,16 +92,17 @@ export async function parseHeroCarousel(): Promise<HeroCarouselConfig> {
   const images: HeroCarouselImage[] = imageFiles.map((filename, index) => {
     // Use CSV alt text if available, otherwise generate from filename
     const alt = altTextOverrides[index] || generateAltText(filename, index);
-
+    console.log('R2 mode: inside hero-carousel-parser.ts', isR2Mode());
     return {
       order: index + 1,
       filename,
       alt,
       path: isR2Mode()
-        ? constructR2Url('hero', filename)
-        : `/hero/${filename}`
+        ? constructR2Url('homepage_hero', filename, 'images')
+        : filename // Return just filename for local mode, HeroCarousel component adds prefix
     };
   });
+
 
   console.log(`✅ Configured ${images.length} hero carousel images`);
 
@@ -122,9 +123,10 @@ export async function copyHeroImages(config: HeroCarouselConfig): Promise<void> 
     return;
   }
 
-  const publicHeroDir = path.join(process.cwd(), 'public', 'hero');
+  // Use nested structure to match R2/bucket path
+  const publicHeroDir = path.join(process.cwd(), 'public', 'homepage_hero', 'images');
 
-  // Ensure public/hero directory exists
+  // Ensure directory exists
   await fs.ensureDir(publicHeroDir);
 
   let copiedCount = 0;

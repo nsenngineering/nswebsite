@@ -14,7 +14,9 @@
       "Bash(git -C /Users/chance/Documents/ns-engineering-website log --oneline -10)",
       "Bash(grep:*)",
       "Bash(git -C /Users/chance/Documents/ns-engineering-website branch -a)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(npx dotenv-cli:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

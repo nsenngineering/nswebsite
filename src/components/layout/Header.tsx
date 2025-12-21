@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { siteConfig } from '@/data/site-config';
 import Button from '@/components/ui/Button';
-import { withBasePath } from '@/lib/utils';
+import { getLogoUrl } from '@/lib/utils';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -44,7 +44,7 @@ const Header: React.FC = () => {
           <Link href="/" className="flex items-center space-x-3">
             <div className="relative w-12 h-12 flex-shrink-0">
               <Image
-                src={withBasePath('/logo/ns-logo.jpg')}
+                src={getLogoUrl()}
                 alt="NS Engineering Logo"
                 fill
                 className="object-contain"

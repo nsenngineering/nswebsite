@@ -82,7 +82,7 @@ export async function parseMilestones(): Promise<MilestonesConfig> {
       image: record.image.trim(),
       featured,
       path: isR2Mode()
-        ? constructR2Url('hero', record.image.trim())
+        ? constructR2Url('homepage_hero/images', record.image.trim())
         : `/hero/${record.image.trim()}`
     };
   });

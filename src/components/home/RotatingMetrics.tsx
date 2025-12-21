@@ -2,46 +2,23 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Briefcase, ArrowRight, LucideIcon } from 'lucide-react';
+import { Trophy, Briefcase, Wrench, Users, Award, Target, ArrowRight, LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
+import rotatingMetricsData from '@/data/generated/rotating-metrics.json';
+import type { RotatingMetric } from '@/types/rotating-metrics';
 
-// ===== DATA STRUCTURE =====
+// ===== DATA =====
 
-interface MetricCard {
-  id: string;
-  icon: 'Trophy' | 'Briefcase' | 'Wrench';
-  value: string;
-  label: string;
-  description: string;
-  gradient: string;
-  href?: string;
-}
-
-const metricsData: MetricCard[] = [
-  {
-    id: 'experience',
-    icon: 'Trophy',
-    value: '10+',
-    label: 'Years of Experience',
-    description: 'Delivering excellence in geotechnical services across Nepal since 2015',
-    gradient: 'from-primary-600 to-primary-800',
-    href: '/about'
-  },
-  {
-    id: 'projects',
-    icon: 'Briefcase',
-    value: '100+',
-    label: 'Projects Completed',
-    description: 'Successful projects across roads, bridges, hydropower, and infrastructure',
-    gradient: 'from-primary-700 to-primary-900',
-    href: '/projects'
-  }
-];
+const metricsData: RotatingMetric[] = rotatingMetricsData.metrics as RotatingMetric[];
 
 const iconMap: Record<string, LucideIcon> = {
   Trophy,
-  Briefcase
+  Briefcase,
+  Wrench,
+  Users,
+  Award,
+  Target
 };
 
 // ===== UTILITY FUNCTIONS =====
@@ -223,7 +200,7 @@ function DesktopStack({
   activeIndex,
   onCardClick
 }: {
-  metricsData: MetricCard[];
+  metricsData: RotatingMetric[];
   activeIndex: number;
   onCardClick: (cardIndex: number, position: number) => void;
 }) {
@@ -276,7 +253,7 @@ function MobileCarousel({
   setActiveIndex,
   setIsPaused
 }: {
-  metricsData: MetricCard[];
+  metricsData: RotatingMetric[];
   activeIndex: number;
   setActiveIndex: (index: number) => void;
   setIsPaused: (paused: boolean) => void;
@@ -331,7 +308,7 @@ function MetricCardContent({
   metric,
   isActive
 }: {
-  metric: MetricCard;
+  metric: RotatingMetric;
   isActive: boolean;
 }) {
   const Icon = iconMap[metric.icon];

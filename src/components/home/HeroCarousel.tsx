@@ -6,11 +6,11 @@ import Autoplay from 'embla-carousel-autoplay';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import heroCarouselData from '@/data/generated/hero-carousel.json';
-import { withBasePath } from '@/lib/utils';
+import { getMediaSrc } from '@/lib/utils';
 
 export default function HeroCarousel() {
   const { images } = heroCarouselData;
-
+  console.log('images in Hero Carousel', images);
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true, duration: 20 },
     [Autoplay({ delay: 5000, stopOnInteraction: true, stopOnMouseEnter: true })]
@@ -75,7 +75,7 @@ export default function HeroCarousel() {
             <div key={index} className="flex-[0_0_100%] relative min-w-0">
               {/* Image */}
               <img
-                src={withBasePath(`/hero/${image.filename}`)}
+                src={image.path}
                 alt={image.alt}
                 className="w-full h-full object-cover"
                 loading={index === 0 ? 'eager' : 'lazy'}
@@ -126,11 +126,10 @@ export default function HeroCarousel() {
                 <button
                   key={index}
                   onClick={() => scrollTo(index)}
-                  className={`transition-all focus:outline-none focus:ring-2 focus:ring-white ${
-                    index === currentSlide
-                      ? 'bg-white w-8 h-3 rounded-full'
-                      : 'bg-white/50 hover:bg-white/75 w-3 h-3 rounded-full'
-                  }`}
+                  className={`transition-all focus:outline-none focus:ring-2 focus:ring-white ${index === currentSlide
+                    ? 'bg-white w-8 h-3 rounded-full'
+                    : 'bg-white/50 hover:bg-white/75 w-3 h-3 rounded-full'
+                    }`}
                   aria-label={`Go to slide ${index + 1}`}
                   aria-current={index === currentSlide ? 'true' : 'false'}
                 />

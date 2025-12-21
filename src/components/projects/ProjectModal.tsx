@@ -5,7 +5,7 @@ import { Building2, MapPin, Calendar, CheckCircle2 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import ImageCarousel from '@/components/ui/ImageCarousel';
 import type { Project } from '@/types/project';
-import { withBasePath } from '@/lib/utils';
+import { getMediaSrc } from '@/lib/utils';
 
 interface ProjectModalProps {
   project: Project | null;
@@ -123,7 +123,7 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                 {project.media.pdfs.map((pdf, idx) => (
                   <li key={idx}>
                     <a
-                      href={withBasePath(`/projects/${project.id}/pdfs/${pdf}`)}
+                      href={getMediaSrc(pdf, `/projects/${project.id}/pdfs`)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700 hover:underline"
