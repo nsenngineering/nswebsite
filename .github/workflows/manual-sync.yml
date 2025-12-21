@@ -24,11 +24,13 @@ jobs:
 
       - name: Install rclone
         run: |
+          set -euo pipefail
           curl https://rclone.org/install.sh | sudo bash
           rclone version
 
       - name: Configure Google Drive remote
         run: |
+          set -euo pipefail
           mkdir -p ~/.config/rclone
           cat > ~/.config/rclone/rclone.conf <<EOF
           [gdrive]
@@ -40,6 +42,7 @@ jobs:
 
       - name: Configure Cloudflare R2 remote
         run: |
+          set -euo pipefail
           cat >> ~/.config/rclone/rclone.conf <<EOF
 
           [r2]
@@ -53,6 +56,7 @@ jobs:
 
       - name: Debug Google Drive visibility
         run: |
+          set -euo pipefail
           echo "Listing Google Drive root (should be content folder):"
           rclone lsd gdrive:
           rclone ls gdrive: --max-depth 1
@@ -60,6 +64,7 @@ jobs:
 
       - name: Sync media files from Google Drive to R2
         run: |
+          set -euo pipefail
           DRY_RUN_FLAG=""
           if [ "${{ inputs.dry_run }}" == "true" ]; then
             DRY_RUN_FLAG="--dry-run"
@@ -81,7 +86,7 @@ jobs:
             --log-level INFO \
             --stats 30s \
 
-            $DRY_RUN_FLAG
+            ${DRY_RUN_FLAG:+$DRY_RUN_FLAG}
 
           if [ "${{ inputs.dry_run }}" == "true" ]; then
             echo "✅ Dry run completed - Review the output above"
@@ -91,6 +96,7 @@ jobs:
 
       - name: Display sync summary
         run: |
+          set -euo pipefail
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "📊 Sync Summary"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
