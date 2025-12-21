@@ -10,6 +10,8 @@ import { parseMilestones, copyMilestoneImages } from './parsers/milestone-parser
 import { parseTeam, copyTeamImages } from './parsers/team-parser.js';
 import { parseELibraryDocuments, extractSectionCounts, loadSectionMetadata } from './parsers/elibrary-parser.js';
 import { parseServices } from './parsers/services-parser.js';
+import { buildAlumni } from './parsers/alumni-parser.js';
+import { buildFAQs } from './parsers/faq-parser.js';
 import { exportAllSheetsToCSV, shouldExportToCSV } from './parsers/csv-exporter.js';
 import { isR2Mode, validateR2Config } from './parsers/r2-utils.js';
 
@@ -207,7 +209,15 @@ async function buildContent() {
     console.log('\n🔧 Building services catalog...');
     await parseServices();
 
-    // Step 18: Export Sheets to CSV for version control (cloud mode only)
+    // Step 18: Build alumni
+    console.log('\n👔 Building alumni...');
+    await buildAlumni();
+
+    // Step 19: Build FAQs
+    console.log('\n❓ Building FAQs...');
+    await buildFAQs();
+
+    // Step 20: Export Sheets to CSV for version control (cloud mode only)
     if (shouldExportToCSV()) {
       await exportAllSheetsToCSV();
     }

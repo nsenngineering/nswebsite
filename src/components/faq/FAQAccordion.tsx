@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import type { FAQItem } from '@/data/faq';
+import type { FAQItem } from '@/types/faq';
 
 interface FAQAccordionProps {
   items: FAQItem[];

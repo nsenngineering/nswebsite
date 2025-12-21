@@ -53,6 +53,7 @@ next-env.d.ts
 /public/homepage_hero/
 /public/team/
 /public/services/
+/public/alumni/
 /public/hero/
 
 # media files (synced to R2, not tracked in Git)
@@ -69,6 +70,9 @@ content/team/images/
 # Services
 content/services/*/images/
 content/services/*/diagrams/
+
+# Alumni
+content/alumni/*/
 
 # eLibrary
 content/elibrary/*/files/

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { siteConfig } from '@/data/site-config';
 import Button from '@/components/ui/Button';
@@ -11,6 +12,7 @@ import { withBasePath } from '@/lib/utils';
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -61,15 +63,25 @@ const Header: React.FC = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors"
-              >
-                {item.name}
-              </Link>
-            ))}
+            {navigation.map((item) => {
+              const isActive =
+                item.href === '/'
+                  ? pathname === item.href
+                  : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-primary-600 text-white'
+                      : 'text-gray-700 hover:text-primary-600 hover:bg-primary-50'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              );
+            })}
           </div>
 
           {/* CTA Button */}
@@ -93,16 +105,26 @@ const Header: React.FC = () => {
         {isMenuOpen && (
           <div className="lg:hidden border-t border-gray-200 py-4">
             <div className="flex flex-col space-y-2">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors"
-                >
-                  {item.name}
-                </Link>
-              ))}
+              {navigation.map((item) => {
+                const isActive =
+                item.href === '/'
+                  ? pathname === item.href
+                  : pathname.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                      isActive
+                        ? 'bg-primary-600 text-white'
+                        : 'text-gray-700 hover:text-primary-600 hover:bg-primary-50'
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
               <div className="pt-2 px-4">
                 <Link href="/contact" onClick={() => setIsMenuOpen(false)}>
                   <Button className="w-full" size="sm">Request Quote</Button>
