@@ -2,8 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import ELibrarySidebar from '@/components/elibrary/ELibrarySidebar';
-import DocumentList from '@/components/elibrary/DocumentList';
-import ReadingPanel from '@/components/elibrary/ReadingPanel';
+import DocumentGrid from '@/components/elibrary/DocumentGrid';
 import type { ELibrarySection, ELibraryConfig } from '@/types/elibrary';
 import elibraryData from '@/data/generated/elibrary.json';
 
@@ -11,7 +10,6 @@ const data = elibraryData as ELibraryConfig;
 
 export default function ELibraryPage() {
   const [activeSection, setActiveSection] = useState<ELibrarySection | 'all'>('all');
-  const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter documents based on section and search query
@@ -35,21 +33,9 @@ export default function ELibraryPage() {
     });
   }, [activeSection, searchQuery]);
 
-  // Get active document
-  const activeDocument = useMemo(() => {
-    if (!activeDocumentId) return null;
-    return data.documents.find((doc) => doc.id === activeDocumentId) || null;
-  }, [activeDocumentId]);
-
   // Handle section change
   const handleSectionChange = (section: ELibrarySection | 'all') => {
     setActiveSection(section);
-    setActiveDocumentId(null); // Reset active document when changing sections
-  };
-
-  // Handle document selection
-  const handleDocumentSelect = (documentId: string) => {
-    setActiveDocumentId(documentId);
   };
 
   return (
@@ -69,8 +55,8 @@ export default function ELibraryPage() {
 
       {/* Main Content Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-6 min-h-[600px]">
-          {/* Sidebar */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar - Category List */}
           <ELibrarySidebar
             sections={data.sectionInfo}
             activeSection={activeSection}
@@ -81,28 +67,17 @@ export default function ELibraryPage() {
             onSearchChange={setSearchQuery}
           />
 
-          {/* Document List + Reading Panel */}
-          <div className="flex-1 flex flex-col lg:flex-row gap-6">
-            {/* Document List (30%) */}
-            <div className="w-full lg:w-[30%]">
-              <DocumentList
-                documents={filteredDocuments}
-                activeDocumentId={activeDocumentId}
-                onDocumentSelect={handleDocumentSelect}
-              />
+          {/* Document Grid - Main Content */}
+          <div className="flex-1">
+            {/* Results Count */}
+            <div className="mb-6 text-sm text-gray-600">
+              Showing {filteredDocuments.length} of {data.metadata.totalDocuments} documents
             </div>
 
-            {/* Reading Panel (70%) */}
-            <div className="flex-1">
-              <ReadingPanel document={activeDocument} />
-            </div>
+            {/* Document Grid */}
+            <DocumentGrid documents={filteredDocuments} />
           </div>
         </div>
-      </div>
-
-      {/* Mobile: Document count footer */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 text-center text-sm text-gray-600">
-        Showing {filteredDocuments.length} of {data.metadata.totalDocuments} documents
       </div>
     </div>
   );
