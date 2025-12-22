@@ -152,20 +152,16 @@ jobs:
           set -euo pipefail
           echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > google-credentials.json
 
-      - name: Fetch content from Google Sheets
+      - name: Build Next.js static site with content fetch
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ./google-credentials.json
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         run: |
           set -euo pipefail
-          echo "📊 Fetching structured content from Google Sheets..."
-          npm run build:content:cloud
-          echo "✅ Content fetch completed"
-
-      - name: Build Next.js static site
-        run: |
-          set -euo pipefail
-          echo "🔨 Building Next.js static site..."
-          npm run build
+          echo "🔨 Building Next.js site (includes content fetch from Sheets)..."
+          npm run build:cloud
           echo "✅ Build completed successfully"
 
       - name: Upload build artifact
