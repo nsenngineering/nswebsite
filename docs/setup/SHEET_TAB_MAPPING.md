@@ -15,6 +15,9 @@
 | `content/services/services.csv` | **Services** |
 | `content/company/company-info.csv` | **CompanyInfo** |
 | `content/rotating_metrics/metrics.csv` | **RotatingMetrics** |
+| `content/alumni/alumni.csv` | **Alumni** |
+| `content/faq/faq.csv` | **FAQ** |
+| `content/faq/faq-categories.csv` | **FAQCategories** |
 
 ## Code Configuration
 
@@ -31,6 +34,9 @@ The default tab names are now hardcoded in the parsers:
 - **Services** → `scripts/parsers/services-parser.ts`
 - **CompanyInfo** → `scripts/parsers/company-info-parser.ts`
 - **RotatingMetrics** → `scripts/parsers/rotating-metrics-parser.ts`
+- **Alumni** → `scripts/parsers/alumni-parser.ts`
+- **FAQ** → `scripts/parsers/faq-parser.ts`
+- **FAQCategories** → `scripts/parsers/faq-parser.ts`
 
 ## Testing Your Setup
 
@@ -52,6 +58,9 @@ npm run build:content:cloud
 📊 Fetching data from Google Sheets tab: "Services"
 📊 Fetching data from Google Sheets tab: "CompanyInfo"
 📊 Fetching data from Google Sheets tab: "RotatingMetrics"
+📊 Fetching data from Google Sheets tab: "Alumni"
+📊 Fetching data from Google Sheets tab: "FAQCategories"
+📊 Fetching data from Google Sheets tab: "FAQ"
 ```
 
 If you see errors like "Sheet tab not found", double-check that your tab names match EXACTLY (case-sensitive!).

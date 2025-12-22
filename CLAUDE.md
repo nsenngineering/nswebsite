@@ -27,7 +27,7 @@ Professional website for **NS Engineering & Geotechnical Services Pvt. Ltd. (NSE
 ### ✅ Completed Features
 
 **Content Management System**:
-- Google Sheets integration (9/9 sheets connected)
+- Google Sheets integration (14/14 sheets connected)
 - Automated CSV export for version control
 - Dual build modes (Local/Cloud)
 - Automatic fallback system
@@ -112,7 +112,7 @@ git commit -m "Content sync"  # Version control
 git push                      # Deploy
 ```
 
-### 9 Integrated Sheets
+### 14 Integrated Sheets
 
 | Sheet Tab | CSV File | Content |
 |-----------|----------|---------|
@@ -125,6 +125,11 @@ git push                      # Deploy
 | ProjectCategories | `content/categories/categories.csv` | 5 categories |
 | ServiceCategories | `content/services/service-categories.csv` | 6 categories |
 | Services | `content/services/services.csv` | 17 services |
+| CompanyInfo | `content/company/company-info.csv` | Company details |
+| RotatingMetrics | `content/rotating_metrics/metrics.csv` | Homepage metrics |
+| Alumni | `content/alumni/alumni.csv` | Alumni profiles |
+| FAQ | `content/faq/faq.csv` | FAQ items |
+| FAQCategories | `content/faq/faq-categories.csv` | FAQ categories |
 
 ---
 
@@ -180,7 +185,8 @@ GOOGLE_APPLICATION_CREDENTIALS=./google-credentials.json
 **Services**: Update `content/services/services.csv` or Sheets
 **Team**: Update `content/team/team.csv` or Sheets
 **eLibrary**: Update `content/elibrary/documents.csv` or Sheets
-**FAQ**: Edit `src/data/faq.ts` (data-driven, no CSV)
+**Alumni**: Update `content/alumni/alumni.csv` or Sheets
+**FAQ**: Update `content/faq/faq.csv` or Sheets
 **Careers**: Edit `src/data/careers.ts` (data-driven, no CSV)
 
 ### Build & Test
