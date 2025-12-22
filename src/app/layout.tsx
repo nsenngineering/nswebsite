@@ -4,18 +4,21 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import FloatingContactButtons from "@/components/layout/FloatingContactButtons";
 import { siteConfig } from "@/data/site-config";
+import { getLogoUrl } from "@/lib/utils";
+
+const logoUrl = getLogoUrl();
 
 export const metadata: Metadata = {
   title: siteConfig.name,
   description: siteConfig.description,
   icons: {
-    icon: '/logo/ns-logo.jpg',
-    apple: '/logo/ns-logo.jpg',
+    icon: logoUrl,
+    apple: logoUrl,
   },
   openGraph: {
     title: siteConfig.name,
     description: siteConfig.description,
-    images: ['/logo/ns-logo.jpg'],
+    images: [logoUrl],
     type: 'website',
   },
 };

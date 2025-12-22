@@ -2,56 +2,23 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Briefcase, Wrench, ArrowRight, LucideIcon } from 'lucide-react';
+import { Trophy, Briefcase, Wrench, Users, Award, Target, ArrowRight, LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
+import rotatingMetricsData from '@/data/generated/rotating-metrics.json';
+import type { RotatingMetric } from '@/types/rotating-metrics';
 
-// ===== DATA STRUCTURE =====
+// ===== DATA =====
 
-interface MetricCard {
-  id: string;
-  icon: 'Trophy' | 'Briefcase' | 'Wrench';
-  value: string;
-  label: string;
-  description: string;
-  gradient: string;
-  href?: string;
-}
-
-const metricsData: MetricCard[] = [
-  {
-    id: 'experience',
-    icon: 'Trophy',
-    value: '10+',
-    label: 'Years of Experience',
-    description: 'Delivering excellence in geotechnical services across Nepal since 2015',
-    gradient: 'from-primary-600 to-primary-800',
-    href: '/about'
-  },
-  {
-    id: 'projects',
-    icon: 'Briefcase',
-    value: '100+',
-    label: 'Projects Completed',
-    description: 'Successful projects across roads, bridges, hydropower, and infrastructure',
-    gradient: 'from-primary-700 to-primary-900',
-    href: '/projects'
-  },
-  {
-    id: 'equipment',
-    icon: 'Wrench',
-    value: '15+',
-    label: 'Advanced Equipment',
-    description: 'State-of-the-art testing tools including PDA, PIT, drilling rigs, and laboratory instruments',
-    gradient: 'from-primary-600 to-primary-800',
-    href: '/equipment'
-  }
-];
+const metricsData: RotatingMetric[] = rotatingMetricsData.metrics as RotatingMetric[];
 
 const iconMap: Record<string, LucideIcon> = {
   Trophy,
   Briefcase,
-  Wrench
+  Wrench,
+  Users,
+  Award,
+  Target
 };
 
 // ===== UTILITY FUNCTIONS =====
@@ -127,8 +94,6 @@ export default function RotatingMetrics() {
   return (
     <section
       className="relative bg-white py-16 md:py-24"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Mobile: Heading (centered, before cards) */}
@@ -205,6 +170,7 @@ export default function RotatingMetrics() {
             metricsData={metricsData}
             activeIndex={activeIndex}
             setActiveIndex={setActiveIndex}
+            setIsPaused={setIsPaused}
           />
 
           {/* Mobile CTAs */}
@@ -234,7 +200,7 @@ function DesktopStack({
   activeIndex,
   onCardClick
 }: {
-  metricsData: MetricCard[];
+  metricsData: RotatingMetric[];
   activeIndex: number;
   onCardClick: (cardIndex: number, position: number) => void;
 }) {
@@ -284,12 +250,19 @@ function DesktopStack({
 function MobileCarousel({
   metricsData,
   activeIndex,
-  setActiveIndex
+  setActiveIndex,
+  setIsPaused
 }: {
-  metricsData: MetricCard[];
+  metricsData: RotatingMetric[];
   activeIndex: number;
   setActiveIndex: (index: number) => void;
+  setIsPaused: (paused: boolean) => void;
 }) {
+  const handleDotClick = (index: number) => {
+    setActiveIndex(index);
+    setIsPaused(true);
+  };
+
   return (
     <div>
       {/* Active Card */}
@@ -316,12 +289,11 @@ function MobileCarousel({
         {metricsData.map((_, index) => (
           <button
             key={index}
-            onClick={() => setActiveIndex(index)}
-            className={`h-2 rounded-full transition-all ${
-              index === activeIndex
+            onClick={() => handleDotClick(index)}
+            className={`h-2 rounded-full transition-all ${index === activeIndex
                 ? 'bg-primary-600 w-8'
                 : 'bg-gray-300 w-2'
-            }`}
+              }`}
             aria-label={`Go to metric ${index + 1}`}
           />
         ))}
@@ -336,7 +308,7 @@ function MetricCardContent({
   metric,
   isActive
 }: {
-  metric: MetricCard;
+  metric: RotatingMetric;
   isActive: boolean;
 }) {
   const Icon = iconMap[metric.icon];
@@ -365,18 +337,16 @@ function MetricCardContent({
       {/* Icon */}
       <div className="flex justify-center mb-6">
         <motion.div
-          className={`w-32 h-32 rounded-full flex items-center justify-center ${
-            isActive ? 'bg-secondary-400/20' : 'bg-white/30'
-          }`}
+          className={`w-32 h-32 rounded-full flex items-center justify-center ${isActive ? 'bg-secondary-400/20' : 'bg-white/30'
+            }`}
           animate={iconPulseAnimation}
           transition={iconPulseTransition}
         >
           <Icon
-            className={`w-20 h-20 ${
-              isActive
+            className={`w-20 h-20 ${isActive
                 ? 'text-secondary-400 drop-shadow-[0_0_16px_rgba(250,204,21,0.5)]'
                 : 'text-white'
-            }`}
+              }`}
           />
         </motion.div>
       </div>

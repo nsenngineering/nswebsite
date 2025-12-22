@@ -1,6 +1,8 @@
 import path from 'path';
 import fs from 'fs-extra';
 import { CSVRecord, parseSemicolonArray, parseBoolean } from './csv-parser.js';
+import { fetchDataWithFallback } from './data-source.js';
+import { isR2Mode, constructR2Url } from './r2-utils.js';
 import type { ELibraryDocument, ELibrarySection, ELibrarySectionInfo } from '../../src/types/elibrary.js';
 
 /**
@@ -134,7 +136,14 @@ export async function parseDocument(record: CSVRecord): Promise<ELibraryDocument
   const fileUrl = await autoDetectFiles(id, csvFileUrl);
 
   // Construct full file path if available
-  const fileUrlPath = fileUrl ? `${id}/files/${fileUrl}` : undefined;
+  let fileUrlPath: string | undefined;
+  if (fileUrl) {
+    if (isR2Mode()) {
+      fileUrlPath = constructR2Url('elibrary', `${id}/files/${fileUrl}`);
+    } else {
+      fileUrlPath = `${id}/files/${fileUrl}`;
+    }
+  }
 
   const featured = parseBoolean(record.featured);
 
@@ -200,26 +209,22 @@ export function extractSectionCounts(documents: ELibraryDocument[]): Record<stri
 export async function loadSectionMetadata(): Promise<ELibrarySectionInfo[]> {
   const SECTIONS_CSV = path.join(process.cwd(), 'content', 'elibrary', 'sections.csv');
 
-  // Check if sections CSV exists
-  const csvExists = await fs.pathExists(SECTIONS_CSV);
-  if (!csvExists) {
-    console.log('📋 No sections.csv found, using defaults');
-    return getDefaultSections();
-  }
-
   try {
-    const { parseCSVFile } = await import('./csv-parser.js');
-    const records = await parseCSVFile(SECTIONS_CSV);
+    const records = await fetchDataWithFallback(
+      SECTIONS_CSV,
+      'ElibrarySections',
+      'GOOGLE_SHEET_TAB_ELIBRARY_SECTIONS'
+    );
 
     return records.map((record, index) => ({
-      id: validateSection(record.id, 'sections.csv'),
+      id: validateSection(record.id, 'sections data'),
       label: record.label?.trim() || formatSectionLabel(record.id),
       description: record.description?.trim() || '',
       icon: record.icon?.trim() || 'FileText',
       order: parseInt(record.order) || index + 1
     }));
   } catch (error) {
-    console.error('❌ Error loading sections CSV:', error);
+    console.error('❌ Error loading sections data:', error);
     console.log('📋 Using default sections');
     return getDefaultSections();
   }

@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
-import { parseCSVFile } from './csv-parser.js';
+import { fetchDataWithFallback } from './data-source.js';
+import { isR2Mode, constructR2Url } from './r2-utils.js';
 import type { HeroCarouselImage, HeroCarouselConfig } from '../../src/types/hero-carousel.js';
 
 const HERO_CSV_PATH = path.join(process.cwd(), 'content', 'homepage_hero', 'hero_carousel.csv');
@@ -71,32 +72,37 @@ export async function parseHeroCarousel(): Promise<HeroCarouselConfig> {
 
   console.log(`   Found ${imageFiles.length} images in directory`);
 
-  // Try to read CSV for alt text overrides
+  // Try to read CSV/Sheets for alt text overrides
   let altTextOverrides: string[] = [];
-  if (await fs.pathExists(HERO_CSV_PATH)) {
-    try {
-      const records = await parseCSVFile(HERO_CSV_PATH) as unknown as HeroCSVRecord[];
-      altTextOverrides = records.map(r => r.alt_text).filter(Boolean);
-      console.log(`   Found ${altTextOverrides.length} alt text overrides in CSV`);
-    } catch (error) {
-      console.warn('⚠️  Could not parse CSV, using auto-generated alt text');
+  try {
+    const records = await fetchDataWithFallback(
+      HERO_CSV_PATH,
+      'HomepageHeroCarousel',
+      'GOOGLE_SHEET_TAB_HERO'
+    ) as unknown as HeroCSVRecord[];
+    altTextOverrides = records.map(r => r.alt_text).filter(Boolean);
+    if (altTextOverrides.length > 0) {
+      console.log(`   Found ${altTextOverrides.length} alt text overrides`);
     }
-  } else {
-    console.log('   No CSV found, using auto-generated alt text');
+  } catch (error) {
+    console.log('   No alt text overrides found, using auto-generated alt text');
   }
 
   // Create image objects
   const images: HeroCarouselImage[] = imageFiles.map((filename, index) => {
     // Use CSV alt text if available, otherwise generate from filename
     const alt = altTextOverrides[index] || generateAltText(filename, index);
-
+    console.log('R2 mode: inside hero-carousel-parser.ts', isR2Mode());
     return {
       order: index + 1,
       filename,
       alt,
-      path: `/hero/${filename}`
+      path: isR2Mode()
+        ? constructR2Url('homepage_hero', filename, 'images')
+        : filename // Return just filename for local mode, HeroCarousel component adds prefix
     };
   });
+
 
   console.log(`✅ Configured ${images.length} hero carousel images`);
 
@@ -111,9 +117,16 @@ export async function parseHeroCarousel(): Promise<HeroCarouselConfig> {
 export async function copyHeroImages(config: HeroCarouselConfig): Promise<void> {
   console.log('\n📂 Copying hero images to public folder...');
 
-  const publicHeroDir = path.join(process.cwd(), 'public', 'hero');
+  // Skip copying in R2 mode
+  if (isR2Mode()) {
+    console.log('⏭️  R2 Mode: Skipping hero image copy (images served from R2)');
+    return;
+  }
 
-  // Ensure public/hero directory exists
+  // Use nested structure to match R2/bucket path
+  const publicHeroDir = path.join(process.cwd(), 'public', 'homepage_hero', 'images');
+
+  // Ensure directory exists
   await fs.ensureDir(publicHeroDir);
 
   let copiedCount = 0;
@@ -133,7 +146,7 @@ export async function copyHeroImages(config: HeroCarouselConfig): Promise<void> 
     }
   }
 
-  console.log(`✅ Copied ${copiedCount} images`);
+  console.log(`✅ Copied ${copiedCount} images to public/hero/`);
   if (skippedCount > 0) {
     console.log(`⚠️  Skipped ${skippedCount} images (not found)`);
   }

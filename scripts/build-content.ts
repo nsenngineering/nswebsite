@@ -2,26 +2,30 @@
 
 import path from 'path';
 import fs from 'fs-extra';
-import { parseCSVFile } from './parsers/csv-parser.js';
-import { parseProjects, extractCategories } from './parsers/project-parser.js';
-import { validateAllMedia, copyProjectMedia, validateAllEquipmentMedia, copyEquipmentMedia, validateAllELibraryFiles, copyELibraryFiles } from './parsers/validate-media.js';
+import { fetchDataWithFallback } from './parsers/data-source.js';
+import { parseProjectsFromSource, extractCategories } from './parsers/project-parser.js';
+import { validateAllMedia, copyProjectMedia, validateAllELibraryFiles, copyELibraryFiles } from './parsers/validate-media.js';
 import { parseHeroCarousel, copyHeroImages } from './parsers/hero-carousel-parser.js';
 import { parseMilestones, copyMilestoneImages } from './parsers/milestone-parser.js';
 import { parseTeam, copyTeamImages } from './parsers/team-parser.js';
-import { parseEquipmentList, extractEquipmentCategories, loadEquipmentCategoryMetadata } from './parsers/equipment-parser.js';
 import { parseELibraryDocuments, extractSectionCounts, loadSectionMetadata } from './parsers/elibrary-parser.js';
 import { parseServices } from './parsers/services-parser.js';
+import { buildAlumni } from './parsers/alumni-parser.js';
+import { buildFAQs } from './parsers/faq-parser.js';
+import { parseCompanyInfo } from './parsers/company-info-parser.js';
+import { parseRotatingMetrics } from './parsers/rotating-metrics-parser.js';
+import { exportAllSheetsToCSV, shouldExportToCSV } from './parsers/csv-exporter.js';
+import { isR2Mode, validateR2Config } from './parsers/r2-utils.js';
 
-const CSV_PATH = path.join(process.cwd(), 'content', 'projects', 'projects.csv');
 const OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'projects.json');
 const CATEGORIES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'categories.json');
 const HERO_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'hero-carousel.json');
 const MILESTONES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'milestones.json');
 const TEAM_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'team.json');
-const EQUIPMENT_CSV_PATH = path.join(process.cwd(), 'content', 'equipment', 'equipment.csv');
-const EQUIPMENT_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'equipment.json');
 const ELIBRARY_CSV_PATH = path.join(process.cwd(), 'content', 'elibrary', 'documents.csv');
 const ELIBRARY_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'elibrary.json');
+const COMPANY_INFO_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'company-info.json');
+const ROTATING_METRICS_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'rotating-metrics.json');
 
 interface GeneratedOutput {
   projects: any[];
@@ -50,26 +54,31 @@ function categorizeProjects(projects: any[]): Record<string, number> {
  * Main build function
  */
 async function buildContent() {
-  console.log('🔨 Building content from CSV files...\n');
+  console.log('🔨 Building content...\n');
+
+  // Validate R2 configuration if enabled
+  if (isR2Mode()) {
+    try {
+      validateR2Config();
+    } catch (error) {
+      console.error('❌ R2 configuration invalid:', error);
+      process.exit(1);
+    }
+  }
 
   try {
-    // Step 1: Parse CSV
-    console.log('📄 Parsing CSV file...');
-    const records = await parseCSVFile(CSV_PATH);
-    console.log(`   Found ${records.length} records in CSV\n`);
-
-    // Step 2: Validate and transform data
-    console.log('🔍 Validating project data...');
-    const projects = await parseProjects(records);
+    // Step 1: Parse projects from Google Sheets or CSV fallback
+    console.log('🔍 Parsing and validating project data...');
+    const projects = await parseProjectsFromSource();
     console.log();
 
-    // Step 3: Validate media files
+    // Step 2: Validate media files (local mode) or R2 config (R2 mode)
     await validateAllMedia(projects);
 
-    // Step 4: Copy media to public folder
+    // Step 3: Copy media to public folder (local mode) or skip (R2 mode)
     await copyProjectMedia(projects);
 
-    // Step 5: Generate JSON output
+    // Step 4: Generate JSON output
     console.log('\n💾 Generating JSON file...');
 
     const output: GeneratedOutput = {
@@ -111,27 +120,27 @@ async function buildContent() {
     }
     console.log(`   Featured projects: ${projects.filter(p => p.featured).length}`);
 
-    // Step 6: Parse hero carousel
+    // Step 5: Parse hero carousel
     console.log('\n📸 Building hero carousel...');
     const heroCarousel = await parseHeroCarousel();
 
-    // Step 7: Copy hero images to public folder
+    // Step 6: Copy hero images to public folder
     await copyHeroImages(heroCarousel);
 
-    // Step 8: Generate hero carousel JSON output
+    // Step 7: Generate hero carousel JSON output
     console.log('\n💾 Generating hero carousel JSON...');
     await fs.ensureDir(path.dirname(HERO_OUTPUT_PATH));
     await fs.writeJSON(HERO_OUTPUT_PATH, heroCarousel, { spaces: 2 });
     console.log(`✅ Generated: ${path.relative(process.cwd(), HERO_OUTPUT_PATH)}`);
 
-    // Step 8b: Parse milestones
+    // Step 8: Parse milestones
     console.log('\n🏛️  Building milestones timeline...');
     const milestones = await parseMilestones();
 
-    // Step 8c: Copy milestone images to public folder
+    // Step 9: Copy milestone images to public folder
     await copyMilestoneImages(milestones);
 
-    // Step 8d: Generate milestones JSON output
+    // Step 10: Generate milestones JSON output
     console.log('\n💾 Generating milestones JSON...');
     await fs.ensureDir(path.dirname(MILESTONES_OUTPUT_PATH));
     await fs.writeJSON(MILESTONES_OUTPUT_PATH, milestones, { spaces: 2 });
@@ -139,76 +148,36 @@ async function buildContent() {
     console.log(`   Timeline: ${milestones.startYear} - ${milestones.endYear}`);
     console.log(`   Milestones: ${milestones.milestones.length}`);
 
-    // Step 9: Parse team
+    // Step 11: Parse team
     console.log('\n👥 Building team...');
     const team = await parseTeam();
 
-    // Step 10: Copy team images to public folder
+    // Step 12: Copy team images to public folder
     await copyTeamImages(team);
 
-    // Step 11: Generate team JSON output
+    // Step 13: Generate team JSON output
     console.log('\n💾 Generating team JSON...');
     await fs.ensureDir(path.dirname(TEAM_OUTPUT_PATH));
     await fs.writeJSON(TEAM_OUTPUT_PATH, team, { spaces: 2 });
     console.log(`✅ Generated: ${path.relative(process.cwd(), TEAM_OUTPUT_PATH)}`);
 
-    // Step 12: Parse equipment CSV
-    console.log('\n🔧 Building equipment catalog...');
-    const equipmentRecords = await parseCSVFile(EQUIPMENT_CSV_PATH);
-    console.log(`   Found ${equipmentRecords.length} equipment items in CSV`);
-
-    const equipment = await parseEquipmentList(equipmentRecords);
-    console.log();
-
-    // Step 13: Validate and copy equipment media
-    await validateAllEquipmentMedia(equipment);
-    await copyEquipmentMedia(equipment);
-
-    // Step 14: Generate equipment JSON output
-    console.log('\n💾 Generating equipment JSON...');
-
-    const equipmentCategories = extractEquipmentCategories(equipment);
-    const equipmentCategoryMetadata = await loadEquipmentCategoryMetadata();
-
-    const equipmentOutput = {
-      equipment,
-      categories: equipmentCategories,
-      categoryMetadata: equipmentCategoryMetadata,
-      metadata: {
-        totalEquipment: equipment.length,
-        lastUpdated: new Date().toISOString(),
-        buildVersion: '1.0.0'
-      }
-    };
-
-    await fs.ensureDir(path.dirname(EQUIPMENT_OUTPUT_PATH));
-    await fs.writeJSON(EQUIPMENT_OUTPUT_PATH, equipmentOutput, { spaces: 2 });
-    console.log(`✅ Generated: ${path.relative(process.cwd(), EQUIPMENT_OUTPUT_PATH)}`);
-
-    // Equipment summary
-    console.log('\n📊 Equipment Summary:');
-    console.log(`   Total equipment: ${equipment.length}`);
-    console.log(`   Categories:`);
-    for (const [categoryId, count] of Object.entries(equipmentCategories)) {
-      const categoryInfo = equipmentCategoryMetadata.find(c => c.id === categoryId);
-      const label = categoryInfo?.label || categoryId;
-      console.log(`      ${label} (${categoryId}): ${count}`);
-    }
-    console.log(`   Featured equipment: ${equipment.filter(e => e.featured).length}`);
-
-    // Step 15: Parse eLibrary CSV
+    // Step 14: Parse eLibrary data (Sheets or CSV)
     console.log('\n📚 Building eLibrary...');
-    const elibraryRecords = await parseCSVFile(ELIBRARY_CSV_PATH);
-    console.log(`   Found ${elibraryRecords.length} documents in CSV`);
+    const elibraryRecords = await fetchDataWithFallback(
+      ELIBRARY_CSV_PATH,
+      'ElibraryDocuments',
+      'GOOGLE_SHEET_TAB_ELIBRARY'
+    );
+    console.log(`   Found ${elibraryRecords.length} documents`);
 
     const elibraryDocs = await parseELibraryDocuments(elibraryRecords);
     console.log();
 
-    // Step 16: Validate and copy eLibrary files
+    // Step 15: Validate and copy eLibrary files
     await validateAllELibraryFiles(elibraryDocs);
     await copyELibraryFiles(elibraryDocs);
 
-    // Step 17: Generate eLibrary JSON
+    // Step 16: Generate eLibrary JSON
     console.log('\n💾 Generating eLibrary JSON...');
 
     const sectionCounts = extractSectionCounts(elibraryDocs);
@@ -240,9 +209,42 @@ async function buildContent() {
     }
     console.log(`   Featured documents: ${elibraryDocs.filter(d => d.featured).length}`);
 
-    // Step 18: Parse services
+    // Step 17: Parse services
     console.log('\n🔧 Building services catalog...');
-    parseServices();
+    await parseServices();
+
+    // Step 18: Build alumni
+    console.log('\n👔 Building alumni...');
+    await buildAlumni();
+
+    // Step 19: Build FAQs
+    console.log('\n❓ Building FAQs...');
+    await buildFAQs();
+
+    // Step 20: Parse company info
+    console.log('\n🏢 Building company info...');
+    const companyInfo = await parseCompanyInfo();
+
+    // Step 21: Generate company info JSON output
+    console.log('\n💾 Generating company info JSON...');
+    await fs.ensureDir(path.dirname(COMPANY_INFO_OUTPUT_PATH));
+    await fs.writeJSON(COMPANY_INFO_OUTPUT_PATH, companyInfo, { spaces: 2 });
+    console.log(`✅ Generated: ${path.relative(process.cwd(), COMPANY_INFO_OUTPUT_PATH)}`);
+
+    // Step 22: Parse rotating metrics
+    console.log('\n📊 Building rotating metrics...');
+    const rotatingMetrics = await parseRotatingMetrics();
+
+    // Step 23: Generate rotating metrics JSON output
+    console.log('\n💾 Generating rotating metrics JSON...');
+    await fs.ensureDir(path.dirname(ROTATING_METRICS_OUTPUT_PATH));
+    await fs.writeJSON(ROTATING_METRICS_OUTPUT_PATH, rotatingMetrics, { spaces: 2 });
+    console.log(`✅ Generated: ${path.relative(process.cwd(), ROTATING_METRICS_OUTPUT_PATH)}`);
+
+    // Step 24: Export Sheets to CSV for version control (cloud mode only)
+    if (shouldExportToCSV()) {
+      await exportAllSheetsToCSV();
+    }
 
     console.log('\n✅ Content build complete!\n');
     process.exit(0);

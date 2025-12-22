@@ -3,7 +3,8 @@
 import { useState, useMemo } from 'react';
 import { Search, HelpCircle, Wrench, DollarSign, FileQuestion, Info } from 'lucide-react';
 import FAQAccordion from '@/components/faq/FAQAccordion';
-import { faqData, faqCategories } from '@/data/faq';
+import faqDataRaw from '@/data/generated/faq.json';
+import type { FAQItem, FAQCategory } from '@/types/faq';
 
 const iconMap: Record<string, React.ElementType> = {
   HelpCircle,
@@ -12,6 +13,16 @@ const iconMap: Record<string, React.ElementType> = {
   FileQuestion,
   Info,
 };
+
+// Load FAQ data from generated JSON
+const faqDataParsed = faqDataRaw as { faqs: FAQItem[]; categories: FAQCategory[] };
+const faqData = faqDataParsed.faqs;
+
+// Add "All Questions" category at the beginning
+const faqCategories: FAQCategory[] = [
+  { id: 'all', label: 'All Questions', icon: 'HelpCircle' },
+  ...faqDataParsed.categories
+];
 
 export default function FAQPage() {
   const [activeCategory, setActiveCategory] = useState('all');

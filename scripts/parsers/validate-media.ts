@@ -1,11 +1,11 @@
 import fs from 'fs-extra';
 import path from 'path';
+import { isR2Mode } from './r2-utils.js';
 import type { Project } from './project-parser.js';
-import type { Equipment } from '../../src/types/equipment.js';
 import type { ELibraryDocument } from '../../src/types/elibrary.js';
 
 const CONTENT_ROOT = path.join(process.cwd(), 'content', 'projects');
-const EQUIPMENT_CONTENT_ROOT = path.join(process.cwd(), 'content', 'equipment');
+
 const ELIBRARY_CONTENT_ROOT = path.join(process.cwd(), 'content', 'elibrary');
 
 /**
@@ -74,6 +74,12 @@ async function validateProjectMedia(project: Project): Promise<{
 export async function validateAllMedia(projects: Project[]): Promise<void> {
   console.log('\n📁 Validating media files...');
 
+  // Skip filesystem validation in R2 mode - files are in R2, not local
+  if (isR2Mode()) {
+    console.log('⏭️  R2 Mode: Skipping local filesystem validation (files served from R2)');
+    return;
+  }
+
   let totalMissingImages = 0;
   let totalMissingPdfs = 0;
 
@@ -96,10 +102,54 @@ export async function validateAllMedia(projects: Project[]): Promise<void> {
 }
 
 /**
+ * Validate R2 configuration
+ */
+export function validateR2Config(): void {
+  console.log('\n🌩️  Validating R2 configuration...');
+
+  const r2BaseUrl = process.env.NEXT_PUBLIC_R2_BASE_URL;
+  const r2BucketName = process.env.R2_BUCKET_NAME;
+  const r2BasePath = process.env.R2_BASE_PATH;
+
+  if (!r2BaseUrl) {
+    console.warn('⚠️  Warning: NEXT_PUBLIC_R2_BASE_URL not set.');
+  } else if (r2BaseUrl === 'https://pub-XXXXX.r2.dev') {
+    console.warn(
+      '⚠️  Warning: NEXT_PUBLIC_R2_BASE_URL is set to placeholder value.\n' +
+      '   Please update with your actual R2 public URL.'
+    );
+  } else {
+    console.log(`✅ R2 Base URL configured: ${r2BaseUrl}`);
+  }
+
+  if (!r2BucketName) {
+    console.warn('⚠️  Warning: R2_BUCKET_NAME not set (using default: ns-engineering-projects)');
+  } else {
+    console.log(`✅ R2 Bucket Name: ${r2BucketName}`);
+  }
+
+  if (!r2BasePath) {
+    console.log('ℹ️  R2 Base Path not set (using default: projects)');
+  } else {
+    console.log(`✅ R2 Base Path: ${r2BasePath}`);
+  }
+}
+
+/**
  * Copy media files from content to public folder
+ * Note: Skipped in R2 mode (images served from R2 CDN)
  */
 export async function copyProjectMedia(projects: Project[]): Promise<void> {
-  console.log('\n📦 Copying media files to public folder...');
+  // Skip copying in R2 mode
+  if (isR2Mode()) {
+    console.log('\n📦 R2 Mode: Skipping local media copy');
+    console.log('ℹ️  Images will be served from:', process.env.NEXT_PUBLIC_R2_BASE_URL);
+    validateR2Config();
+    return;
+  }
+
+  // Local mode: Copy files to public folder
+  console.log('\n📦 Local Mode: Copying media files to public folder...');
 
   const PUBLIC_ROOT = path.join(process.cwd(), 'public', 'projects');
 
@@ -144,143 +194,9 @@ export async function copyProjectMedia(projects: Project[]): Promise<void> {
   console.log(`✅ Copied ${copiedCount} media files to public/projects/`);
 }
 
-// ==================== EQUIPMENT MEDIA VALIDATION ====================
 
-/**
- * Check if an equipment file exists
- */
-async function checkEquipmentFileExists(
-  equipmentId: string,
-  filePath: string,
-  fileType: 'image' | 'spec-sheet'
-): Promise<boolean> {
-  const fullPath = path.join(EQUIPMENT_CONTENT_ROOT, filePath);
-  const exists = await fs.pathExists(fullPath);
 
-  if (!exists) {
-    console.warn(
-      `⚠️  Warning: ${fileType} file not found\n` +
-      `   Equipment: ${equipmentId}\n` +
-      `   File: ${fullPath}\n` +
-      `   Expected location: content/equipment/${filePath}`
-    );
-  }
 
-  return exists;
-}
-
-/**
- * Validate all media files for a single equipment item
- */
-async function validateEquipmentMediaItem(equipment: Equipment): Promise<{
-  missingImages: string[];
-  missingSpecSheet: boolean;
-}> {
-  const missingImages: string[] = [];
-  let missingSpecSheet = false;
-
-  // Check images
-  for (const imagePath of equipment.media.images) {
-    const exists = await checkEquipmentFileExists(equipment.id, imagePath, 'image');
-    if (!exists) {
-      missingImages.push(imagePath);
-    }
-  }
-
-  // Check hero image if specified
-  if (equipment.media.heroImage) {
-    const exists = await checkEquipmentFileExists(equipment.id, equipment.media.heroImage, 'image');
-    if (!exists && !missingImages.includes(equipment.media.heroImage)) {
-      missingImages.push(equipment.media.heroImage);
-    }
-  }
-
-  // Check spec sheet
-  if (equipment.media.specSheet) {
-    const exists = await checkEquipmentFileExists(equipment.id, equipment.media.specSheet, 'spec-sheet');
-    if (!exists) {
-      missingSpecSheet = true;
-    }
-  }
-
-  return { missingImages, missingSpecSheet };
-}
-
-/**
- * Validate media files for all equipment
- */
-export async function validateAllEquipmentMedia(equipment: Equipment[]): Promise<void> {
-  console.log('\n📁 Validating equipment media files...');
-
-  let totalMissingImages = 0;
-  let totalMissingSpecSheets = 0;
-
-  for (const item of equipment) {
-    const { missingImages, missingSpecSheet } = await validateEquipmentMediaItem(item);
-    totalMissingImages += missingImages.length;
-    if (missingSpecSheet) totalMissingSpecSheets++;
-  }
-
-  if (totalMissingImages > 0 || totalMissingSpecSheets > 0) {
-    console.warn(
-      `\n⚠️  Equipment media validation warnings:\n` +
-      `   Missing images: ${totalMissingImages}\n` +
-      `   Missing spec sheets: ${totalMissingSpecSheets}\n` +
-      `   Note: This is a warning, not an error. Build will continue.`
-    );
-  } else {
-    console.log('✅ All equipment media files found');
-  }
-}
-
-/**
- * Copy equipment media files from content to public folder
- */
-export async function copyEquipmentMedia(equipment: Equipment[]): Promise<void> {
-  console.log('\n📦 Copying equipment media files to public folder...');
-
-  const PUBLIC_ROOT = path.join(process.cwd(), 'public', 'equipment');
-
-  // Ensure public/equipment directory exists
-  await fs.ensureDir(PUBLIC_ROOT);
-
-  let copiedCount = 0;
-
-  for (const item of equipment) {
-    const contentEquipmentDir = path.join(EQUIPMENT_CONTENT_ROOT, item.id);
-    const publicEquipmentDir = path.join(PUBLIC_ROOT, item.id);
-
-    // Check if equipment folder exists in content
-    const equipmentDirExists = await fs.pathExists(contentEquipmentDir);
-
-    if (!equipmentDirExists) {
-      // No media folder for this equipment, skip
-      continue;
-    }
-
-    // Copy images folder if it exists
-    const imagesDir = path.join(contentEquipmentDir, 'images');
-    if (await fs.pathExists(imagesDir)) {
-      await fs.copy(imagesDir, path.join(publicEquipmentDir, 'images'), {
-        overwrite: true
-      });
-      const imageFiles = await fs.readdir(imagesDir);
-      copiedCount += imageFiles.length;
-    }
-
-    // Copy spec-sheet folder if it exists
-    const specSheetDir = path.join(contentEquipmentDir, 'spec-sheet');
-    if (await fs.pathExists(specSheetDir)) {
-      await fs.copy(specSheetDir, path.join(publicEquipmentDir, 'spec-sheet'), {
-        overwrite: true
-      });
-      const specFiles = await fs.readdir(specSheetDir);
-      copiedCount += specFiles.length;
-    }
-  }
-
-  console.log(`✅ Copied ${copiedCount} equipment media files to public/equipment/`);
-}
 
 // ==================== ELIBRARY FILE VALIDATION ====================
 
@@ -331,6 +247,12 @@ async function validateELibraryDocument(document: ELibraryDocument): Promise<{
 export async function validateAllELibraryFiles(documents: ELibraryDocument[]): Promise<void> {
   console.log('\n📁 Validating eLibrary files...');
 
+  // Skip filesystem validation in R2 mode - files are in R2, not local
+  if (isR2Mode()) {
+    console.log('⏭️  R2 Mode: Skipping local filesystem validation (files served from R2)');
+    return;
+  }
+
   let totalMissingFiles = 0;
 
   for (const document of documents) {
@@ -354,6 +276,12 @@ export async function validateAllELibraryFiles(documents: ELibraryDocument[]): P
  */
 export async function copyELibraryFiles(documents: ELibraryDocument[]): Promise<void> {
   console.log('\n📦 Copying eLibrary files to public folder...');
+
+  // Skip copying in R2 mode
+  if (isR2Mode()) {
+    console.log('⏭️  R2 Mode: Skipping eLibrary file copy (files served from R2)');
+    return;
+  }
 
   const PUBLIC_ROOT = path.join(process.cwd(), 'public', 'elibrary');
 

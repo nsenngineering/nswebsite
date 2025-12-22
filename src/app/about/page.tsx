@@ -17,6 +17,7 @@ import FadeIn from '@/components/animations/FadeIn';
 import Image from 'next/image';
 import { withBasePath } from '@/lib/utils';
 import teamData from '@/data/generated/team.json';
+import FeaturedAlumni from '@/components/home/FeaturedAlumni';
 
 interface TeamMember {
   name: string;
@@ -333,6 +334,9 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      {/* Featured Alumni */}
+      <FeaturedAlumni />
 
       {/* International Collaboration */}
       <section className="py-20 bg-gradient-to-br from-primary-600 to-primary-800">

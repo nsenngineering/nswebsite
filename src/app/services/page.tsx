@@ -3,391 +3,48 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Hammer,
-  Beaker,
-  Box,
-  Drill,
-  Waves,
-  Shield,
-  ChevronDown,
-  CheckCircle2,
-  ArrowRight
+  Wrench,
+  Filter,
+  Search
 } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
 import FadeIn from '@/components/animations/FadeIn';
-import Link from 'next/link';
-import servicesData from '@/data/generated/services.json';
+import ServiceCard from '@/components/services/ServiceCard';
+import ServiceModal from '@/components/services/ServiceModal';
+import type { Service } from '@/types/service';
+import servicesDataRaw from '@/data/generated/services.json';
+import Input from '@/components/ui/Input';
 
-interface ServiceDetail {
-  id: string;
-  icon: React.ElementType;
-  title: string;
-  subtitle: string;
-  description: string;
-  capabilities: string[];
-  equipment: string[];
-  applications: string[];
-  deliverables: string[];
-  color: string;
-}
+// Type assertion for imported JSON
+const servicesData = servicesDataRaw as { services: Service[]; categories: Array<{ id: string; name: string }> };
 
-// Icon mapping
-const iconMap: Record<string, React.ElementType> = {
-  Hammer,
-  Beaker,
-  Box,
-  Drill,
-  Waves,
-  Shield
-};
+const services = servicesData.services as Service[];
+const categories = servicesData.categories;
 
-// Color mapping for categories
-const categoryColors: Record<string, string> = {
-  'pile-testing': 'from-purple-500 to-purple-700',
-  'soil-laboratory': 'from-purple-600 to-purple-800',
-  'rock-laboratory': 'from-purple-400 to-purple-600',
-  'drilling': 'from-purple-700 to-purple-900',
-  'geophysical': 'from-purple-500 to-indigo-700',
-  'ndt': 'from-indigo-600 to-purple-700'
-};
-
-// Transform individual services into category-level data
-function transformServicesData(): ServiceDetail[] {
-  const { services: individualServices, categories } = servicesData;
-
-  return categories.map(category => {
-    // Get all services in this category
-    const categoryServices = individualServices.filter(s => s.category === category.id);
-
-    // Extract capabilities (service names become capabilities)
-    const capabilities = categoryServices.map(s => s.name);
-
-    // Extract all unique equipment
-    const equipment = Array.from(
-      new Set(categoryServices.flatMap(s => s.equipmentUsed))
-    );
-
-    // Extract all unique deliverables
-    const deliverables = Array.from(
-      new Set(categoryServices.flatMap(s => s.typicalDeliverables))
-    );
-
-    return {
-      id: category.id,
-      icon: iconMap[category.icon] || Shield,
-      title: category.name,
-      subtitle: category.description,
-      description: categoryServices[0]?.fullDescription || category.description,
-      capabilities,
-      equipment,
-      applications: [], // Can be populated from project data later
-      deliverables,
-      color: categoryColors[category.id] || 'from-purple-500 to-purple-700'
-    };
-  });
-}
-
-// Hardcoded applications data (can be moved to CSV later)
-const applicationsByCategory: Record<string, string[]> = {
-  'pile-testing': [
-    'Bridges and Flyovers',
-    'High-rise Buildings',
-    'Transmission Towers',
-    'Industrial Structures',
-    'Hydropower Projects'
-  ],
-  'soil-laboratory': [
-    'Foundation Design',
-    'Road & Pavement Design',
-    'Embankment Construction',
-    'Slope Stability Analysis',
-    'Earthwork Quality Control'
-  ],
-  'rock-laboratory': [
-    'Tunnel Design',
-    'Dam Foundations',
-    'Rock Slope Engineering',
-    'Quarry Assessment',
-    'Underground Excavation'
-  ],
-  'drilling': [
-    'Deep Foundation Design',
-    'Tunnel Investigations',
-    'Dam Site Studies',
-    'Hydropower Projects',
-    'Landslide Investigation'
-  ],
-  'geophysical': [
-    'Seismic Site Classification',
-    'Bedrock Depth Mapping',
-    'Groundwater Exploration',
-    'Tunnel Route Selection',
-    'Landslide Characterization'
-  ],
-  'ndt': [
-    'Building Structural Audit',
-    'Bridge Assessment',
-    'Post-Earthquake Evaluation',
-    'Quality Control',
-    'Renovation Planning'
-  ]
-};
-
-// Generate services from CSV data
-const rawServices = transformServicesData();
-const services: ServiceDetail[] = rawServices.map(service => ({
-  ...service,
-  applications: applicationsByCategory[service.id] || []
-}));
-
-// Keeping hardcoded as backup (to be removed after CSV verification)
-const servicesBackup: ServiceDetail[] = [
-  {
-    id: 'pile-testing',
-    icon: Hammer,
-    title: 'Pile Testing Services',
-    subtitle: 'Advanced Foundation Integrity & Load Testing',
-    description: 'Comprehensive pile testing services ensuring foundation safety and compliance with international standards. Our state-of-the-art equipment and experienced team deliver accurate, reliable results for all pile types.',
-    capabilities: [
-      'High-Strain Dynamic Pile Testing (PDA)',
-      'Low-Strain Pile Integrity Testing (PIT)',
-      'Static Load Testing (Compression & Tension)',
-      'Lateral Load Testing',
-      'Cross-Hole Sonic Logging (CSL)',
-      'Pile Pull-Out Testing',
-      'O-Cell Testing',
-      'Rebar Detection & Scanning'
-    ],
-    equipment: [
-      'Pile Driving Analyzer (PDA)',
-      'Pile Integrity Tester',
-      'Static Load Test Setup (up to 1000 tons)',
-      'Cross-Hole Sonic Logger',
-      'Rebar Scanner',
-      'Data Acquisition Systems'
-    ],
-    applications: [
-      'Bridges and Flyovers',
-      'High-rise Buildings',
-      'Transmission Towers',
-      'Industrial Structures',
-      'Hydropower Projects'
-    ],
-    deliverables: [
-      'Pile Capacity Analysis Report',
-      'Load-Settlement Curves',
-      'Integrity Assessment',
-      'Signal Analysis & Wave Matching',
-      'Compliance Certificates'
-    ],
-    color: 'from-purple-500 to-purple-700'
-  },
-  {
-    id: 'soil-laboratory',
-    icon: Beaker,
-    title: 'Soil Laboratory Testing',
-    subtitle: 'Comprehensive Geotechnical Analysis',
-    description: 'Our ISO 9001:2015 certified laboratory in Lalitpur provides complete soil testing services with modern equipment and certified technicians, meeting national and international standards.',
-    capabilities: [
-      'Standard Proctor & Modified Proctor Compaction',
-      'California Bearing Ratio (CBR)',
-      'Triaxial Shear Test (UU, CU, CD)',
-      'Direct Shear Test',
-      'Unconfined Compressive Strength (UCS)',
-      'Consolidation Test',
-      'Permeability Test',
-      'Grain Size Analysis (Sieve & Hydrometer)',
-      'Atterberg Limits (LL, PL, SL)',
-      'Specific Gravity',
-      'Organic Content'
-    ],
-    equipment: [
-      'Triaxial Testing System',
-      'Direct Shear Apparatus',
-      'Consolidation Equipment',
-      'Permeability Test Setup',
-      'Proctor Compaction Equipment',
-      'Automated Sieve Shaker'
-    ],
-    applications: [
-      'Foundation Design',
-      'Road & Pavement Design',
-      'Embankment Construction',
-      'Slope Stability Analysis',
-      'Earthwork Quality Control'
-    ],
-    deliverables: [
-      'Soil Classification Report',
-      'Shear Strength Parameters',
-      'Compaction Characteristics',
-      'Bearing Capacity Recommendations',
-      'Test Certificates'
-    ],
-    color: 'from-purple-600 to-purple-800'
-  },
-  {
-    id: 'rock-laboratory',
-    icon: Box,
-    title: 'Rock Laboratory Testing',
-    subtitle: 'Rock Mechanics & Classification',
-    description: 'Specialized rock testing services for tunnel, dam, and slope projects. Our laboratory handles core samples up to 100mm diameter with precise testing protocols.',
-    capabilities: [
-      'Unconfined Compressive Strength (UCS)',
-      'Point Load Test (Axial & Diametral)',
-      'Indirect Tensile Strength (Brazilian Test)',
-      'Rock Quality Designation (RQD)',
-      'Core Recovery & Logging',
-      'Density & Porosity',
-      'Water Absorption',
-      'Slake Durability Test'
-    ],
-    equipment: [
-      'Rock UCS Testing Machine (3000 kN)',
-      'Point Load Tester',
-      'Core Cutting Machine',
-      'Digital Caliper & Measuring Tools'
-    ],
-    applications: [
-      'Tunnel Design',
-      'Dam Foundations',
-      'Rock Slope Engineering',
-      'Quarry Assessment',
-      'Underground Excavation'
-    ],
-    deliverables: [
-      'Rock Classification Report',
-      'Strength Parameters',
-      'RQD Analysis',
-      'Geological Core Logs',
-      'Design Recommendations'
-    ],
-    color: 'from-purple-400 to-purple-600'
-  },
-  {
-    id: 'drilling',
-    icon: Drill,
-    title: 'Drilling & Field Investigation',
-    subtitle: 'Up to 700m Depth Capability',
-    description: 'Our fleet of modern drilling rigs can reach depths up to 700m, making us one of Nepal\'s most capable drilling service providers. Experienced drillers and geologists ensure quality sampling and logging.',
-    capabilities: [
-      'Rotary Core Drilling (NX, HQ, PQ sizes)',
-      'Percussion Drilling',
-      'Auger Drilling',
-      'Standard Penetration Test (SPT)',
-      'Borehole Logging',
-      'In-Situ Permeability Test',
-      'Piezometer Installation',
-      'Groundwater Sampling'
-    ],
-    equipment: [
-      'Rotary Drilling Rigs (up to 700m)',
-      'SPT Equipment',
-      'Core Barrels & Drill Bits',
-      'Piezometers',
-      'Water Level Indicators'
-    ],
-    applications: [
-      'Deep Foundation Design',
-      'Tunnel Investigations',
-      'Dam Site Studies',
-      'Hydropower Projects',
-      'Landslide Investigation'
-    ],
-    deliverables: [
-      'Borehole Logs',
-      'SPT Data & N-values',
-      'Core Photographs',
-      'Groundwater Level Data',
-      'Geotechnical Report'
-    ],
-    color: 'from-purple-700 to-purple-900'
-  },
-  {
-    id: 'geophysical',
-    icon: Waves,
-    title: 'Geophysical Surveys',
-    subtitle: 'Subsurface Imaging & Characterization',
-    description: 'Non-invasive geophysical investigation methods for rapid subsurface characterization. Our surveys provide valuable data for preliminary design and site assessment.',
-    capabilities: [
-      'Multi-channel Analysis of Surface Waves (MASW)',
-      'Electrical Resistivity Tomography (ERT)',
-      'Seismic Refraction Tomography (SRT)',
-      'Magnetotelluric (MT) Survey',
-      'Microtremor Array Measurement (MAM)',
-      'Borehole Camera & Televiewer',
-      'Ground Penetrating Radar (GPR)'
-    ],
-    equipment: [
-      'Seismic Data Acquisition System',
-      'Resistivity Meter & Electrodes',
-      'Borehole Camera',
-      'Magnetotelluric Equipment',
-      'GPS & Survey Instruments'
-    ],
-    applications: [
-      'Seismic Site Classification',
-      'Bedrock Depth Mapping',
-      'Groundwater Exploration',
-      'Tunnel Route Selection',
-      'Landslide Characterization'
-    ],
-    deliverables: [
-      'Subsurface Profile (2D/3D)',
-      'Shear Wave Velocity (Vs30)',
-      'Resistivity Models',
-      'Seismic Hazard Parameters',
-      'Interpretation Report'
-    ],
-    color: 'from-purple-500 to-indigo-700'
-  },
-  {
-    id: 'ndt',
-    icon: Shield,
-    title: 'Non-Destructive Testing (NDT)',
-    subtitle: 'Structure Assessment Without Damage',
-    description: 'Assess existing structures without causing damage. Our NDT services are essential for renovation projects, structural audits, and quality control.',
-    capabilities: [
-      'Rebound Hammer Test (Schmidt Hammer)',
-      'Ultrasonic Pulse Velocity (UPV)',
-      'Rebar Detection & Scanning',
-      'Core Cutting & Extraction',
-      'Flat Jack Test',
-      'Push-Out Shear Test',
-      'Equipotential Test (Corrosion Detection)',
-      'Concrete Cover Measurement'
-    ],
-    equipment: [
-      'Digital Rebound Hammer',
-      'Ultrasonic Pulse Velocity Tester',
-      'Rebar Locator',
-      'Core Drilling Machine',
-      'Flat Jack Equipment'
-    ],
-    applications: [
-      'Building Structural Audit',
-      'Bridge Assessment',
-      'Post-Earthquake Evaluation',
-      'Quality Control',
-      'Renovation Planning'
-    ],
-    deliverables: [
-      'Concrete Strength Assessment',
-      'Rebar Layout Drawings',
-      'Structural Condition Report',
-      'Repair Recommendations',
-      'Compliance Certificates'
-    ],
-    color: 'from-indigo-600 to-purple-700'
-  }
+// Generate service categories with "All Services"
+const serviceCategories = [
+  { id: 'all', label: 'All Services' },
+  ...categories.map(cat => ({ id: cat.id, label: cat.name }))
 ];
 
 export default function ServicesPage() {
-  const [expandedService, setExpandedService] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
 
-  const toggleService = (id: string) => {
-    setExpandedService(expandedService === id ? null : id);
-  };
+  // Calculate category stats
+  const categoryStats = services.reduce((acc, service) => {
+    acc[service.category] = (acc[service.category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const filteredServices = services.filter((service) => {
+    const matchesCategory = selectedCategory === 'all' || service.category === selectedCategory;
+    const matchesSearch =
+      service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      service.shortDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      service.fullDescription.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -411,8 +68,7 @@ export default function ServicesPage() {
                   Our Services
                 </h1>
                 <p className="text-xl text-purple-100 max-w-3xl mx-auto">
-                  Comprehensive geotechnical, testing, and investigation services backed by
-                  <span className="text-secondary-400 font-semibold"> ISO 9001:2015 certification</span> and over a decade of experience
+                  <span className="text-secondary-400 font-semibold">Comprehensive geotechnical testing</span> and engineering services for infrastructure projects
                 </p>
               </motion.div>
             </div>
@@ -420,170 +76,102 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Services List */}
-      <section className="py-20">
+      {/* Filters & Search */}
+      <section className="py-8 bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-6">
-            {services.map((service, index) => {
-              const Icon = service.icon;
-              const isExpanded = expandedService === service.id;
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            {/* Search */}
+            <div className="w-full md:w-96">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Search services..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
 
-              return (
-                <FadeIn key={service.id} delay={index * 0.1}>
-                  <Card hover className="overflow-hidden">
-                    <CardContent className="p-0">
-                      {/* Service Header */}
-                      <button
-                        onClick={() => toggleService(service.id)}
-                        className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors text-left"
-                      >
-                        <div className="flex items-center gap-6 flex-1">
-                          <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${service.color} flex items-center justify-center flex-shrink-0`}>
-                            <Icon className="w-8 h-8 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-1">
-                              {service.title}
-                            </h3>
-                            <p className="text-sm text-primary-600 font-medium">
-                              {service.subtitle}
-                            </p>
-                          </div>
-                        </div>
-                        <motion.div
-                          animate={{ rotate: isExpanded ? 180 : 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <ChevronDown className="w-6 h-6 text-gray-400" />
-                        </motion.div>
-                      </button>
+            {/* Category Filter */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <Filter className="w-5 h-5 text-gray-400" />
+              {serviceCategories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    selectedCategory === category.id
+                      ? 'bg-primary-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {category.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
-                      {/* Expanded Content */}
-                      <motion.div
-                        initial={false}
-                        animate={{
-                          height: isExpanded ? 'auto' : 0,
-                          opacity: isExpanded ? 1 : 0
-                        }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="p-6 pt-0 border-t border-gray-100">
-                          <p className="text-gray-600 mb-8 leading-relaxed">
-                            {service.description}
-                          </p>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Capabilities */}
-                            <div>
-                              <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <CheckCircle2 className="w-5 h-5 text-primary-600" />
-                                Capabilities
-                              </h4>
-                              <ul className="space-y-2">
-                                {service.capabilities.map((cap) => (
-                                  <li key={cap} className="text-sm text-gray-600 flex items-start gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600 mt-2 flex-shrink-0" />
-                                    {cap}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-
-                            {/* Equipment */}
-                            <div>
-                              <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <CheckCircle2 className="w-5 h-5 text-primary-600" />
-                                Equipment
-                              </h4>
-                              <ul className="space-y-2">
-                                {service.equipment.map((eq) => (
-                                  <li key={eq} className="text-sm text-gray-600 flex items-start gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600 mt-2 flex-shrink-0" />
-                                    {eq}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-
-                            {/* Applications */}
-                            <div>
-                              <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <CheckCircle2 className="w-5 h-5 text-primary-600" />
-                                Applications
-                              </h4>
-                              <ul className="space-y-2">
-                                {service.applications.map((app) => (
-                                  <li key={app} className="text-sm text-gray-600 flex items-start gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600 mt-2 flex-shrink-0" />
-                                    {app}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-
-                            {/* Deliverables */}
-                            <div>
-                              <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <CheckCircle2 className="w-5 h-5 text-primary-600" />
-                                Deliverables
-                              </h4>
-                              <ul className="space-y-2">
-                                {service.deliverables.map((del) => (
-                                  <li key={del} className="text-sm text-gray-600 flex items-start gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600 mt-2 flex-shrink-0" />
-                                    {del}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-
-                          <div className="mt-8 pt-6 border-t border-gray-100">
-                            <Link href="/contact">
-                              <Button variant="purple" className="group">
-                                Request Quote for {service.title}
-                                <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                              </Button>
-                            </Link>
-                          </div>
-                        </div>
-                      </motion.div>
-                    </CardContent>
-                  </Card>
-                </FadeIn>
-              );
-            })}
+          {/* Results Count */}
+          <div className="mt-4 text-sm text-gray-600">
+            Showing <span className="font-semibold text-gray-900">{filteredServices.length}</span> of <span className="font-semibold text-gray-900">{services.length}</span> services
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-purple-600 to-purple-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* Services Grid */}
+      <section className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {filteredServices.length === 0 ? (
+            <div className="text-center py-20">
+              <Wrench className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No services found</h3>
+              <p className="text-gray-600">Try adjusting your filters or search query</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredServices.map((service, index) => (
+                <FadeIn key={service.id} delay={index * 0.05}>
+                  <ServiceCard
+                    service={service}
+                    onOpenModal={() => setSelectedService(service)}
+                  />
+                </FadeIn>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-20 bg-white border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
-            <h2 className="text-4xl font-bold text-white mb-4">
-              Ready to Start Your Project?
-            </h2>
-            <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
-              Get in touch with our team to discuss your geotechnical testing needs
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/contact">
-                <Button size="lg" variant="primary" className="group">
-                  Request a Quote
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <Link href="/projects">
-                <Button size="lg" variant="outline" className="bg-white/10 border-white text-white hover:bg-white/20">
-                  View Our Projects
-                </Button>
-              </Link>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Services by Category</h2>
+              <p className="text-gray-600">Comprehensive testing and analysis across all disciplines</p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 text-center">
+              {categories.map((category) => (
+                <div key={category.id} className="group cursor-pointer" onClick={() => setSelectedCategory(category.id)}>
+                  <div className="text-4xl font-bold text-primary-600 mb-2 group-hover:scale-110 transition-transform">
+                    {categoryStats[category.id] || 0}
+                  </div>
+                  <div className="text-sm text-gray-600 group-hover:text-primary-600 transition-colors">{category.name}</div>
+                </div>
+              ))}
             </div>
           </FadeIn>
         </div>
       </section>
+
+      {/* Service Modal */}
+      <ServiceModal
+        service={selectedService}
+        isOpen={selectedService !== null}
+        onClose={() => setSelectedService(null)}
+      />
     </div>
   );
 }

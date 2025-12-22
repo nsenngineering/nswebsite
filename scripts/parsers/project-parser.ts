@@ -2,6 +2,9 @@ import path from 'path';
 import fs from 'fs-extra';
 import { CSVRecord, parseSemicolonArray, parseBoolean, parseNumber } from './csv-parser.js';
 import { parseCategoriesCSV, CategoryConfig } from './category-parser.js';
+import { fetchDataWithFallback } from './data-source.js';
+import { isR2Mode, constructR2Url } from './r2-utils.js';
+import { isR2ApiConfigured, listProjectImages, listProjectPDFs } from './r2-client.js';
 
 export interface Project {
   id: string;
@@ -40,6 +43,23 @@ const NEPAL_LAT_MIN = 26.3479;
 const NEPAL_LAT_MAX = 30.4227;
 const NEPAL_LNG_MIN = 80.0884;
 const NEPAL_LNG_MAX = 88.2015;
+
+/**
+ * Construct media URL (R2 or local path)
+ * @param projectId - Project ID
+ * @param mediaType - Type of media (images, pdfs)
+ * @param filename - File name
+ * @returns Full URL (R2) or relative path (local)
+ */
+function constructMediaUrl(projectId: string, mediaType: 'images' | 'pdfs', filename: string): string {
+  if (isR2Mode()) {
+    // Use shared R2 utility to construct URL
+    return constructR2Url(`projects/${projectId}`, filename, mediaType);
+  } else {
+    // Local mode - return relative path (will be copied to public/)
+    return `${projectId}/${mediaType}/${filename}`;
+  }
+}
 
 /**
  * Validate required field exists
@@ -98,7 +118,8 @@ function validateProjectId(id: string): void {
 }
 
 /**
- * Auto-detect images from filesystem when CSV is empty
+ * Auto-detect images from filesystem or R2 when CSV is empty
+ * Supports both local filesystem and R2 bucket auto-detection
  */
 async function autoDetectImages(
   projectId: string,
@@ -110,7 +131,42 @@ async function autoDetectImages(
     return { images: csvImages, heroImage: csvHeroImage };
   }
 
-  // Otherwise, scan filesystem
+  // R2 Mode: Try to list files from R2 bucket
+  if (isR2Mode()) {
+    // If R2 API is configured, auto-detect from R2
+    if (isR2ApiConfigured()) {
+      try {
+        const imageFiles = await listProjectImages(projectId);
+
+        if (imageFiles.length > 0) {
+          const heroImage = csvHeroImage || (imageFiles.length > 0 ? imageFiles[0] : undefined);
+          return { images: imageFiles, heroImage };
+        } else {
+          // No images found in R2 for this project
+          return { images: [], heroImage: undefined };
+        }
+      } catch (error) {
+        console.warn(
+          `⚠️  Warning: Could not auto-detect images from R2 for project "${projectId}".\n` +
+          `   Error: ${error instanceof Error ? error.message : error}\n` +
+          `   Falling back to CSV-only mode.`
+        );
+        return { images: [], heroImage: undefined };
+      }
+    } else {
+      // R2 mode but no API credentials - require CSV listing
+      if (csvImages.length === 0) {
+        console.warn(
+          `⚠️  Warning: Project "${projectId}" has no images specified in CSV/Sheets.\n` +
+          `   In R2 mode without API credentials, images must be listed in the images column.\n` +
+          `   To enable auto-detection, set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, and R2_SECRET_ACCESS_KEY.`
+        );
+      }
+      return { images: [], heroImage: undefined };
+    }
+  }
+
+  // Local mode: scan filesystem for images
   const CONTENT_ROOT = path.join(process.cwd(), 'content', 'projects');
   const imagesDir = path.join(CONTENT_ROOT, projectId, 'images');
 
@@ -162,6 +218,70 @@ async function autoDetectImages(
   }
 }
 
+
+/**
+ * Auto-detect PDFs from filesystem or R2 when CSV is empty
+ * Supports both local filesystem and R2 bucket auto-detection
+ */
+async function autoDetectPDFs(
+  projectId: string,
+  csvPdfs: string[]
+): Promise<string[]> {
+  // If CSV has PDFs, use those (override mode)
+  if (csvPdfs.length > 0) {
+    return csvPdfs;
+  }
+
+  // R2 Mode: Try to list files from R2 bucket
+  if (isR2Mode()) {
+    if (isR2ApiConfigured()) {
+      try {
+        const pdfFiles = await listProjectPDFs(projectId);
+        return pdfFiles;
+      } catch (error) {
+        console.warn(
+          `⚠️  Warning: Could not auto-detect PDFs from R2 for project "${projectId}".\n` +
+          `   Falling back to CSV-only mode.`
+        );
+        return [];
+      }
+    } else {
+      // R2 mode but no API credentials - require CSV listing
+      return [];
+    }
+  }
+
+  // Local mode: scan filesystem for PDFs
+  const CONTENT_ROOT = path.join(process.cwd(), 'content', 'projects');
+  const pdfsDir = path.join(CONTENT_ROOT, projectId, 'pdfs');
+
+  // Check if directory exists
+  const dirExists = await fs.pathExists(pdfsDir);
+  if (!dirExists) {
+    return [];
+  }
+
+  try {
+    // Read all files in directory
+    const files = await fs.readdir(pdfsDir);
+
+    // Filter by PDF extension
+    const pdfFiles = files
+      .filter(file => file.toLowerCase().endsWith('.pdf'))
+      .sort(); // Alphabetical order
+
+    return pdfFiles;
+
+  } catch (error) {
+    console.error(
+      `❌ Error reading PDFs directory for project "${projectId}":`,
+      error instanceof Error ? error.message : error
+    );
+    return [];
+  }
+}
+
+
 /**
  * Parse a single project from CSV record
  */
@@ -187,18 +307,19 @@ export async function parseProject(record: CSVRecord): Promise<Project> {
     console.warn(`⚠️  Warning: Project "${id}" has no scope items`);
   }
 
-  // Parse media files
+  // Parse media files from CSV
   const csvImages = parseSemicolonArray(record.images);
-  const pdfs = parseSemicolonArray(record.pdfs);
+  const csvPdfs = parseSemicolonArray(record.pdfs);
   const csvHeroImage = record.hero_image?.trim() || undefined;
 
-  // Auto-detect images from filesystem if CSV is empty
+  // Auto-detect images and PDFs from filesystem/R2 if CSV is empty
   const { images, heroImage } = await autoDetectImages(id, csvImages, csvHeroImage);
+  const pdfs = await autoDetectPDFs(id, csvPdfs);
 
-  // Construct full media paths (projectId/images/filename)
-  const imagesPaths = images.map(img => `${id}/images/${img}`);
-  const pdfsPaths = pdfs.map(pdf => `${id}/pdfs/${pdf}`);
-  const heroImagePath = heroImage ? `${id}/images/${heroImage}` : undefined;
+  // Construct full media URLs/paths (R2 or local)
+  const imagesPaths = images.map(img => constructMediaUrl(id, 'images', img));
+  const pdfsPaths = pdfs.map(pdf => constructMediaUrl(id, 'pdfs', pdf));
+  const heroImagePath = heroImage ? constructMediaUrl(id, 'images', heroImage) : undefined;
 
   const featured = parseBoolean(record.featured);
 
@@ -249,6 +370,26 @@ export async function parseProjects(records: CSVRecord[]): Promise<Project[]> {
 
   console.log(`✅ Successfully parsed ${projects.length} projects`);
   return projects;
+}
+
+/**
+ * Parse all projects from Google Sheets or CSV (with fallback)
+ * This is the main entry point for parsing projects
+ */
+export async function parseProjectsFromSource(): Promise<Project[]> {
+  console.log('📦 Loading project data...');
+
+  const PROJECTS_CSV_PATH = path.join(process.cwd(), 'content', 'projects', 'projects.csv');
+
+  // Fetch from Google Sheets or CSV fallback
+  const records = await fetchDataWithFallback(
+    PROJECTS_CSV_PATH,
+    'Projects',
+    'GOOGLE_SHEET_TAB_PROJECTS'
+  );
+
+  // Parse using existing logic
+  return parseProjects(records);
 }
 
 /**
