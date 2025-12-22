@@ -235,3 +235,43 @@ export async function listTeamPhotos(): Promise<string[]> {
     return [];
   }
 }
+
+/**
+ * List image files for a specific service in R2
+ *
+ * @param serviceId - Service ID (e.g., 'pile-dynamic-analysis')
+ * @returns Array of image filenames (without full path)
+ *
+ * @example
+ * const images = await listServiceImages('pile-dynamic-analysis');
+ * // Returns: ['pda-01.jpg', 'pda-02.jpg']
+ */
+export async function listServiceImages(serviceId: string): Promise<string[]> {
+  const r2Prefix = process.env.R2_BASE_PATH || '';
+  const basePath = r2Prefix ? `${r2Prefix}/` : '';
+  const prefix = `${basePath}services/${serviceId}/images/`;
+
+  try {
+    const files = await listR2Files(prefix);
+
+    // Filter for image extensions and extract filenames
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+    const images = files
+      .filter(file => {
+        const ext = file.key.toLowerCase().slice(file.key.lastIndexOf('.'));
+        return imageExtensions.includes(ext);
+      })
+      .map(file => {
+        // Extract just the filename from the full key
+        const parts = file.key.split('/');
+        return parts[parts.length - 1];
+      })
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+
+    return images;
+  } catch (error) {
+    // If R2 listing fails, return empty array (fallback gracefully)
+    console.warn(`⚠️  Could not list R2 images for service "${serviceId}":`, error instanceof Error ? error.message : error);
+    return [];
+  }
+}

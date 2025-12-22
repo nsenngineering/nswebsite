@@ -11,6 +11,7 @@ import { Service, ServiceCategory } from '../../src/types/service';
 import { fetchDataWithFallback } from './data-source.js';
 import { isR2Mode, constructR2Url } from './r2-utils.js';
 import { parseSemicolonArray, parseBoolean } from './csv-parser.js';
+import { isR2ApiConfigured, listServiceImages } from './r2-client.js';
 
 interface ServiceCSVRow {
   id: string;
@@ -69,8 +70,8 @@ function constructMediaUrl(serviceId: string, filename: string): string {
 }
 
 /**
- * Auto-detect images from filesystem when CSV is empty
- * Note: In R2 mode, filesystem auto-detection is skipped
+ * Auto-detect images from filesystem or R2 when CSV is empty
+ * Supports both local filesystem and R2 bucket auto-detection
  */
 async function autoDetectImages(
   serviceId: string,
@@ -82,15 +83,39 @@ async function autoDetectImages(
     return { images: csvImages, heroImage: csvHeroImage };
   }
 
-  // In R2 mode, skip filesystem detection (images are in R2, not local)
+  // R2 Mode: Try to list files from R2 bucket
   if (isR2Mode()) {
-    if (csvImages.length === 0) {
-      console.warn(
-        `⚠️  Warning: Service "${serviceId}" has no images specified in CSV/Sheets.\n` +
-        `   In R2 mode, images must be listed in the images column.`
-      );
+    // If R2 API is configured, auto-detect from R2
+    if (isR2ApiConfigured()) {
+      try {
+        const imageFiles = await listServiceImages(serviceId);
+
+        if (imageFiles.length > 0) {
+          const heroImage = csvHeroImage || (imageFiles.length > 0 ? imageFiles[0] : undefined);
+          return { images: imageFiles, heroImage };
+        } else {
+          // No images found in R2 for this service
+          return { images: [], heroImage: undefined };
+        }
+      } catch (error) {
+        console.warn(
+          `⚠️  Warning: Could not auto-detect images from R2 for service "${serviceId}".\n` +
+          `   Error: ${error instanceof Error ? error.message : error}\n` +
+          `   Falling back to CSV-only mode.`
+        );
+        return { images: [], heroImage: undefined };
+      }
+    } else {
+      // R2 mode but no API credentials - require CSV listing
+      if (csvImages.length === 0) {
+        console.warn(
+          `⚠️  Warning: Service "${serviceId}" has no images specified in CSV/Sheets.\n` +
+          `   In R2 mode without API credentials, images must be listed in the images column.\n` +
+          `   To enable auto-detection, set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, and R2_SECRET_ACCESS_KEY.`
+        );
+      }
+      return { images: [], heroImage: undefined };
     }
-    return { images: [], heroImage: undefined };
   }
 
   // Local mode: scan filesystem for images
