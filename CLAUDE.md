@@ -27,7 +27,7 @@ Professional website for **NS Engineering & Geotechnical Services Pvt. Ltd. (NSE
 ### ✅ Completed Features
 
 **Content Management System**:
-- Google Sheets integration (14/14 sheets connected)
+- Google Sheets integration (18/18 sheets connected)
 - Automated CSV export for version control
 - Dual build modes (Local/Cloud)
 - Automatic fallback system
@@ -36,7 +36,7 @@ Professional website for **NS Engineering & Geotechnical Services Pvt. Ltd. (NSE
 - Interactive project map with 49 projects
 - Photo galleries with Embla carousel
 - Evolution timeline (2015-2025)
-- eLibrary with search and filtering
+- eLibrary with 5 specialized sections (standards, publications, curated papers, downloads, newsletters)
 - FAQ page (20 questions)
 - Careers portal
 - Service catalog (17 services)
@@ -112,7 +112,7 @@ git commit -m "Content sync"  # Version control
 git push                      # Deploy
 ```
 
-### 14 Integrated Sheets
+### 18 Integrated Sheets
 
 | Sheet Tab | CSV File | Content |
 |-----------|----------|---------|
@@ -120,8 +120,12 @@ git push                      # Deploy
 | HomepageHeroCarousel | `content/homepage_hero/hero_carousel.csv` | Hero images |
 | HomepageHeroMilestones | `content/homepage_hero/milestones.csv` | Timeline |
 | Team | `content/team/team.csv` | 5 members |
-| ElibraryDocuments | `content/elibrary/documents.csv` | 12 docs |
-| ElibrarySections | `content/elibrary/sections.csv` | 3 sections |
+| StandardCodes | `content/elibrary/standard-codes.csv` | Standard codes (external links) |
+| Publications | `content/elibrary/publications.csv` | Technical papers (internal PDFs) |
+| CuratedPapers | `content/elibrary/curated-papers.csv` | Research papers (external links) |
+| Downloads | `content/elibrary/downloads.csv` | Company materials |
+| Newsletters | `content/elibrary/newsletters.csv` | Quarterly newsletters |
+| ElibrarySections | `content/elibrary/sections.csv` | 5 eLibrary sections |
 | ProjectCategories | `content/categories/categories.csv` | 5 categories |
 | ServiceCategories | `content/services/service-categories.csv` | 6 categories |
 | Services | `content/services/services.csv` | 17 services |
@@ -184,7 +188,7 @@ GOOGLE_APPLICATION_CREDENTIALS=./google-credentials.json
 **Projects**: Edit Google Sheet → Developer syncs weekly
 **Services**: Update `content/services/services.csv` or Sheets
 **Team**: Update `content/team/team.csv` or Sheets
-**eLibrary**: Update `content/elibrary/documents.csv` or Sheets
+**eLibrary**: Update respective CSV files or Sheets (5 sections: standard-codes, publications, curated-papers, downloads, newsletters)
 **Alumni**: Update `content/alumni/alumni.csv` or Sheets
 **FAQ**: Update `content/faq/faq.csv` or Sheets
 **Careers**: Edit `src/data/careers.ts` (data-driven, no CSV)
@@ -417,6 +421,6 @@ npx serve@latest out          # Test build locally
 
 ---
 
-**Version**: 1.0.0
+**Version**: 2.0.0
 **Status**: Production Ready ✅
-**Last Updated**: 2024-12-17
+**Last Updated**: 2024-12-24

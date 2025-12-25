@@ -80,7 +80,7 @@ export default function EvolutionTimeline() {
       {/* Tagline at top */}
       <div className="absolute top-0 left-0 right-0 z-20 pt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center">
+          <h1 className="text-3xl sm:text-3xl md:text-4xl font-bold text-center">
             <span className="text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
               Constantly Evolving,
             </span>{' '}

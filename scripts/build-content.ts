@@ -4,11 +4,19 @@ import path from 'path';
 import fs from 'fs-extra';
 import { fetchDataWithFallback } from './parsers/data-source.js';
 import { parseProjectsFromSource, extractCategories } from './parsers/project-parser.js';
-import { validateAllMedia, copyProjectMedia, validateAllELibraryFiles, copyELibraryFiles } from './parsers/validate-media.js';
+import { validateAllMedia, copyProjectMedia } from './parsers/validate-media.js';
 import { parseHeroCarousel, copyHeroImages } from './parsers/hero-carousel-parser.js';
 import { parseMilestones, copyMilestoneImages } from './parsers/milestone-parser.js';
 import { parseTeam, copyTeamImages } from './parsers/team-parser.js';
-import { parseELibraryDocuments, extractSectionCounts, loadSectionMetadata } from './parsers/elibrary-parser.js';
+import {
+  parseStandardCodes,
+  parsePublications,
+  parseCuratedPapers,
+  parseDownloads,
+  parseNewsletters,
+  extractSectionCounts,
+  loadSectionMetadata
+} from './parsers/elibrary-parser.js';
 import { parseServices } from './parsers/services-parser.js';
 import { buildAlumni } from './parsers/alumni-parser.js';
 import { buildFAQs } from './parsers/faq-parser.js';
@@ -22,7 +30,11 @@ const CATEGORIES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generate
 const HERO_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'hero-carousel.json');
 const MILESTONES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'milestones.json');
 const TEAM_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'team.json');
-const ELIBRARY_CSV_PATH = path.join(process.cwd(), 'content', 'elibrary', 'documents.csv');
+const STANDARD_CODES_CSV_PATH = path.join(process.cwd(), 'content', 'elibrary', 'standard-codes.csv');
+const PUBLICATIONS_CSV_PATH = path.join(process.cwd(), 'content', 'elibrary', 'publications.csv');
+const CURATED_PAPERS_CSV_PATH = path.join(process.cwd(), 'content', 'elibrary', 'curated-papers.csv');
+const DOWNLOADS_CSV_PATH = path.join(process.cwd(), 'content', 'elibrary', 'downloads.csv');
+const NEWSLETTERS_CSV_PATH = path.join(process.cwd(), 'content', 'elibrary', 'newsletters.csv');
 const ELIBRARY_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'elibrary.json');
 const COMPANY_INFO_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'company-info.json');
 const ROTATING_METRICS_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'rotating-metrics.json');
@@ -161,36 +173,79 @@ async function buildContent() {
     await fs.writeJSON(TEAM_OUTPUT_PATH, team, { spaces: 2 });
     console.log(`✅ Generated: ${path.relative(process.cwd(), TEAM_OUTPUT_PATH)}`);
 
-    // Step 14: Parse eLibrary data (Sheets or CSV)
+    // Step 14: Parse eLibrary data (5 sections with Sheets or CSV fallback)
     console.log('\n📚 Building eLibrary...');
-    const elibraryRecords = await fetchDataWithFallback(
-      ELIBRARY_CSV_PATH,
-      'ElibraryDocuments',
-      'GOOGLE_SHEET_TAB_ELIBRARY'
-    );
-    console.log(`   Found ${elibraryRecords.length} documents`);
 
-    const elibraryDocs = await parseELibraryDocuments(elibraryRecords);
+    // Fetch all 5 section CSVs
+    const standardCodesRecords = await fetchDataWithFallback(
+      STANDARD_CODES_CSV_PATH,
+      'StandardCodes',
+      'GOOGLE_SHEET_TAB_STANDARD_CODES'
+    );
+    const publicationsRecords = await fetchDataWithFallback(
+      PUBLICATIONS_CSV_PATH,
+      'Publications',
+      'GOOGLE_SHEET_TAB_PUBLICATIONS'
+    );
+    const curatedPapersRecords = await fetchDataWithFallback(
+      CURATED_PAPERS_CSV_PATH,
+      'CuratedPapers',
+      'GOOGLE_SHEET_TAB_CURATED_PAPERS'
+    );
+    const downloadsRecords = await fetchDataWithFallback(
+      DOWNLOADS_CSV_PATH,
+      'Downloads',
+      'GOOGLE_SHEET_TAB_DOWNLOADS'
+    );
+    const newslettersRecords = await fetchDataWithFallback(
+      NEWSLETTERS_CSV_PATH,
+      'Newsletters',
+      'GOOGLE_SHEET_TAB_NEWSLETTERS'
+    );
+
+    // Parse each section
+    const standardCodes = await parseStandardCodes(standardCodesRecords);
+    const publications = await parsePublications(publicationsRecords);
+    const curatedPapers = await parseCuratedPapers(curatedPapersRecords);
+    const downloads = await parseDownloads(downloadsRecords);
+    const newsletters = await parseNewsletters(newslettersRecords);
+
     console.log();
 
-    // Step 15: Validate and copy eLibrary files
-    await validateAllELibraryFiles(elibraryDocs);
-    await copyELibraryFiles(elibraryDocs);
-
-    // Step 16: Generate eLibrary JSON
-    console.log('\n💾 Generating eLibrary JSON...');
-
-    const sectionCounts = extractSectionCounts(elibraryDocs);
+    // Step 15: Load section metadata
     const sectionMetadata = await loadSectionMetadata();
 
+    // Step 16: Calculate section counts
+    const sectionCounts = extractSectionCounts(
+      standardCodes,
+      publications,
+      curatedPapers,
+      downloads,
+      newsletters
+    );
+
+    // Step 17: Generate eLibrary JSON
+    console.log('\n💾 Generating eLibrary JSON...');
+
+    const totalDocuments =
+      standardCodes.length +
+      publications.length +
+      curatedPapers.length +
+      downloads.length +
+      newsletters.length;
+
     const elibraryOutput = {
-      documents: elibraryDocs,
+      standardCodes,
+      publications,
+      curatedPapers,
+      downloads,
+      newsletters,
       sections: sectionCounts,
       sectionInfo: sectionMetadata,
       metadata: {
-        totalDocuments: elibraryDocs.length,
+        totalDocuments,
         lastUpdated: new Date().toISOString(),
-        buildVersion: '1.0.0'
+        buildVersion: '2.0.0'
       }
     };
 
@@ -200,14 +255,21 @@ async function buildContent() {
 
     // eLibrary summary
     console.log('\n📊 eLibrary Summary:');
-    console.log(`   Total documents: ${elibraryDocs.length}`);
+    console.log(`   Total items: ${totalDocuments}`);
     console.log(`   Sections:`);
     for (const [sectionId, count] of Object.entries(sectionCounts)) {
       const sectionInfo = sectionMetadata.find(s => s.id === sectionId);
       const label = sectionInfo?.label || sectionId;
-      console.log(`      ${label} (${sectionId}): ${count}`);
+      console.log(`      ${label}: ${count}`);
     }
-    console.log(`   Featured documents: ${elibraryDocs.filter(d => d.featured).length}`);
+    const allFeatured = [
+      ...standardCodes.filter(i => i.featured),
+      ...publications.filter(i => i.featured),
+      ...curatedPapers.filter(i => i.featured),
+      ...downloads.filter(i => i.featured),
+      ...newsletters.filter(i => i.featured)
+    ];
+    console.log(`   Featured items: ${allFeatured.length}`);
 
     // Step 17: Parse services
     console.log('\n🔧 Building services catalog...');

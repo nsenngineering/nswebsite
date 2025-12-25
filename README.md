@@ -15,13 +15,13 @@ Professional website for NS Engineering & Geotechnical Services Pvt. Ltd., a lea
 - **Project Portfolio** - 49+ projects with filterable gallery and photo carousels
 - **Interactive Map** - Leaflet map with GPS locations, marker clustering, and detailed popups
 - **Evolution Timeline** - Company history from 2015-2025 with milestone showcase
-- **eLibrary** - Technical documents (standards, publications, newsletters) with search
+- **eLibrary** - 5 specialized sections (standard codes, publications, curated papers, downloads, newsletters) with search and reading pane
 - **FAQ System** - 20+ questions with accordion interface and category filtering
 - **Careers Portal** - Job listings with benefits showcase and application system
 - **Contact/RFQ Form** - Multi-step request for quotation with validation
 
 ### Content Management
-- **Google Sheets Integration** - Team edits content in familiar spreadsheet interface
+- **Google Sheets Integration** - 18 integrated sheets for all content types
 - **CSV Version Control** - Git tracks all changes with professional audit trail
 - **Dual Build Modes** - Local (CSV) and Cloud (Google Sheets) build options
 - **Automatic Fallback** - Builds succeed even if Sheets API fails
@@ -149,7 +149,7 @@ ns-engineering-website/
 │   ├── projects/              # Project data + images
 │   ├── homepage_hero/         # Hero carousel + milestones
 │   ├── team/                  # Team member data
-│   ├── elibrary/              # Documents + sections
+│   ├── elibrary/              # eLibrary (5 sections + metadata)
 │   ├── services/              # Service catalog
 │   └── categories/            # Category definitions
 │
@@ -364,12 +364,13 @@ See [Documentation](./docs/README.md) for more help.
 
 ## 📊 Project Status
 
-- ✅ **Core Features**: Complete (Projects, Services, eLibrary, FAQ, Careers)
-- ✅ **Google Sheets Integration**: Complete (9/9 sheets)
+- ✅ **Core Features**: Complete (Projects, Services, eLibrary v2.0, FAQ, Careers)
+- ✅ **Google Sheets Integration**: Complete (18/18 sheets)
 - ✅ **CSV Version Control**: Complete
 - ✅ **Interactive Map**: Complete with clustering
 - ✅ **Photo Galleries**: Complete with carousels
 - ✅ **Evolution Timeline**: Complete
+- ✅ **eLibrary Restructure**: Complete (5 specialized sections)
 - 🔄 **Cloudflare R2**: Planned for Phase 2
 - 🔄 **Automated Sync**: Planned for Phase 2
 
@@ -400,6 +401,6 @@ See [Documentation](./docs/README.md) for more help.
 
 ---
 
-**Last Updated**: 2024-12-17
-**Version**: 1.0.0
+**Last Updated**: 2024-12-24
+**Version**: 2.0.0
 **Status**: Production Ready 🚀

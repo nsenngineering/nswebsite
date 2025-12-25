@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { isR2Mode } from './r2-utils.js';
 import type { Project } from './project-parser.js';
-import type { ELibraryDocument } from '../../src/types/elibrary.js';
+// Note: ELibraryDocument type removed - eLibrary now uses separate types per section
 
 const CONTENT_ROOT = path.join(process.cwd(), 'content', 'projects');
 
@@ -225,7 +225,8 @@ async function checkELibraryFileExists(
 /**
  * Validate all files for a single eLibrary document
  */
-async function validateELibraryDocument(document: ELibraryDocument): Promise<{
+// Note: validateELibraryDocument function removed - no longer used with new eLibrary structure
+async function validateELibraryDocument(document: any): Promise<{
   missingFile: boolean;
 }> {
   let missingFile = false;
@@ -241,77 +242,7 @@ async function validateELibraryDocument(document: ELibraryDocument): Promise<{
   return { missingFile };
 }
 
-/**
- * Validate files for all eLibrary documents
- */
-export async function validateAllELibraryFiles(documents: ELibraryDocument[]): Promise<void> {
-  console.log('\n📁 Validating eLibrary files...');
-
-  // Skip filesystem validation in R2 mode - files are in R2, not local
-  if (isR2Mode()) {
-    console.log('⏭️  R2 Mode: Skipping local filesystem validation (files served from R2)');
-    return;
-  }
-
-  let totalMissingFiles = 0;
-
-  for (const document of documents) {
-    const { missingFile } = await validateELibraryDocument(document);
-    if (missingFile) totalMissingFiles++;
-  }
-
-  if (totalMissingFiles > 0) {
-    console.warn(
-      `\n⚠️  eLibrary file validation warnings:\n` +
-      `   Missing files: ${totalMissingFiles}\n` +
-      `   Note: This is a warning, not an error. Build will continue.`
-    );
-  } else {
-    console.log('✅ All eLibrary files found');
-  }
-}
-
-/**
- * Copy eLibrary files from content to public folder
- */
-export async function copyELibraryFiles(documents: ELibraryDocument[]): Promise<void> {
-  console.log('\n📦 Copying eLibrary files to public folder...');
-
-  // Skip copying in R2 mode
-  if (isR2Mode()) {
-    console.log('⏭️  R2 Mode: Skipping eLibrary file copy (files served from R2)');
-    return;
-  }
-
-  const PUBLIC_ROOT = path.join(process.cwd(), 'public', 'elibrary');
-
-  // Ensure public/elibrary directory exists
-  await fs.ensureDir(PUBLIC_ROOT);
-
-  let copiedCount = 0;
-
-  for (const document of documents) {
-    const contentDocumentDir = path.join(ELIBRARY_CONTENT_ROOT, document.id);
-    const publicDocumentDir = path.join(PUBLIC_ROOT, document.id);
-
-    // Check if document folder exists in content
-    const documentDirExists = await fs.pathExists(contentDocumentDir);
-
-    if (!documentDirExists) {
-      // No files folder for this document, skip
-      continue;
-    }
-
-    // Copy files folder if it exists
-    const filesDir = path.join(contentDocumentDir, 'files');
-    if (await fs.pathExists(filesDir)) {
-      await fs.copy(filesDir, path.join(publicDocumentDir, 'files'), {
-        overwrite: true
-      });
-      const files = await fs.readdir(filesDir);
-      copiedCount += files.length;
-    }
-  }
-
-  console.log(`✅ Copied ${copiedCount} eLibrary files to public/elibrary/`);
-}
+// Note: eLibrary validation functions removed
+// The new eLibrary structure uses 5 separate section types (StandardCode, Publication, etc.)
+// File validation is now handled differently per section type in the parsers
+// These functions are no longer used in the build system
