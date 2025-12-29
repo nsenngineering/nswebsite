@@ -32,13 +32,12 @@ const HeroSection: React.FC = () => {
 
           {/* Headline - changed to h2 since h1 is now in carousel */}
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6">
-            Leading Geotechnical Services in Nepal
+            Leading Geotechnical Service Provider in Nepal
           </h2>
 
           {/* Description */}
           <p className="text-lg md:text-xl text-purple-100 mb-8 leading-relaxed max-w-3xl mx-auto">
-            Advanced provider of geotechnical investigation, in-situ & laboratory testing services.
-            Delivering reliable results with state-of-the-art equipment and experienced professionals.
+            We offer advanced  geotechnical investigation services, in-situ & laboratory testing servicesby delivering reliable results with state-of-the-art equipment and experienced professionals.
           </p>
 
           {/* CTAs */}
