@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Script from 'next/script';
 import {
   Mail,
   Phone,
@@ -13,13 +14,17 @@ import {
   Clock,
   Building2,
   User,
-  MessageSquare
+  MessageSquare,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import FadeIn from '@/components/animations/FadeIn';
+import { ToastContainer } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
+import { sendQuotationRequest, validateQuotationForm } from '@/lib/emailService';
 
 interface FormData {
   // Step 1: Service Selection
@@ -59,6 +64,30 @@ export default function ContactPage() {
     company: '',
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | undefined>();
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const { toasts, removeToast, success, error } = useToast();
+
+  // Setup Turnstile callback and handle widget rendering
+  useEffect(() => {
+    // Setup global callback for Turnstile
+    (window as any).onTurnstileSuccess = (token: string) => {
+      setTurnstileToken(token);
+    };
+
+    // Reset Turnstile widget if navigating away from Step 3
+    return () => {
+      if (currentStep !== 3 && (window as any).turnstile) {
+        // Clean up Turnstile widget when leaving Step 3
+        try {
+          (window as any).turnstile.reset();
+        } catch (e) {
+          // Turnstile might not be loaded yet
+        }
+      }
+    };
+  }, [currentStep]);
 
   const updateFormData = (field: keyof FormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -86,9 +115,41 @@ export default function ContactPage() {
     }
   };
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData);
-    setIsSubmitted(true);
+  const handleSubmit = async () => {
+    // Validate form data
+    const validation = validateQuotationForm(formData);
+    if (!validation.isValid) {
+      validation.errors.forEach((err) => error(err));
+      return;
+    }
+
+    // Check Turnstile token
+    if (!turnstileToken) {
+      error('Please complete the security verification');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Send email via Cloudflare Worker with Turnstile token
+      const response = await sendQuotationRequest(
+        formData,
+        turnstileToken
+      );
+
+      if (response.success) {
+        success('Quotation request sent successfully!');
+        setIsSubmitted(true);
+      } else {
+        error(response.error || 'Failed to send quotation request. Please try again.');
+      }
+    } catch (err) {
+      console.error('Submission error:', err);
+      error('An unexpected error occurred. Please try again or contact us directly.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const nextStep = () => {
@@ -99,6 +160,10 @@ export default function ContactPage() {
 
   const prevStep = () => {
     if (currentStep > 1) {
+      // Reset Turnstile token if navigating back from Step 3
+      if (currentStep === 3 && turnstileToken) {
+        setTurnstileToken(undefined);
+      }
       setCurrentStep(currentStep - 1);
     }
   };
@@ -459,6 +524,25 @@ export default function ContactPage() {
                             onChange={(e) => updateFormData('company', e.target.value)}
                           />
                         </div>
+
+                        {/* Cloudflare Turnstile - Security Verification */}
+                        <div className="pt-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-3">
+                            Security Verification *
+                          </label>
+                          <div
+                            ref={turnstileRef}
+                            className="cf-turnstile"
+                            data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                            data-callback="onTurnstileSuccess"
+                            data-theme="light"
+                          />
+                          {!turnstileToken && currentStep === 3 && (
+                            <p className="text-sm text-gray-500 mt-2">
+                              Please complete the security check above to submit your request
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </motion.div>
                   )}
@@ -469,7 +553,7 @@ export default function ContactPage() {
                   <Button
                     variant="outline"
                     onClick={prevStep}
-                    disabled={currentStep === 1}
+                    disabled={currentStep === 1 || isSubmitting}
                     className="disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="w-4 h-4 mr-2" />
@@ -488,11 +572,20 @@ export default function ContactPage() {
                   ) : (
                     <Button
                       onClick={handleSubmit}
-                      disabled={!canProceed(currentStep)}
+                      disabled={!canProceed(currentStep) || isSubmitting}
                       className="disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Submit Request
-                      <Send className="w-4 h-4 ml-2" />
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          Submit Request
+                          <Send className="w-4 h-4 ml-2" />
+                        </>
+                      )}
                     </Button>
                   )}
                 </div>
@@ -501,6 +594,15 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
+
+      {/* Cloudflare Turnstile Script */}
+      <Script
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+        strategy="lazyOnload"
+      />
     </div>
   );
 }
