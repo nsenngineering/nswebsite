@@ -115,7 +115,11 @@ npm run build:cloud
 | Hero Carousel | `HomepageHeroCarousel` | `content/homepage_hero/hero_carousel.csv` |
 | Milestones | `HomepageHeroMilestones` | `content/homepage_hero/milestones.csv` |
 | Team | `Team` | `content/team/team.csv` |
-| eLibrary Docs | `ElibraryDocuments` | `content/elibrary/documents.csv` |
+| eLibrary - Standard Codes | `StandardCodes` | `content/elibrary/standard-codes.csv` |
+| eLibrary - Publications | `Publications` | `content/elibrary/publications.csv` |
+| eLibrary - Curated Papers | `CuratedPapers` | `content/elibrary/curated-papers.csv` |
+| eLibrary - Downloads | `Downloads` | `content/elibrary/downloads.csv` |
+| eLibrary - Newsletters | `Newsletters` | `content/elibrary/newsletters.csv` |
 | eLibrary Sections | `ElibrarySections` | `content/elibrary/sections.csv` |
 | Categories | `ProjectCategories` | `content/categories/categories.csv` |
 | Service Categories | `ServiceCategories` | `content/services/service-categories.csv` |
@@ -186,5 +190,5 @@ For questions or issues:
 
 ---
 
-**Last Updated**: 2024-12-17
+**Last Updated**: 2024-12-24
 **Maintained By**: Development Team

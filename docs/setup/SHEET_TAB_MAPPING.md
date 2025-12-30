@@ -8,7 +8,11 @@
 | `content/homepage_hero/hero_carousel.csv` | **HomepageHeroCarousel** |
 | `content/homepage_hero/milestones.csv` | **HomepageHeroMilestones** |
 | `content/team/team.csv` | **Team** |
-| `content/elibrary/documents.csv` | **ElibraryDocuments** |
+| `content/elibrary/standard-codes.csv` | **StandardCodes** |
+| `content/elibrary/publications.csv` | **Publications** |
+| `content/elibrary/curated-papers.csv` | **CuratedPapers** |
+| `content/elibrary/downloads.csv` | **Downloads** |
+| `content/elibrary/newsletters.csv` | **Newsletters** |
 | `content/elibrary/sections.csv` | **ElibrarySections** |
 | `content/categories/categories.csv` | **ProjectCategories** |
 | `content/services/service-categories.csv` | **ServiceCategories** |
@@ -27,7 +31,11 @@ The default tab names are now hardcoded in the parsers:
 - **HomepageHeroCarousel** → `scripts/parsers/hero-carousel-parser.ts`
 - **HomepageHeroMilestones** → `scripts/parsers/milestone-parser.ts`
 - **Team** → `scripts/parsers/team-parser.ts`
-- **ElibraryDocuments** → `scripts/build-content.ts` + `scripts/parsers/elibrary-parser.ts`
+- **StandardCodes** → `scripts/parsers/elibrary-parser.ts`
+- **Publications** → `scripts/parsers/elibrary-parser.ts`
+- **CuratedPapers** → `scripts/parsers/elibrary-parser.ts`
+- **Downloads** → `scripts/parsers/elibrary-parser.ts`
+- **Newsletters** → `scripts/parsers/elibrary-parser.ts`
 - **ElibrarySections** → `scripts/parsers/elibrary-parser.ts`
 - **ProjectCategories** → `scripts/parsers/category-parser.ts`
 - **ServiceCategories** → `scripts/parsers/services-parser.ts`
@@ -51,7 +59,11 @@ npm run build:content:cloud
 📊 Fetching data from Google Sheets tab: "HomepageHeroCarousel"
 📊 Fetching data from Google Sheets tab: "HomepageHeroMilestones"
 📊 Fetching data from Google Sheets tab: "Team"
-📊 Fetching data from Google Sheets tab: "ElibraryDocuments"
+📊 Fetching data from Google Sheets tab: "StandardCodes"
+📊 Fetching data from Google Sheets tab: "Publications"
+📊 Fetching data from Google Sheets tab: "CuratedPapers"
+📊 Fetching data from Google Sheets tab: "Downloads"
+📊 Fetching data from Google Sheets tab: "Newsletters"
 📊 Fetching data from Google Sheets tab: "ElibrarySections"
 📊 Fetching data from Google Sheets tab: "ProjectCategories"
 📊 Fetching data from Google Sheets tab: "ServiceCategories"

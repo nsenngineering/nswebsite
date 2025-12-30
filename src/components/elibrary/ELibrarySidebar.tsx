@@ -1,14 +1,13 @@
 'use client';
 
-import { Search, FileText, BookOpen, Newspaper } from 'lucide-react';
+import { Search, FileText, BookOpen, Newspaper, Lightbulb, Download } from 'lucide-react';
 import type { ELibrarySection, ELibrarySectionInfo } from '@/types/elibrary';
 
 interface ELibrarySidebarProps {
   sections: ELibrarySectionInfo[];
-  activeSection: ELibrarySection | 'all';
-  onSectionChange: (section: ELibrarySection | 'all') => void;
+  activeSection: ELibrarySection;
+  onSectionChange: (section: ELibrarySection) => void;
   documentCounts: Record<string, number>;
-  totalDocuments: number;
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }
@@ -17,6 +16,8 @@ const iconMap: Record<string, React.ElementType> = {
   FileText,
   BookOpen,
   Newspaper,
+  Lightbulb,
+  Download,
 };
 
 export default function ELibrarySidebar({
@@ -24,7 +25,6 @@ export default function ELibrarySidebar({
   activeSection,
   onSectionChange,
   documentCounts,
-  totalDocuments,
   searchQuery,
   onSearchChange,
 }: ELibrarySidebarProps) {
@@ -46,35 +46,6 @@ export default function ELibrarySidebar({
 
       {/* Section List */}
       <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-        {/* All Documents */}
-        <button
-          onClick={() => onSectionChange('all')}
-          className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
-            activeSection === 'all'
-              ? 'bg-blue-50 text-blue-700 font-medium'
-              : 'text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            <FileText className="w-5 h-5" />
-            <span>All Documents</span>
-          </div>
-          <span
-            className={`px-2 py-0.5 text-xs rounded-full ${
-              activeSection === 'all'
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            {totalDocuments}
-          </span>
-        </button>
-
-        {/* Divider */}
-        <div className="py-2">
-          <div className="h-px bg-gray-200" />
-        </div>
-
         {/* Section Buttons */}
         {sections
           .sort((a, b) => a.order - b.order)
@@ -112,21 +83,19 @@ export default function ELibrarySidebar({
           })}
       </nav>
 
-      {/* Section Descriptions (shown on desktop only) */}
-      {activeSection !== 'all' && (
-        <div className="hidden lg:block p-4 border-t border-gray-200 bg-gray-50">
-          {sections
-            .filter((s) => s.id === activeSection)
-            .map((section) => (
-              <div key={section.id}>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                  {section.label}
-                </h3>
-                <p className="text-xs text-gray-600">{section.description}</p>
-              </div>
-            ))}
-        </div>
-      )}
+      {/* Section Description (shown on desktop only) */}
+      <div className="hidden lg:block p-4 border-t border-gray-200 bg-gray-50">
+        {sections
+          .filter((s) => s.id === activeSection)
+          .map((section) => (
+            <div key={section.id}>
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                {section.label}
+              </h3>
+              <p className="text-xs text-gray-600">{section.description}</p>
+            </div>
+          ))}
+      </div>
     </aside>
   );
 }

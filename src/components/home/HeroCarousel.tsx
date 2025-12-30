@@ -121,18 +121,22 @@ export default function HeroCarousel() {
             </motion.div>
 
             {/* Dot Indicators */}
-            <div className="flex gap-2 flex-shrink-0">
+            <div className="flex gap-1 flex-shrink-0">
               {images.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => scrollTo(index)}
-                  className={`transition-all focus:outline-none focus:ring-2 focus:ring-white ${index === currentSlide
-                    ? 'bg-white w-8 h-3 rounded-full'
-                    : 'bg-white/50 hover:bg-white/75 w-3 h-3 rounded-full'
-                    }`}
+                  className="p-2 transition-all focus:outline-none focus:ring-2 focus:ring-white rounded-full"
                   aria-label={`Go to slide ${index + 1}`}
                   aria-current={index === currentSlide ? 'true' : 'false'}
-                />
+                >
+                  <div
+                    className={`transition-all ${index === currentSlide
+                      ? 'bg-white w-8 h-3 rounded-full'
+                      : 'bg-white/50 hover:bg-white/75 w-3 h-3 rounded-full'
+                      }`}
+                  />
+                </button>
               ))}
             </div>
 

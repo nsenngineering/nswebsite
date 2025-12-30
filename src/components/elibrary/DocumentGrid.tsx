@@ -1,19 +1,28 @@
 'use client';
 
-import { Calendar, Tag, Download, FileText, User } from 'lucide-react';
-import type { ELibraryDocument } from '@/types/elibrary';
+import { Calendar, Tag, Download, FileText, User, ExternalLink, Building2, Globe } from 'lucide-react';
+import type { ELibraryItem } from '@/types/elibrary';
+import {
+  isStandardCode,
+  isPublication,
+  isCuratedPaper,
+  isDownload,
+  isNewsletter,
+} from '@/types/elibrary';
 
 interface DocumentGridProps {
-  documents: ELibraryDocument[];
+  items: ELibraryItem[];
+  onItemClick: (item: ELibraryItem) => void;
+  selectedItemId?: string;
 }
 
-export default function DocumentGrid({ documents }: DocumentGridProps) {
-  if (documents.length === 0) {
+export default function DocumentGrid({ items, onItemClick, selectedItemId }: DocumentGridProps) {
+  if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[500px] p-8 text-center bg-white border border-gray-200 rounded-lg">
         <FileText className="w-16 h-16 text-gray-300 mb-4" />
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          No documents found
+          No items found
         </h3>
         <p className="text-sm text-gray-500 max-w-sm">
           Try adjusting your search or filter to find what you're looking for.
@@ -24,106 +33,264 @@ export default function DocumentGrid({ documents }: DocumentGridProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {documents.map((doc) => (
-        <div
-          key={doc.id}
-          className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
-        >
-          {/* Document Header */}
-          <div className="p-6 border-b border-gray-100">
-            {/* Featured Badge */}
-            {doc.featured && (
-              <span className="inline-block mb-2 px-3 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 rounded-full">
-                Featured
-              </span>
-            )}
+      {items.map((item) => {
+        const isSelected = selectedItemId === item.id;
 
-            {/* Title */}
-            <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
-              {doc.title}
-            </h3>
-
-            {/* Metadata Row */}
-            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-              {/* Date */}
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" />
-                <span>
-                  {new Date(doc.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })}
+        return (
+          <div
+            key={item.id}
+            onClick={() => onItemClick(item)}
+            className={`bg-white border rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden ${
+              isSelected ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-200'
+            }`}
+          >
+            {/* Card Header */}
+            <div className="p-6 border-b border-gray-100">
+              {/* Featured Badge */}
+              {item.featured && (
+                <span className="inline-block mb-2 px-3 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 rounded-full">
+                  Featured
                 </span>
-              </div>
-
-              {/* Author */}
-              {doc.author && (
-                <div className="flex items-center gap-1.5">
-                  <User className="w-4 h-4" />
-                  <span>{doc.author}</span>
-                </div>
               )}
 
-              {/* Category Badge */}
-              {doc.category && (
-                <div className="flex items-center gap-1.5">
-                  <Tag className="w-4 h-4" />
-                  <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
-                    {doc.category}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
+              {/* Title */}
+              <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+                {item.title}
+              </h3>
 
-          {/* Document Body */}
-          <div className="p-6 space-y-4">
-            {/* Summary */}
-            <p className="text-sm text-gray-700 line-clamp-3">
-              {doc.summary}
-            </p>
+              {/* Metadata Row - Section Specific */}
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                {isStandardCode(item) && (
+                  <>
+                    {/* Organization */}
+                    {item.organization && (
+                      <div className="flex items-center gap-1.5">
+                        <Building2 className="w-4 h-4" />
+                        <span>{item.organization}</span>
+                      </div>
+                    )}
+                    {/* Category */}
+                    {item.category && (
+                      <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
+                        {item.category}
+                      </span>
+                    )}
+                  </>
+                )}
 
-            {/* Content Preview */}
-            <p className="text-sm text-gray-600 line-clamp-4 leading-relaxed">
-              {doc.content}
-            </p>
+                {isPublication(item) && (
+                  <>
+                    {/* Date */}
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4" />
+                      <span>
+                        {new Date(item.publishDate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                        })}
+                      </span>
+                    </div>
+                    {/* Author */}
+                    {item.author && (
+                      <div className="flex items-center gap-1.5">
+                        <User className="w-4 h-4" />
+                        <span>{item.author}</span>
+                      </div>
+                    )}
+                    {/* Category */}
+                    {item.category && (
+                      <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
+                        {item.category}
+                      </span>
+                    )}
+                  </>
+                )}
 
-            {/* Tags */}
-            {doc.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 pt-2">
-                {doc.tags.slice(0, 5).map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded-md"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {doc.tags.length > 5 && (
-                  <span className="px-2 py-1 text-xs text-gray-500">
-                    +{doc.tags.length - 5} more
-                  </span>
+                {isCuratedPaper(item) && (
+                  <>
+                    {/* Source */}
+                    {item.source && (
+                      <div className="flex items-center gap-1.5">
+                        <Globe className="w-4 h-4" />
+                        <span>{item.source}</span>
+                      </div>
+                    )}
+                    {/* Category */}
+                    {item.category && (
+                      <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
+                        {item.category}
+                      </span>
+                    )}
+                  </>
+                )}
+
+                {isDownload(item) && (
+                  <>
+                    {/* File Type */}
+                    {item.fileType && (
+                      <div className="flex items-center gap-1.5">
+                        <FileText className="w-4 h-4" />
+                        <span>{item.fileType}</span>
+                      </div>
+                    )}
+                    {/* File Size */}
+                    {item.fileSize && (
+                      <span className="text-xs text-gray-500">{item.fileSize}</span>
+                    )}
+                    {/* Category */}
+                    {item.category && (
+                      <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
+                        {item.category}
+                      </span>
+                    )}
+                  </>
+                )}
+
+                {isNewsletter(item) && (
+                  <>
+                    {/* Date */}
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4" />
+                      <span>
+                        {new Date(item.publishDate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                        })}
+                      </span>
+                    </div>
+                    {/* Quarter Badge */}
+                    {item.quarter && (
+                      <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">
+                        {item.quarter}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
-            )}
-          </div>
-
-          {/* Document Footer */}
-          {doc.fileUrl && (
-            <div className="p-6 pt-0">
-              <a
-                href={doc.fileUrl}
-                download
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Download PDF
-              </a>
             </div>
-          )}
-        </div>
-      ))}
+
+            {/* Card Body */}
+            <div className="p-6 space-y-4">
+              {/* Description/Preview */}
+              {isPublication(item) && (
+                <p className="text-sm text-gray-700 line-clamp-3">
+                  {item.description}
+                </p>
+              )}
+
+              {isDownload(item) && item.description && (
+                <p className="text-sm text-gray-700 line-clamp-3">
+                  {item.description}
+                </p>
+              )}
+
+              {isNewsletter(item) && item.description && (
+                <p className="text-sm text-gray-700 line-clamp-3">
+                  {item.description}
+                </p>
+              )}
+
+              {isStandardCode(item) && (
+                <div className="flex items-center gap-2 text-sm text-blue-600">
+                  <ExternalLink className="w-4 h-4" />
+                  <span>View on {item.organization || 'Standards'} website</span>
+                </div>
+              )}
+
+              {isCuratedPaper(item) && (
+                <div className="flex items-center gap-2 text-sm text-blue-600">
+                  <ExternalLink className="w-4 h-4" />
+                  <span>Read full paper</span>
+                </div>
+              )}
+
+              {/* Tags */}
+              {item.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {item.tags.slice(0, 5).map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded-md"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                  {item.tags.length > 5 && (
+                    <span className="px-2 py-1 text-xs text-gray-500">
+                      +{item.tags.length - 5} more
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Card Footer - Action Button */}
+            <div className="p-6 pt-0">
+              {isStandardCode(item) && (
+                <a
+                  href={item.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  View Standard
+                </a>
+              )}
+
+              {isPublication(item) && (
+                <a
+                  href={item.fileUrl}
+                  download
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Download PDF
+                </a>
+              )}
+
+              {isCuratedPaper(item) && (
+                <a
+                  href={item.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Read Paper
+                </a>
+              )}
+
+              {isDownload(item) && (
+                <a
+                  href={item.fileUrl}
+                  download
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Download
+                </a>
+              )}
+
+              {isNewsletter(item) && (
+                <a
+                  href={item.fileUrl}
+                  download
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Download
+                </a>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

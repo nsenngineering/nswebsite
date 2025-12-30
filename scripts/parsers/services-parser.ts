@@ -124,7 +124,7 @@ async function autoDetectImages(
   // Check if directory exists
   const dirExists = await fs.pathExists(imagesDir);
   if (!dirExists) {
-    console.warn(`⚠️  No images directory found for service: ${serviceId}`);
+    // Silently return empty array (consistent with projects behavior)
     return { images: [], heroImage: undefined };
   }
 
