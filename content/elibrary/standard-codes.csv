@@ -1,5 +1,5 @@
-id,title,externalUrl,organization,category,tags,featured,dateAdded
-astm-d4945,ASTM D4945: Standard Test Method for High-Strain Dynamic Testing,https://www.astm.org/Standards/D4945.htm,ASTM International,Pile Testing,pile testing;standards;astm;dynamic testing,TRUE,2023-06-15
-iso-22477-1,ISO 22477-1: Geotechnical Investigation and Testing,https://www.iso.org/standard/57728.html,ISO,Pile Testing,pile testing;standards;iso;static testing,TRUE,2023-03-10
-bs-8004,BS 8004: Code of Practice for Foundations,https://shop.bsigroup.com/ProductDetail/?pid=000000000030380284,British Standards Institution,Foundation Design,foundations;standards;british standards;design,FALSE,2023-01-20
-astm-d1586,ASTM D1586: Standard Penetration Test (SPT) and Split-Barrel Sampling,https://www.astm.org/Standards/D1586.htm,ASTM International,In-Situ Testing,spt;standards;in-situ testing;astm,FALSE,2022-08-15
+"id","title","externalUrl","organization","category","tags","featured","dateAdded"
+"astm-d4945","ASTM D4945: Standard Test Method for High-Strain Dynamic Testing","https://www.astm.org/Standards/D4945.htm","ASTM International","Pile Testing","pile testing;standards;astm;dynamic testing","TRUE"," 2023-06-15"
+"iso-22477-1","ISO 22477-1: Geotechnical Investigation and Testing","https://www.iso.org/standard/57728.html","ISO","Pile Testing","pile testing;standards;iso;static testing","TRUE"," 2023-03-10"
+"bs-8004","BS 8004: Code of Practice for Foundations","https://shop.bsigroup.com/ProductDetail/?pid=000000000030380284","British Standards Institution","Foundation Design","foundations;standards;british standards;design","FALSE"," 2023-01-20"
+"astm-d1586","ASTM D1586: Standard Penetration Test (SPT) and Split-Barrel Sampling","https://www.astm.org/Standards/D1586.htm","ASTM International","In-Situ Testing","spt;standards;in-situ testing;astm","FALSE"," 2022-08-15"
