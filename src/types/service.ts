@@ -1,10 +1,9 @@
-export type ServiceCategory =
-  | 'pile-testing'
-  | 'soil-laboratory'
-  | 'rock-laboratory'
-  | 'drilling'
-  | 'geophysical'
-  | 'ndt';
+/**
+ * Service category ID (kebab-case)
+ * Categories are dynamically loaded from service-categories.csv
+ * Examples: 'pile-testing', 'soil-laboratory', 'material', etc.
+ */
+export type ServiceCategory = string;
 
 export interface Service {
   id: string;

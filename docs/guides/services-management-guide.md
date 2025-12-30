@@ -45,7 +45,7 @@ Contains individual service definitions.
 | Column | Required | Description | Example |
 |--------|----------|-------------|---------|
 | `id` | ✅ | Unique kebab-case identifier | `pda-testing` |
-| `category` | ✅ | Category ID (must exist in categories CSV) | `pile-testing` |
+| `category` | ✅ | Category ID (must exist in `service-categories.csv`) | `pile-testing` |
 | `name` | ✅ | Service display name | `Pile Driving Analyzer (PDA)` |
 | `shortDescription` | ✅ | One-line summary | `High-strain dynamic testing for pile capacity verification` |
 | `fullDescription` | ✅ | Detailed description (2-3 sentences) | `PDA testing provides real-time analysis...` |
@@ -57,12 +57,9 @@ Contains individual service definitions.
 | `diagram` | Optional | Optional diagram filename | `pda-process.svg` |
 
 **Valid Categories:**
-- `pile-testing`
-- `soil-laboratory`
-- `rock-laboratory`
-- `drilling`
-- `geophysical`
-- `ndt`
+- Categories are **dynamically loaded** from `service-categories.csv`
+- To add a new category, add it to `service-categories.csv` first
+- Common categories: `pile-testing`, `soil-laboratory`, `rock-laboratory`, `drilling`, `geophysical`, `ndt`, `material`
 
 **Valid Icon Names:**
 Common Lucide icons: `Hammer`, `Beaker`, `Box`, `Drill`, `Waves`, `Shield`, `Activity`, `BarChart`, `Triangle`, `Scissors`, `Filter`, `Gauge`, `Zap`, `Radio`, `Grid`, `Layers`, `TrendingUp`, `Map`
@@ -236,77 +233,53 @@ npm run build:content
 
 ## How to Add a New Service Category
 
+**Categories are now fully dynamic!** No code changes required.
+
 ### Step 1: Update `service-categories.csv`
 
-Add a new row:
+Open `content/services/service-categories.csv` and add a new row:
 
 ```csv
-new-category-id,New Category Name,Description of what this category covers,IconName
+material,Material Testing,Comprehensive material testing and quality control,TestTube
 ```
 
-### Step 2: Update Type Definitions
+**Columns:**
+- `id` - Kebab-case category identifier (e.g., `material`, `water-testing`)
+- `name` - Display name (e.g., `Material Testing`)
+- `description` - Brief description of the category
+- `icon` - Lucide icon name (e.g., `TestTube`, `FlaskConical`, `Microscope`)
 
-Edit `src/types/service.ts`:
-
-```typescript
-export type ServiceCategory =
-  | 'pile-testing'
-  | 'soil-laboratory'
-  | 'rock-laboratory'
-  | 'drilling'
-  | 'geophysical'
-  | 'ndt'
-  | 'new-category-id';  // Add your new category
-```
-
-### Step 3: Update Parser Validation
-
-Edit `scripts/parsers/services-parser.ts`:
-
-```typescript
-const VALID_CATEGORIES: ServiceCategory[] = [
-  'pile-testing',
-  'soil-laboratory',
-  'rock-laboratory',
-  'drilling',
-  'geophysical',
-  'ndt',
-  'new-category-id'  // Add here
-];
-```
-
-### Step 4: Update Services Page Styling
-
-Edit `src/app/services/page.tsx` - Add color mapping:
-
-```typescript
-const categoryColors: Record<string, string> = {
-  // ... existing colors ...
-  'new-category-id': 'from-purple-500 to-blue-700'
-};
-```
-
-### Step 5: Add Applications Data
-
-In the same file, add applications:
-
-```typescript
-const applicationsByCategory: Record<string, string[]> = {
-  // ... existing applications ...
-  'new-category-id': [
-    'Application 1',
-    'Application 2',
-    'Application 3'
-  ]
-};
-```
-
-### Step 6: Rebuild and Test
+### Step 2: Rebuild and Test
 
 ```bash
 npm run build:content
 npm run dev
 ```
+
+That's it! The build system will:
+- ✅ Automatically detect the new category
+- ✅ Validate services against available categories
+- ✅ Display helpful error messages if a service references a non-existent category
+
+**Example:** If you try to use a category that doesn't exist in `service-categories.csv`, you'll see:
+
+```
+❌ Invalid category "unknown-category" for service "test-service".
+   Available categories: drilling, geophysical, material, ndt, pile-testing, rock-laboratory, soil-laboratory
+```
+
+### Optional: Customize Category Styling
+
+If you want custom colors for your new category on the Services page, edit `src/app/services/page.tsx`:
+
+```typescript
+const categoryColors: Record<string, string> = {
+  // ... existing colors ...
+  'material': 'from-orange-500 to-red-700'  // Add custom gradient
+};
+```
+
+If not specified, the category will use default purple styling.
 
 ---
 
