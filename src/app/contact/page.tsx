@@ -69,24 +69,53 @@ export default function ContactPage() {
   const turnstileRef = useRef<HTMLDivElement>(null);
   const { toasts, removeToast, success, error } = useToast();
 
-  // Setup Turnstile callback and handle widget rendering
+  // Setup Turnstile callback
   useEffect(() => {
     // Setup global callback for Turnstile
     (window as any).onTurnstileSuccess = (token: string) => {
+      console.log('✅ Turnstile verified:', token);
       setTurnstileToken(token);
     };
+  }, []);
 
-    // Reset Turnstile widget if navigating away from Step 3
-    return () => {
-      if (currentStep !== 3 && (window as any).turnstile) {
-        // Clean up Turnstile widget when leaving Step 3
-        try {
-          (window as any).turnstile.reset();
-        } catch (e) {
-          // Turnstile might not be loaded yet
+  // Render Turnstile widget when reaching step 3
+  useEffect(() => {
+    if (currentStep === 3 && turnstileRef.current) {
+      // Wait for Turnstile script to load
+      const renderTurnstile = () => {
+        if ((window as any).turnstile && turnstileRef.current) {
+          try {
+            console.log('🔄 Rendering Turnstile widget...');
+            (window as any).turnstile.render(turnstileRef.current, {
+              sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+              callback: (token: string) => {
+                console.log('✅ Turnstile verified:', token);
+                setTurnstileToken(token);
+              },
+              theme: 'light',
+            });
+          } catch (e) {
+            console.error('❌ Turnstile render error:', e);
+          }
+        } else {
+          // Retry after script loads
+          setTimeout(renderTurnstile, 100);
         }
-      }
-    };
+      };
+
+      renderTurnstile();
+
+      // Cleanup
+      return () => {
+        if ((window as any).turnstile && turnstileRef.current) {
+          try {
+            (window as any).turnstile.remove(turnstileRef.current);
+          } catch (e) {
+            console.log('Turnstile cleanup skipped');
+          }
+        }
+      };
+    }
   }, [currentStep]);
 
   const updateFormData = (field: keyof FormData, value: any) => {
@@ -531,13 +560,8 @@ export default function ContactPage() {
                             Security Verification *
                           </label>
                           <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                            <div
-                              ref={turnstileRef}
-                              className="cf-turnstile min-h-[65px]"
-                              data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-                              data-callback="onTurnstileSuccess"
-                              data-theme="light"
-                            />
+                            {/* Turnstile will render here */}
+                            <div ref={turnstileRef} className="min-h-[65px]" />
                             {!turnstileToken && currentStep === 3 && (
                               <p className="text-sm text-gray-600 mt-3 flex items-center gap-2">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -555,18 +579,25 @@ export default function ContactPage() {
 
                 {/* Navigation Buttons */}
                 <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
-                  <Button
-                    variant="outline-dark"
-                    onClick={prevStep}
-                    disabled={currentStep === 1 || isSubmitting}
-                    className="disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft className="w-4 h-4 mr-2" />
-                    Previous
-                  </Button>
+                  {/* Only show Previous button after step 1 */}
+                  {currentStep > 1 && (
+                    <Button
+                      variant="purple"
+                      onClick={prevStep}
+                      disabled={isSubmitting}
+                      className="disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-2" />
+                      Previous
+                    </Button>
+                  )}
+
+                  {/* Spacer when Previous button is hidden */}
+                  {currentStep === 1 && <div />}
 
                   {currentStep < 3 ? (
                     <Button
+                      variant="purple"
                       onClick={nextStep}
                       disabled={!canProceed(currentStep)}
                       className="disabled:opacity-50 disabled:cursor-not-allowed"
@@ -576,6 +607,7 @@ export default function ContactPage() {
                     </Button>
                   ) : (
                     <Button
+                      variant="purple"
                       onClick={handleSubmit}
                       disabled={!canProceed(currentStep) || isSubmitting}
                       className="disabled:opacity-50 disabled:cursor-not-allowed"
