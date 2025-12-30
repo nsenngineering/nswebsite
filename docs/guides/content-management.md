@@ -51,7 +51,7 @@ The CSV file has these columns:
 | `id` | ✅ Yes | Unique project identifier (lowercase, use dashes) | `ktft-fast-track` |
 | `title` | ✅ Yes | Project name (displayed on website) | `KTFT Project (Fast Track)` |
 | `client` | ✅ Yes | Client/company name | `Kumar-Roshan-Sichuwan JV` |
-| `category` | ✅ Yes | Type: `pile-testing`, `tunnel-road`, `hydropower`, `transmission`, or `ndt` | `pile-testing` |
+| `category` | ✅ Yes | Category ID from `categories.csv` (kebab-case) | `pile-testing` |
 | `year` | ✅ Yes | Year completed | `2024` |
 | `location_name` | ✅ Yes | Human-readable location | `Kathmandu Valley` |
 | `location_district` | No | District name | `Kathmandu` |
@@ -87,7 +87,7 @@ The CSV file has these columns:
 Gather these details:
 - Project name
 - Client name
-- Category (pile-testing, tunnel-road, hydropower, transmission, ndt)
+- Category (see available categories in `content/categories/categories.csv`)
 - Year completed
 - Location and GPS coordinates
 - Scope of work (list of tasks)
@@ -477,7 +477,7 @@ project-id,"Project Title","Client Name",category,2025,"Location Name",District,
 - `project-id` → Your unique ID
 - `Project Title` → Full project name
 - `Client Name` → Client company
-- `category` → One of: pile-testing, tunnel-road, hydropower, transmission, ndt
+- `category` → Category ID from `categories.csv` (e.g., pile-testing, hydropower)
 - `2025` → Year completed
 - `Location Name` → Human-readable location
 - `District` → District name (or empty `""`)

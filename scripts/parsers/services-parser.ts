@@ -48,15 +48,6 @@ const CONTENT_DIR = path.join(process.cwd(), 'content/services');
 const OUTPUT_DIR = path.join(process.cwd(), 'src/data/generated');
 const PUBLIC_SERVICES_DIR = path.join(process.cwd(), 'public/services');
 
-const VALID_CATEGORIES: ServiceCategory[] = [
-  'pile-testing',
-  'soil-laboratory',
-  'rock-laboratory',
-  'drilling',
-  'geophysical',
-  'ndt'
-];
-
 /**
  * Construct media URL for service images
  */
@@ -172,8 +163,9 @@ async function autoDetectImages(
 
 /**
  * Parse services from Google Sheets or CSV file
+ * @param validCategoryIds - Set of valid category IDs from service-categories.csv
  */
-async function parseServicesCSV(): Promise<Service[]> {
+async function parseServicesCSV(validCategoryIds: Set<string>): Promise<Service[]> {
   const csvPath = path.join(CONTENT_DIR, 'services.csv');
 
   if (!fs.existsSync(csvPath)) {
@@ -199,11 +191,11 @@ async function parseServicesCSV(): Promise<Service[]> {
       );
     }
 
-    // Validate category
-    if (!VALID_CATEGORIES.includes(row.category as ServiceCategory)) {
+    // Validate category exists in service-categories.csv
+    if (!validCategoryIds.has(row.category)) {
       throw new Error(
         `Invalid category "${row.category}" for service "${row.id}". ` +
-        `Must be one of: ${VALID_CATEGORIES.join(', ')}`
+        `Available categories: ${Array.from(validCategoryIds).sort().join(', ')}`
       );
     }
 
@@ -329,20 +321,14 @@ export async function parseServices(): Promise<void> {
   console.log('🔧 Parsing services data...\n');
 
   try {
-    // Parse from Google Sheets or CSV files
-    const services = await parseServicesCSV();
+    // Step 1: Load categories FIRST (required for validation)
     const categories = await parseCategoriesCSV();
+    const validCategoryIds = new Set(categories.map(c => c.id));
 
-    // Validate that all categories referenced by services exist
-    const categoryIds = new Set(categories.map(c => c.id));
-    for (const service of services) {
-      if (!categoryIds.has(service.category)) {
-        console.warn(
-          `⚠️  Service "${service.id}" references category "${service.category}" ` +
-          `which is not defined in service-categories.csv`
-        );
-      }
-    }
+    console.log(`✅ Loaded ${categories.length} service categories: ${Array.from(validCategoryIds).sort().join(', ')}\n`);
+
+    // Step 2: Parse services with category validation
+    const services = await parseServicesCSV(validCategoryIds);
 
     // Copy media files
     await copyMediaFiles(services);

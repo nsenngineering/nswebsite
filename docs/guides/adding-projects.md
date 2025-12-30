@@ -25,11 +25,21 @@ Before you start, collect these details:
 **Required Information:**
 - ✅ Project name (full title)
 - ✅ Client name (company/organization)
-- ✅ Category (pile-testing, tunnel-road, hydropower, transmission, or ndt)
+- ✅ Category (see available categories in `content/categories/categories.csv`)
 - ✅ Year completed (YYYY format)
 - ✅ Location (city/district/area name)
 - ✅ GPS coordinates (latitude and longitude)
 - ✅ Scope of work (list of tasks/deliverables)
+
+**Available Categories:**
+Categories are dynamically loaded from `content/categories/categories.csv`. Common categories include:
+- `pile-testing` - Pile Testing projects
+- `tunnel-road` - Tunnel & Road projects
+- `hydropower` - Hydropower projects
+- `transmission` - Transmission Lines
+- `ndt` - Non-Destructive Testing
+
+To use a category, it must exist in the categories CSV file. To add a new category, see the section below.
 
 **Optional Information:**
 - District name
@@ -122,7 +132,7 @@ A unique identifier for the project used in the system.
    | **id** | Your project ID | `budhi-gandaki-drilling` |
    | **title** | Full project name | `Budhi Gandaki HEP Drilling` |
    | **client** | Client company name | `Power Construction Corp` |
-   | **category** | One of: `pile-testing`, `tunnel-road`, `hydropower`, `transmission`, `ndt` | `hydropower` |
+   | **category** | Category ID from `categories.csv` (kebab-case) | `hydropower` |
    | **year** | Year completed | `2025` |
    | **location_name** | Human-readable location | `Gorkha` |
    | **location_district** | District (or leave empty with `""`) | `Gorkha` |
@@ -397,6 +407,42 @@ A: Verify:
 
 **Q: "Duplicate project ID error"**
 A: The ID already exists. Choose a different unique ID.
+
+---
+
+## How to Add a New Project Category
+
+**Categories are fully dynamic!** No code changes required.
+
+### Step 1: Update `categories.csv`
+
+Open `content/categories/categories.csv` and add a new row:
+
+```csv
+water-supply,Water Supply Projects,#3b82f6,blue-500,blue-700,Water supply and distribution systems
+```
+
+**Columns:**
+- `id` - Kebab-case category identifier (e.g., `water-supply`, `bridge-construction`)
+- `label` - Display name (e.g., `Water Supply Projects`)
+- `color` - Hex color code (e.g., `#3b82f6`)
+- `gradientFrom` - Tailwind color for gradient start (e.g., `blue-500`)
+- `gradientTo` - Tailwind color for gradient end (e.g., `blue-700`)
+- `description` - Brief category description
+
+### Step 2: Rebuild and Test
+
+```bash
+npm run build:content
+npm run dev
+```
+
+That's it! The build system will:
+- ✅ Automatically detect the new category
+- ✅ Generate proper styling and metadata
+- ✅ Display on the Projects page and map filters
+
+**Note:** If a project uses a category that doesn't exist in `categories.csv`, the build will still succeed but use default purple styling.
 
 ---
 
