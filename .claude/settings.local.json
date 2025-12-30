@@ -17,7 +17,8 @@
       "Bash(python3:*)",
       "Bash(npx dotenv-cli:*)",
       "Bash(npx tsc:*)",
-      "Bash(if not exist \"D:\\\\My Documents\\\\NS Website\\\\ns-engineering-website\\\\src\\\\hooks\" mkdir \"D:\\\\My Documents\\\\NS Website\\\\ns-engineering-website\\\\src\\\\hooks\")"
+      "Bash(if not exist \"D:\\\\My Documents\\\\NS Website\\\\ns-engineering-website\\\\src\\\\hooks\" mkdir \"D:\\\\My Documents\\\\NS Website\\\\ns-engineering-website\\\\src\\\\hooks\")",
+      "Bash(npm run build:content:local:*)"
     ],
     "deny": [],
     "ask": []

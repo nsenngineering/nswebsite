@@ -74,7 +74,12 @@ export function Toast({ id, message, type, duration = 5000, onClose }: ToastProp
   );
 }
 
-export function ToastContainer({ toasts, onClose }: { toasts: ToastProps[]; onClose: (id: string) => void }) {
+export interface ToastContainerProps {
+  toasts: Omit<ToastProps, 'onClose'>[];
+  onClose: (id: string) => void;
+}
+
+export function ToastContainer({ toasts, onClose }: ToastContainerProps) {
   return (
     <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
       <AnimatePresence mode="popLayout">
