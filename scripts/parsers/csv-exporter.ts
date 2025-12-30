@@ -78,10 +78,28 @@ export async function exportAllSheetsToCSV(): Promise<void> {
       sheetTabName: process.env.GOOGLE_SHEET_TAB_TEAM || 'Team',
       csvOutputPath: path.join(process.cwd(), 'content', 'team', 'team.csv')
     },
+    // eLibrary content tabs (5 separate sections)
     {
-      sheetTabName: process.env.GOOGLE_SHEET_TAB_ELIBRARY || 'ElibraryDocuments',
-      csvOutputPath: path.join(process.cwd(), 'content', 'elibrary', 'documents.csv')
+      sheetTabName: process.env.GOOGLE_SHEET_TAB_STANDARD_CODES || 'StandardCodes',
+      csvOutputPath: path.join(process.cwd(), 'content', 'elibrary', 'standard-codes.csv')
     },
+    {
+      sheetTabName: process.env.GOOGLE_SHEET_TAB_PUBLICATIONS || 'Publications',
+      csvOutputPath: path.join(process.cwd(), 'content', 'elibrary', 'publications.csv')
+    },
+    {
+      sheetTabName: process.env.GOOGLE_SHEET_TAB_CURATED_PAPERS || 'CuratedPapers',
+      csvOutputPath: path.join(process.cwd(), 'content', 'elibrary', 'curated-papers.csv')
+    },
+    {
+      sheetTabName: process.env.GOOGLE_SHEET_TAB_DOWNLOADS || 'Downloads',
+      csvOutputPath: path.join(process.cwd(), 'content', 'elibrary', 'downloads.csv')
+    },
+    {
+      sheetTabName: process.env.GOOGLE_SHEET_TAB_NEWSLETTERS || 'Newsletters',
+      csvOutputPath: path.join(process.cwd(), 'content', 'elibrary', 'newsletters.csv')
+    },
+    // eLibrary metadata
     {
       sheetTabName: process.env.GOOGLE_SHEET_TAB_ELIBRARY_SECTIONS || 'ElibrarySections',
       csvOutputPath: path.join(process.cwd(), 'content', 'elibrary', 'sections.csv')
