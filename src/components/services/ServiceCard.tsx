@@ -73,9 +73,16 @@ export default function ServiceCard({ service, onOpenModal }: ServiceCardProps) 
               {getCategoryLabel(service.category)}
             </div>
 
+            {/* Service Name Overlay at Bottom */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent pt-8 pb-3 px-4">
+              <h3 className="text-base font-bold text-white line-clamp-2">
+                {service.name}
+              </h3>
+            </div>
+
             {/* Camera Badge (Photo Count) */}
             {imageCount > 0 && (
-              <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/70 backdrop-blur-sm rounded-full text-xs font-medium text-white flex items-center gap-1">
+              <div className="absolute top-[210px] right-3 px-2 py-1 bg-black/70 backdrop-blur-sm rounded-full text-xs font-medium text-white flex items-center gap-1 z-10">
                 <Camera className="w-3 h-3" />
                 {imageCount}
               </div>
@@ -99,12 +106,14 @@ export default function ServiceCard({ service, onOpenModal }: ServiceCardProps) 
           </div>
         )}
 
-        {/* Service Title */}
-        <div className={`px-6 ${hasImages ? 'pt-4' : ''}`}>
-          <h3 className={`text-lg font-bold mb-2 line-clamp-2 ${hasImages ? 'text-gray-900' : 'text-white'}`}>
-            {service.name}
-          </h3>
-        </div>
+        {/* Service Title (only show in gradient header when no image) */}
+        {(!hasImages || !heroImage) && (
+          <div className="px-6">
+            <h3 className="text-lg font-bold text-white mb-2 line-clamp-2">
+              {service.name}
+            </h3>
+          </div>
+        )}
 
         {/* Service Details */}
         <div className="p-6">
