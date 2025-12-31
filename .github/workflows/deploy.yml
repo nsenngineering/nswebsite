@@ -50,6 +50,9 @@ env:
   # Google Sheet ID for content
   GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
 
+  # Turnstile site key for spam protection
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+
 jobs:
   # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   # Job 1: Sync Assets
