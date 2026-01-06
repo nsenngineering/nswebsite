@@ -92,8 +92,8 @@ export default function ProjectCard({
             </div>
           ) : (
             // Fallback gradient header if no images
-            <div className={`p-6 bg-gradient-to-br ${getCategoryGradient(project.category)} text-white`}>
-              <div className="flex items-start justify-between mb-4">
+            <div className={`p-6 pb-8 bg-gradient-to-br ${getCategoryGradient(project.category)} text-white`}>
+              <div className="flex items-start justify-between mb-6">
                 <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-medium">
                   {getCategoryLabel(project.category)}
                 </span>
@@ -102,13 +102,8 @@ export default function ProjectCard({
                   {project.year}
                 </span>
               </div>
-            </div>
-          )}
-
-          {/* Project Title (only show in gradient header when no image) */}
-          {(!hasImages || !heroImage) && (
-            <div className="px-6">
-              <h3 className="text-lg font-bold text-white mb-2 line-clamp-2">
+              {/* Project Title inside gradient */}
+              <h3 className="text-lg font-bold text-white line-clamp-2">
                 {project.title}
               </h3>
             </div>
