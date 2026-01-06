@@ -1,6 +1,6 @@
-id,label,description,icon,order,emptyMessage
-standard-codes,Standard Codes,Links to industry standards and testing protocols for geotechnical engineering,FileText,1,No standards available yet
-publications,Publications,Technical papers and research from our team and industry experts,BookOpen,2,No publications available yet
-curated-papers,Curated Papers,Recommended research papers and technical articles,Lightbulb,3,No curated papers available yet
-downloads,Downloads,Downloadable resources and company materials,Download,4,No downloads available yet
-newsletters,Newsletters,Company newsletters with project updates and team news,Newspaper,5,No newsletters available yet
+"id","label","description","icon","order","emptyMessage"
+"standard-codes","Standard Codes","Links to industry standards and testing protocols for geotechnical engineering","FileText","1","No standards available yet"
+"publications","Publications","Technical papers and research from our team and industry experts","BookOpen","2","No publications available yet"
+"curated-papers","Curated Papers","Recommended research papers and technical articles","Lightbulb","3","No curated papers available yet"
+"downloads","Downloads","Downloadable resources and company materials","Download","4","No downloads available yet"
+"newsletters","Newsletters","Company newsletters with project updates and team news","Newspaper","5","No newsletters available yet"
