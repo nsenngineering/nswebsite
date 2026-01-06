@@ -70,24 +70,32 @@ export default function ContactPage() {
   const turnstileWidgetId = useRef<string | null>(null);
   const { toasts, removeToast, success, error } = useToast();
 
-  // Setup Turnstile callback
+  // Add preconnect link for Turnstile performance optimization
   useEffect(() => {
-    // Setup global callback for Turnstile
-    (window as any).onTurnstileSuccess = (token: string) => {
-      console.log('✅ Turnstile verified:', token);
-      setTurnstileToken(token);
-    };
+    // Check if preconnect link already exists
+    const existingLink = document.querySelector('link[href="https://challenges.cloudflare.com"]');
+    if (!existingLink) {
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = 'https://challenges.cloudflare.com';
+      document.head.appendChild(link);
+      console.log('✅ Added Turnstile preconnect link');
+    }
   }, []);
 
   // Render Turnstile widget when reaching step 3
   useEffect(() => {
     if (currentStep === 3 && turnstileRef.current) {
-      let retryCount = 0;
-      const MAX_RETRIES = 50; // 5 seconds max (50 * 100ms)
+      // Use official turnstile.ready() method instead of custom retry logic
+      const initTurnstile = () => {
+        if (!(window as any).turnstile) {
+          console.warn('Turnstile not yet loaded, waiting...');
+          return;
+        }
 
-      // Wait for Turnstile script to load
-      const renderTurnstile = () => {
-        if ((window as any).turnstile && turnstileRef.current) {
+        (window as any).turnstile.ready(() => {
+          if (!turnstileRef.current) return;
+
           try {
             // Check if widget already exists
             if (turnstileWidgetId.current !== null) {
@@ -106,9 +114,8 @@ export default function ContactPage() {
             }
 
             console.log('🔄 Rendering Turnstile widget...');
-            console.log('Site key:', sitekey);
 
-            // Render and store widget ID
+            // Render and store widget ID with all callbacks
             const widgetId = (window as any).turnstile.render(turnstileRef.current, {
               sitekey: sitekey,
               callback: (token: string) => {
@@ -119,6 +126,16 @@ export default function ContactPage() {
                 console.error('❌ Turnstile verification failed');
                 error('Security verification failed. Please try again.');
                 setTurnstileToken(undefined);
+              },
+              'expired-callback': () => {
+                console.warn('⏰ Turnstile token expired (5 minutes)');
+                setTurnstileToken(undefined);
+                error('Security verification expired. Please verify again.');
+              },
+              'timeout-callback': () => {
+                console.error('⏱️ Turnstile verification timed out');
+                setTurnstileToken(undefined);
+                error('Security verification timed out. Please try again.');
               },
               theme: 'light',
               appearance: 'always',
@@ -131,26 +148,19 @@ export default function ContactPage() {
             console.error('❌ Turnstile render error:', e);
             error('Failed to load security verification. Please refresh the page.');
           }
-        } else {
-          // Retry after script loads (with limit)
-          retryCount++;
-          if (retryCount < MAX_RETRIES) {
-            setTimeout(renderTurnstile, 100);
-          } else {
-            console.error('❌ Turnstile script failed to load after 5 seconds');
-            error('Security verification failed to load. Please refresh the page.');
-          }
-        }
+        });
       };
 
-      renderTurnstile();
+      initTurnstile();
 
-      // Cleanup - reset token when leaving step 3
+      // Cleanup - remove widget completely when leaving step 3
       return () => {
         if (turnstileWidgetId.current !== null && (window as any).turnstile) {
           try {
-            console.log('🧹 Resetting Turnstile widget');
-            (window as any).turnstile.reset(turnstileWidgetId.current);
+            console.log('🧹 Removing Turnstile widget');
+            (window as any).turnstile.remove(turnstileWidgetId.current);
+            turnstileWidgetId.current = null;
+            setTurnstileToken(undefined);
           } catch (e) {
             console.log('Turnstile cleanup skipped:', e);
           }
@@ -193,10 +203,32 @@ export default function ContactPage() {
       return;
     }
 
-    // Check Turnstile token
+    // Check Turnstile token in state
     if (!turnstileToken) {
       error('Please complete the security verification');
       return;
+    }
+
+    // Double-check with Turnstile API (extra validation)
+    if (turnstileWidgetId.current !== null && (window as any).turnstile) {
+      // Check if token is expired
+      if ((window as any).turnstile.isExpired(turnstileWidgetId.current)) {
+        console.error('❌ Turnstile token is expired');
+        error('Security verification expired. Please verify again.');
+        setTurnstileToken(undefined);
+        return;
+      }
+
+      // Get current token from widget (should match state)
+      const currentToken = (window as any).turnstile.getResponse(turnstileWidgetId.current);
+      if (!currentToken) {
+        console.error('❌ No Turnstile token available');
+        error('Please complete the security verification');
+        setTurnstileToken(undefined);
+        return;
+      }
+
+      console.log('✅ Turnstile token validated before submission');
     }
 
     setIsSubmitting(true);
