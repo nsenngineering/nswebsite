@@ -67,7 +67,7 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | undefined>();
   const [turnstileLoaded, setTurnstileLoaded] = useState(false);
-  const turnstileRef = useRef<HTMLDivElement>(null);
+  const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null);
   const turnstileWidgetId = useRef<string | null>(null);
   const { toasts, removeToast, success, error } = useToast();
 
@@ -82,29 +82,29 @@ export default function ContactPage() {
       document.head.appendChild(link);
       console.log('✅ Added Turnstile preconnect link');
     }
+
+    // Check if Turnstile is already loaded (e.g. from previous navigation)
+    if ((window as any).turnstile) {
+      console.log('✅ Turnstile globally available on mount');
+      setTurnstileLoaded(true);
+    }
   }, []);
 
-  // Render Turnstile widget when reaching step 3 and script is loaded
+  // Render Turnstile widget when container is mounted and script is loaded
   useEffect(() => {
-    if (currentStep === 3 && turnstileLoaded && turnstileRef.current) {
-      // Check if widget already exists
+    // Only proceed if we have both the container and the script
+    if (containerNode && turnstileLoaded) {
+      // Check if widget already exists to prevent duplicates
       if (turnstileWidgetId.current !== null) {
-        console.log('🔄 Widget already exists, skipping render');
         return;
       }
 
-      console.log('🔄 Initializing Turnstile widget...');
+      console.log('🔄 Initializing Turnstile widget in container:', containerNode);
 
-      // Use official turnstile.ready() to ensure API is initialized
-      (window as any).turnstile.ready(() => {
-        if (!turnstileRef.current) {
-          console.warn('⚠️ Ref is null, cannot render');
-          return;
-        }
-
+      // Verify Turnstile API is available
+      if ((window as any).turnstile) {
         // Double-check widget doesn't exist (race condition)
         if (turnstileWidgetId.current !== null) {
-          console.log('🔄 Widget created in race condition, skipping');
           return;
         }
 
@@ -112,16 +112,17 @@ export default function ContactPage() {
           // Get the site key
           const sitekey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
-          if (!sitekey) {
-            console.error('❌ NEXT_PUBLIC_TURNSTILE_SITE_KEY is not defined');
-            error('Security verification is not configured. Please contact support.');
+          // Strict check for valid site key
+          if (!sitekey || sitekey.includes('YOUR_SITE_KEY') || sitekey === '') {
+            console.error('❌ NEXT_PUBLIC_TURNSTILE_SITE_KEY is invalid or missing');
+            error('Configuration Error: Turnstile Site Key is missing. Please check .env.local');
             return;
           }
 
           console.log('🎨 Rendering Turnstile widget...');
 
           // Render and store widget ID with all callbacks
-          const widgetId = (window as any).turnstile.render(turnstileRef.current, {
+          const widgetId = (window as any).turnstile.render(containerNode, {
             sitekey: sitekey,
             callback: (token: string) => {
               console.log('✅ Turnstile verified successfully');
@@ -153,23 +154,23 @@ export default function ContactPage() {
           console.error('❌ Turnstile render error:', e);
           error('Failed to load security verification. Please refresh the page.');
         }
-      });
-
-      // Cleanup - remove widget completely when leaving step 3
-      return () => {
-        if (turnstileWidgetId.current !== null && (window as any).turnstile) {
-          try {
-            console.log('🧹 Removing Turnstile widget');
-            (window as any).turnstile.remove(turnstileWidgetId.current);
-            turnstileWidgetId.current = null;
-            setTurnstileToken(undefined);
-          } catch (e) {
-            console.log('Turnstile cleanup skipped:', e);
-          }
-        }
-      };
+      }
     }
-  }, [currentStep, turnstileLoaded, error]);
+
+    // Cleanup function - removes widget when component unmounts or container changes
+    return () => {
+      if (turnstileWidgetId.current !== null && (window as any).turnstile) {
+        try {
+          console.log('🧹 Removing Turnstile widget');
+          (window as any).turnstile.remove(turnstileWidgetId.current);
+          turnstileWidgetId.current = null;
+          setTurnstileToken(undefined);
+        } catch (e) {
+          console.log('Turnstile cleanup skipped:', e);
+        }
+      }
+    };
+  }, [containerNode, turnstileLoaded, error]);
 
   const updateFormData = (field: keyof FormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -419,19 +420,17 @@ export default function ContactPage() {
                     {[1, 2, 3].map((step) => (
                       <div key={step} className="flex items-center flex-1">
                         <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                            currentStep >= step
-                              ? 'bg-primary-600 text-white'
-                              : 'bg-gray-200 text-gray-500'
-                          }`}
+                          className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${currentStep >= step
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-gray-200 text-gray-500'
+                            }`}
                         >
                           {step}
                         </div>
                         {step < 3 && (
                           <div
-                            className={`flex-1 h-1 mx-2 transition-all ${
-                              currentStep > step ? 'bg-primary-600' : 'bg-gray-200'
-                            }`}
+                            className={`flex-1 h-1 mx-2 transition-all ${currentStep > step ? 'bg-primary-600' : 'bg-gray-200'
+                              }`}
                           />
                         )}
                       </div>
@@ -472,11 +471,10 @@ export default function ContactPage() {
                           <button
                             key={service.id}
                             onClick={() => toggleService(service.id)}
-                            className={`p-4 rounded-lg border-2 text-left transition-all ${
-                              formData.serviceType.includes(service.id)
-                                ? 'border-primary-600 bg-primary-50'
-                                : 'border-gray-200 hover:border-gray-300'
-                            }`}
+                            className={`p-4 rounded-lg border-2 text-left transition-all ${formData.serviceType.includes(service.id)
+                              ? 'border-primary-600 bg-primary-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                              }`}
                           >
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-medium text-gray-900">
@@ -636,7 +634,7 @@ export default function ContactPage() {
                           </label>
                           <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                             {/* Turnstile will render here */}
-                            <div ref={turnstileRef} className="min-h-[65px]" />
+                            <div ref={setContainerNode} className="min-h-[65px]" />
                             {!turnstileToken && currentStep === 3 && (
                               <p className="text-sm text-gray-600 mt-3 flex items-center gap-2">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
