@@ -87,10 +87,24 @@ The **CompanyInfo** sheet uses a key-value pair structure (2 columns):
 | company_short_name | NS Engineering |
 | company_tagline | Constantly Evolving, Foundation You Can Trust |
 | contact_email | info@nsengineering.com.np |
+| contact_email_careers | careers@nsengineering.com.np |
 | contact_phone | +977-01-5260121 |
+| contact_phone_alt | +977-9851228995 |
+| contact_whatsapp | +977-9851228995 |
+| contact_address | Bishal Niwash, 4th Cross, Jwagal, Lalitpur, Nepal |
+| social_facebook | https://www.facebook.com/nsengineering |
+| social_linkedin | https://www.linkedin.com/company/ns-engineering |
 | ... | ... |
 
 This format makes it easy to edit individual company details in Google Sheets.
+
+**Required Fields:**
+- All `company_*` fields (name, short_name, tagline, description, url)
+- All `contact_*` fields (email, email_careers, phone, phone_alt, whatsapp, address)
+- All `social_*` fields (facebook, linkedin, instagram, tiktok)
+- All `certification_*` fields (iso, badge)
+- All `laboratory_*` fields (name, location, description)
+- All `stats_*` fields (years_experience, projects_completed, team_size, drilling_capacity)
 
 ## Rotating Metrics Sheet Structure
 
