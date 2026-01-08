@@ -67,6 +67,7 @@ export async function parseCompanyInfo(): Promise<CompanyInfo> {
 
     contact: {
       email: get('contact_email'),
+      emailCareers: get('contact_email_careers'),
       phone: get('contact_phone'),
       phoneAlt: get('contact_phone_alt'),
       whatsapp: get('contact_whatsapp'),

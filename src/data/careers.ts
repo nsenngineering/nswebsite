@@ -1,3 +1,5 @@
+import { siteConfig } from './site-config';
+
 export interface JobListing {
   id: string;
   title: string;
@@ -95,9 +97,10 @@ export const jobListings: JobListing[] = [
   // },
 ];
 
+// Career contact information sourced from centralized company info
 export const careerContact = {
-  email: 'careers@nsengineering.com.np',
-  phone: '+977-01-5260121',
-  alternatePhone: '+977-9851228995',
-  address: 'Bishal Niwash, 4th Cross, Jwagal, Lalitpur, Nepal',
+  email: siteConfig.contact.emailCareers,
+  phone: siteConfig.contact.phone,
+  alternatePhone: siteConfig.contact.phoneAlt,
+  address: siteConfig.contact.address,
 };

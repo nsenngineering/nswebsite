@@ -22,6 +22,7 @@ export interface CompanyInfo {
 
   contact: {
     email: string;
+    emailCareers: string;
     phone: string;
     phoneAlt: string;
     whatsapp: string;
