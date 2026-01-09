@@ -1,8 +1,8 @@
 # Claude AI Assistant - Project Context
 
 **Project**: NS Engineering & Geotechnical Services Website
-**Status**: Production Ready (v1.0.0)
-**Last Updated**: 2024-12-17
+**Status**: Production Ready (v1.1.0)
+**Last Updated**: 2026-01-09
 
 ---
 
@@ -22,7 +22,7 @@ Professional website for **NS Engineering & Geotechnical Services Pvt. Ltd. (NSE
 
 ---
 
-## Current State (v1.0.0)
+## Current State (v1.1.0)
 
 ### ✅ Completed Features
 
@@ -36,6 +36,7 @@ Professional website for **NS Engineering & Geotechnical Services Pvt. Ltd. (NSE
 - Interactive project map with 49 projects
 - Photo galleries with Embla carousel
 - Evolution timeline (2015-2025)
+- **Team members system** with featured leadership display and full directory page
 - eLibrary with 5 specialized sections (standards, publications, curated papers, downloads, newsletters)
 - FAQ page (20 questions)
 - Careers portal
@@ -85,8 +86,8 @@ ns-engineering-website/
 │   │   └── csv-exporter.ts          # CSV export
 │   └── build-content.ts             # Main orchestrator
 ├── src/
-│   ├── app/             # 7 main pages
-│   ├── components/      # 50+ React components
+│   ├── app/             # 8 main pages (new: /team)
+│   ├── components/      # 52+ React components (new: TeamCard, TeamModal)
 │   ├── data/            # Generated JSON + static data
 │   ├── lib/             # Utilities
 │   └── types/           # TypeScript definitions
@@ -119,7 +120,7 @@ git push                      # Deploy
 | Projects | `content/projects/projects.csv` | 49 projects |
 | HomepageHeroCarousel | `content/homepage_hero/hero_carousel.csv` | Hero images |
 | HomepageHeroMilestones | `content/homepage_hero/milestones.csv` | Timeline |
-| Team | `content/team/team.csv` | 5 members |
+| Team | `content/team/team.csv` | 5 featured members (leadership) + full directory |
 | StandardCodes | `content/elibrary/standard-codes.csv` | Standard codes (external links) |
 | Publications | `content/elibrary/publications.csv` | Technical papers (internal PDFs) |
 | CuratedPapers | `content/elibrary/curated-papers.csv` | Research papers (external links) |
@@ -188,6 +189,9 @@ GOOGLE_APPLICATION_CREDENTIALS=./google-credentials.json
 **Projects**: Edit Google Sheet → Developer syncs weekly
 **Services**: Update `content/services/services.csv` or Sheets
 **Team**: Update `content/team/team.csv` or Sheets
+  - Fields: name, role, education, experience, order, featured, linkedinUrl, specializations
+  - Featured members appear on About page (Leadership Team section)
+  - All members appear on `/team` page with search and filter
 **eLibrary**: Update respective CSV files or Sheets (5 sections: standard-codes, publications, curated-papers, downloads, newsletters)
 **Alumni**: Update `content/alumni/alumni.csv` or Sheets
 **FAQ**: Update `content/faq/faq.csv` or Sheets
@@ -278,6 +282,61 @@ Benefits:
 - Can revert to any version
 - CSV files are backup if Sheets fails
 
+### Team Members Feature (v1.1.0)
+
+**Featured Leadership System**:
+- Similar to Alumni pattern with `featured` boolean flag
+- Featured members display on About page (Leadership Team section)
+- All members accessible via dedicated `/team` page
+
+**Data Structure** (`content/team/team.csv`):
+```csv
+name, role, education, experience, order, featured, linkedinUrl, specializations
+```
+
+**New Fields**:
+- `featured` (boolean) - TRUE for leadership display on About page
+- `linkedinUrl` (optional) - LinkedIn profile URL
+- `specializations` (semicolon-separated) - Key expertise areas
+
+**Components**:
+- `TeamCard.tsx` - Individual member card with hover effects
+  - Shows first 2 specializations + "X more" badge
+  - LinkedIn badge if URL exists
+  - Click opens modal
+- `TeamModal.tsx` - Full profile modal
+  - Complete specializations list
+  - Education, experience details
+  - LinkedIn profile button
+
+**Pages**:
+- `/about` - Leadership Team section (filtered to featured=TRUE only)
+- `/team` - Full team directory with:
+  - Search by name
+  - Filter by role
+  - Results count
+  - Responsive grid (1/2/3 columns)
+  - Modal on card click
+
+**Implementation Pattern**:
+```typescript
+// About page - show only featured
+const leadership = teamData.members.filter(m => m.featured);
+
+// Team page - show all with filters
+const filteredTeam = team.filter(member =>
+  member.name.toLowerCase().includes(searchQuery) &&
+  (selectedRole === 'all' || member.role === selectedRole)
+);
+```
+
+**Key Files**:
+- Types: `src/types/team.ts`
+- Parser: `scripts/parsers/team-parser.ts`
+- Components: `src/components/team/TeamCard.tsx`, `TeamModal.tsx`
+- Pages: `src/app/about/page.tsx`, `src/app/team/page.tsx`
+- Data: `content/team/team.csv`
+
 ---
 
 ## Important Conventions
@@ -348,12 +407,19 @@ npm run dev                  # Restart dev server
 - **Geophysical**: MASW, ERT, Seismic Refraction
 - **NDT**: Concrete Integrity, Rebar Detection, Structure Assessment
 
-### Key Team Members
+### Key Team Members (Featured Leadership)
 - **Arun Kumar Pandit** - Managing Director (MSc Geotechnical, 19 years)
+  - Specializations: Pile Testing, Foundation Design, Project Management, Geotechnical Investigation
 - **Dhurba Raj Tirpathi** - Director (Civil Engineering, 28 years)
+  - Specializations: Geotechnical Investigation, Site Supervision, Quality Control, Construction Management
 - **Shrawan Kumar Thapa** - Director (MSc Transportation, 30 years)
+  - Specializations: Transportation Engineering, Road Design, Infrastructure Planning, Highway Engineering
 - **Madhav Pokhrel** - Director (MSc Disaster Risk, 15 years)
-- **Dr. Suman Panthi** - Geologist (PhD Engineering Geology, 25+ years)
+  - Specializations: Disaster Risk Management, Structural Assessment, Risk Analysis, Emergency Planning
+- **Arjun Adhikari** - Director (MSc Geotechnical, 20 years)
+  - Specializations: Geotechnical Engineering, Soil Mechanics, Laboratory Testing, Site Investigation
+
+*All team members viewable at `/team` page with search and filter capabilities.*
 
 ### Target Industries
 - Road & Bridge Construction
@@ -421,6 +487,6 @@ npx serve@latest out          # Test build locally
 
 ---
 
-**Version**: 2.0.0
+**Version**: 1.1.0
 **Status**: Production Ready ✅
-**Last Updated**: 2024-12-24
+**Last Updated**: 2026-01-09

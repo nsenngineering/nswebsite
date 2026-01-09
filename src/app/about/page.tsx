@@ -10,11 +10,14 @@ import {
   CheckCircle2,
   TrendingUp,
   Shield,
-  Building2
+  Building2,
+  ArrowRight
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
 import FadeIn from '@/components/animations/FadeIn';
 import Image from 'next/image';
+import Link from 'next/link';
 import { withBasePath } from '@/lib/utils';
 import teamData from '@/data/generated/team.json';
 import FeaturedAlumni from '@/components/home/FeaturedAlumni';
@@ -26,6 +29,7 @@ interface TeamMember {
   experience: string;
   image?: string;
   hasImage: boolean;
+  featured?: boolean;
 }
 
 interface Stat {
@@ -62,8 +66,8 @@ const stats: Stat[] = [
   }
 ];
 
-// Load team members from generated JSON
-const leadership = teamData.members as TeamMember[];
+// Load team members from generated JSON - filter to show only featured (leadership)
+const leadership = (teamData.members as TeamMember[]).filter(m => m.featured);
 
 const values = [
   {
@@ -332,6 +336,18 @@ export default function AboutPage() {
               </FadeIn>
             ))}
           </div>
+
+          {/* View Full Team CTA */}
+          <FadeIn delay={0.4}>
+            <div className="text-center mt-12">
+              <Link href="/team">
+                <Button size="lg" variant="primary">
+                  View Full Team
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+            </div>
+          </FadeIn>
         </div>
       </section>
 

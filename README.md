@@ -15,6 +15,7 @@ Professional website for NS Engineering & Geotechnical Services Pvt. Ltd., a lea
 - **Project Portfolio** - 49+ projects with filterable gallery and photo carousels
 - **Interactive Map** - Leaflet map with GPS locations, marker clustering, and detailed popups
 - **Evolution Timeline** - Company history from 2015-2025 with milestone showcase
+- **Team Directory** - Featured leadership display on About page + full team page with search, filter, and specializations
 - **eLibrary** - 5 specialized sections (standard codes, publications, curated papers, downloads, newsletters) with search and reading pane
 - **FAQ System** - 20+ questions with accordion interface and category filtering
 - **Careers Portal** - Job listings with benefits showcase and application system
