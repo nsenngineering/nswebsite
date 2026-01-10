@@ -1,45 +1,32 @@
-import type { Metadata } from 'next';
 import ProjectsClient from './ProjectsClient';
 import JsonLd from '@/components/seo/JsonLd';
-import { generateBreadcrumbSchema } from '@/lib/seo/schema-generators';
+import { generateBreadcrumbSchema, generateProjectListSchema } from '@/lib/seo/schema-generators';
+import { generateProjectsMetadata } from '@/lib/seo/dynamic-metadata';
+import projectsData from '@/data/generated/projects.json';
 
-const siteUrl = 'https://www.nsengineering.com.np';
-
-export const metadata: Metadata = {
-  title: 'Projects - 100+ Infrastructure Projects Across Nepal | NS Engineering',
-  description: '100+ completed geotechnical projects across Nepal. Roads, bridges, tunnels, hydropower, transmission lines. View our interactive project map showing work in all major districts.',
-  keywords: [
-    'geotechnical projects Nepal',
-    'infrastructure projects Nepal',
-    'pile testing projects',
-    'hydropower geotechnical',
-    'tunnel drilling Nepal',
-    'road projects Nepal',
-    'transmission line testing',
-    'geotechnical investigation projects',
-    'fast track expressway',
-    'hydropower investigation',
-  ],
-  openGraph: {
-    title: '100+ Infrastructure Projects | NS Engineering Nepal',
-    description: 'Explore our portfolio of geotechnical projects across Nepal. Interactive map, detailed case studies, major highway and hydropower projects.',
-    url: `${siteUrl}/projects`,
-    type: 'website',
-  },
-  alternates: {
-    canonical: `${siteUrl}/projects`,
-  },
-};
+export const metadata = generateProjectsMetadata();
 
 export default function ProjectsPage() {
+  // Generate breadcrumb schema
   const breadcrumbData = generateBreadcrumbSchema([
     { name: 'Home', path: '/' },
     { name: 'Projects', path: '/projects' },
   ]);
 
+  // Generate ProjectList schema from actual data
+  const projectListSchema = generateProjectListSchema(
+    projectsData.projects.map(project => ({
+      id: project.id,
+      title: project.title,
+      category: project.category,
+      year: project.year,
+      client: project.client,
+    }))
+  );
+
   return (
     <>
-      <JsonLd data={breadcrumbData} />
+      <JsonLd data={[breadcrumbData, projectListSchema]} />
       <ProjectsClient />
     </>
   );

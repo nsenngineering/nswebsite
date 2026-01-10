@@ -1,43 +1,29 @@
-import type { Metadata } from 'next';
 import FAQClient from './FAQClient';
 import JsonLd from '@/components/seo/JsonLd';
-import { generateBreadcrumbSchema } from '@/lib/seo/schema-generators';
+import { generateBreadcrumbSchema, generateFAQPageSchema } from '@/lib/seo/schema-generators';
+import { generateFAQMetadata } from '@/lib/seo/dynamic-metadata';
+import faqData from '@/data/generated/faq.json';
 
-const siteUrl = 'https://www.nsengineering.com.np';
-
-export const metadata: Metadata = {
-  title: 'FAQ - Geotechnical Testing Questions Answered | NS Engineering',
-  description: 'Frequently asked questions about pile testing, geotechnical services, pricing, testing procedures, and project timelines. Get answers about PDA testing, static load tests, drilling, and laboratory analysis.',
-  keywords: [
-    'geotechnical testing FAQ',
-    'pile testing questions',
-    'PDA testing FAQ',
-    'static load test questions',
-    'geotechnical services pricing',
-    'soil testing FAQ',
-    'drilling services questions',
-    'laboratory testing FAQ',
-  ],
-  openGraph: {
-    title: 'Geotechnical Services FAQ | NS Engineering Nepal',
-    description: '20+ answered questions about our geotechnical testing, pile analysis, drilling, and laboratory services in Nepal.',
-    url: `${siteUrl}/faq`,
-    type: 'website',
-  },
-  alternates: {
-    canonical: `${siteUrl}/faq`,
-  },
-};
+export const metadata = generateFAQMetadata();
 
 export default function FAQPage() {
+  // Generate breadcrumb schema
   const breadcrumbData = generateBreadcrumbSchema([
     { name: 'Home', path: '/' },
     { name: 'FAQ', path: '/faq' },
   ]);
 
+  // Generate FAQ schema from actual data
+  const faqSchemaData = generateFAQPageSchema(
+    faqData.faqs.map(faq => ({
+      question: faq.question,
+      answer: faq.answer,
+    }))
+  );
+
   return (
     <>
-      <JsonLd data={breadcrumbData} />
+      <JsonLd data={[breadcrumbData, faqSchemaData]} />
       <FAQClient />
     </>
   );
