@@ -13,7 +13,7 @@ export default function ProjectsPage() {
     { name: 'Projects', path: '/projects' },
   ]);
 
-  // Generate ProjectList schema from actual data
+  // Generate ProjectList schema from actual data with geographic optimization
   const projectListSchema = generateProjectListSchema(
     projectsData.projects.map(project => ({
       id: project.id,
@@ -21,6 +21,7 @@ export default function ProjectsPage() {
       category: project.category,
       year: project.year,
       client: project.client,
+      location: project.location, // Include location for AI geographic targeting
     }))
   );
 
