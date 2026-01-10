@@ -32,6 +32,7 @@ Professional website for NS Engineering & Geotechnical Services Pvt. Ltd., a lea
 - **100% TypeScript** - Fully typed for reliability
 - **Responsive Design** - Mobile-first, works on all devices
 - **SEO Optimized** - Meta tags, structured data, semantic HTML
+- **AI SEO** - Person schemas, geographic targeting, technical terminology for AI assistants (ChatGPT, Claude, Perplexity)
 - **Performance** - Lazy loading, image optimization, code splitting
 
 ---
