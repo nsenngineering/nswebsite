@@ -24,6 +24,7 @@ import { parseCompanyInfo } from './parsers/company-info-parser.js';
 import { parseRotatingMetrics } from './parsers/rotating-metrics-parser.js';
 import { exportAllSheetsToCSV, shouldExportToCSV } from './parsers/csv-exporter.js';
 import { isR2Mode, validateR2Config } from './parsers/r2-utils.js';
+import { generateSitemap } from './generate-sitemap.js';
 
 const OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'projects.json');
 const CATEGORIES_OUTPUT_PATH = path.join(process.cwd(), 'src', 'data', 'generated', 'categories.json');
@@ -303,7 +304,10 @@ async function buildContent() {
     await fs.writeJSON(ROTATING_METRICS_OUTPUT_PATH, rotatingMetrics, { spaces: 2 });
     console.log(`✅ Generated: ${path.relative(process.cwd(), ROTATING_METRICS_OUTPUT_PATH)}`);
 
-    // Step 24: Export Sheets to CSV for version control (cloud mode only)
+    // Step 24: Generate sitemap.xml
+    await generateSitemap();
+
+    // Step 25: Export Sheets to CSV for version control (cloud mode only)
     if (shouldExportToCSV()) {
       await exportAllSheetsToCSV();
     }
