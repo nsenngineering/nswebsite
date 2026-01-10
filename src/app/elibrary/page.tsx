@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import ELibraryClient from './ELibraryClient';
+import JsonLd from '@/components/seo/JsonLd';
+import { generateBreadcrumbSchema } from '@/lib/seo/schema-generators';
 
 const siteUrl = 'https://www.nsengineering.com.np';
 
@@ -28,5 +30,15 @@ export const metadata: Metadata = {
 };
 
 export default function ELibraryPage() {
-  return <ELibraryClient />;
+  const breadcrumbData = generateBreadcrumbSchema([
+    { name: 'Home', path: '/' },
+    { name: 'eLibrary', path: '/elibrary' },
+  ]);
+
+  return (
+    <>
+      <JsonLd data={breadcrumbData} />
+      <ELibraryClient />
+    </>
+  );
 }

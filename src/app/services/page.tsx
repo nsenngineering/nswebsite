@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import ServicesClient from './ServicesClient';
+import JsonLd from '@/components/seo/JsonLd';
+import { generateBreadcrumbSchema } from '@/lib/seo/schema-generators';
 
 const siteUrl = 'https://www.nsengineering.com.np';
 
@@ -30,5 +32,15 @@ export const metadata: Metadata = {
 };
 
 export default function ServicesPage() {
-  return <ServicesClient />;
+  const breadcrumbData = generateBreadcrumbSchema([
+    { name: 'Home', path: '/' },
+    { name: 'Services', path: '/services' },
+  ]);
+
+  return (
+    <>
+      <JsonLd data={breadcrumbData} />
+      <ServicesClient />
+    </>
+  );
 }

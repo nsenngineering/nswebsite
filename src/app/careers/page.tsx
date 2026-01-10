@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import CareersClient from './CareersClient';
+import JsonLd from '@/components/seo/JsonLd';
+import { generateBreadcrumbSchema } from '@/lib/seo/schema-generators';
 
 const siteUrl = 'https://www.nsengineering.com.np';
 
@@ -28,5 +30,15 @@ export const metadata: Metadata = {
 };
 
 export default function CareersPage() {
-  return <CareersClient />;
+  const breadcrumbData = generateBreadcrumbSchema([
+    { name: 'Home', path: '/' },
+    { name: 'Careers', path: '/careers' },
+  ]);
+
+  return (
+    <>
+      <JsonLd data={breadcrumbData} />
+      <CareersClient />
+    </>
+  );
 }

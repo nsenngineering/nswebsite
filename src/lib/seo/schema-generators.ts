@@ -90,9 +90,9 @@ export function generateLocalBusinessSchema() {
 }
 
 /**
- * Generate BreadcrumbList schema for navigation
+ * Generate BreadcrumbList JSON-LD structured data for navigation
  */
-export function generateBreadcrumbSchema(items: Array<{ name: string; url: string }>) {
+export function generateBreadcrumbSchema(items: Array<{ name: string; path: string }>) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -100,7 +100,7 @@ export function generateBreadcrumbSchema(items: Array<{ name: string; url: strin
       '@type': 'ListItem',
       position: index + 1,
       name: item.name,
-      item: item.url,
+      item: `${SITE_URL}${item.path}`,
     })),
   };
 }
