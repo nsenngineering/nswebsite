@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs-extra';
-import { parseNumber } from './csv-parser.js';
+import { parseNumber, parseSemicolonArray, parseBoolean } from './csv-parser.js';
 import { fetchDataWithFallback } from './data-source.js';
 import { isR2Mode, constructR2Url } from './r2-utils.js';
 import type { TeamMember, TeamConfig } from '../../src/types/team.js';
@@ -14,6 +14,9 @@ interface TeamCSVRecord {
   education: string;
   experience: string;
   order: string;
+  featured?: string; // Optional featured flag (TRUE/FALSE)
+  linkedinUrl?: string; // Optional LinkedIn profile URL
+  specializations?: string; // Optional semicolon-separated specializations
 }
 
 /**
@@ -135,7 +138,10 @@ export async function parseTeam(): Promise<TeamConfig> {
       experience: record.experience,
       order,
       image,
-      hasImage
+      hasImage,
+      featured: parseBoolean(record.featured) ?? false,
+      linkedinUrl: record.linkedinUrl?.trim() || undefined,
+      specializations: parseSemicolonArray(record.specializations || '')
     });
   }
 
@@ -144,8 +150,10 @@ export async function parseTeam(): Promise<TeamConfig> {
 
   const withImages = members.filter(m => m.hasImage).length;
   const withoutImages = members.filter(m => !m.hasImage).length;
+  const featuredCount = members.filter(m => m.featured).length;
 
   console.log(`✅ Parsed ${members.length} team members`);
+  console.log(`   👑 ${featuredCount} featured (leadership)`);
   console.log(`   📸 ${withImages} with images, ${withoutImages} without images`);
 
   return {

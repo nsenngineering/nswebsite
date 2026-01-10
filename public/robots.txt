@@ -1,0 +1,15 @@
+# robots.txt for NS Engineering & Geotechnical Services
+# Last updated: 2026-01-10
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.nsengineering.com.np/sitemap.xml
+
+# Block admin/private areas
+Disallow: /api/
+Disallow: /_next/
+
+# Crawl-delay for polite crawling (1 second between requests)
+Crawl-delay: 1

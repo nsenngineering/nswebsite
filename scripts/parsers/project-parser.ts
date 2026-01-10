@@ -5,6 +5,7 @@ import { parseCategoriesCSV, CategoryConfig } from './category-parser.js';
 import { fetchDataWithFallback } from './data-source.js';
 import { isR2Mode, constructR2Url } from './r2-utils.js';
 import { isR2ApiConfigured, listProjectImages, listProjectPDFs } from './r2-client.js';
+import { generateProjectSEO } from './seo-generator.js';
 
 export interface Project {
   id: string;
@@ -323,6 +324,20 @@ export async function parseProject(record: CSVRecord): Promise<Project> {
 
   const featured = parseBoolean(record.featured);
 
+  // Auto-generate SEO metadata from project data
+  const seoData = generateProjectSEO({
+    id,
+    title,
+    client,
+    category,
+    year,
+    location: {
+      name: locationName,
+      district: record.location_district?.trim() || undefined,
+    },
+    scope,
+  });
+
   return {
     id,
     title,
@@ -340,7 +355,8 @@ export async function parseProject(record: CSVRecord): Promise<Project> {
       pdfs: pdfsPaths,
       heroImage: heroImagePath
     },
-    featured
+    featured,
+    ...seoData, // Spread SEO fields (adds seo object)
   };
 }
 

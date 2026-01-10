@@ -1,20 +1,20 @@
-import PrivacyClient from './PrivacyClient';
+import TeamClient from './TeamClient';
 import JsonLd from '@/components/seo/JsonLd';
 import { generateBreadcrumbSchema } from '@/lib/seo/schema-generators';
-import { generatePrivacyMetadata } from '@/lib/seo/dynamic-metadata';
+import { generateTeamMetadata } from '@/lib/seo/dynamic-metadata';
 
-export const metadata = generatePrivacyMetadata();
+export const metadata = generateTeamMetadata();
 
-export default function PrivacyPage() {
+export default function TeamPage() {
   const breadcrumbData = generateBreadcrumbSchema([
     { name: 'Home', path: '/' },
-    { name: 'Privacy Policy', path: '/privacy' },
+    { name: 'Team', path: '/team' },
   ]);
 
   return (
     <>
       <JsonLd data={breadcrumbData} />
-      <PrivacyClient />
+      <TeamClient />
     </>
   );
 }

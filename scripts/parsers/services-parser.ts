@@ -12,6 +12,7 @@ import { fetchDataWithFallback } from './data-source.js';
 import { isR2Mode, constructR2Url } from './r2-utils.js';
 import { parseSemicolonArray, parseBoolean } from './csv-parser.js';
 import { isR2ApiConfigured, listServiceImages } from './r2-client.js';
+import { generateServiceSEO } from './seo-generator.js';
 
 interface ServiceCSVRow {
   id: string;
@@ -222,6 +223,15 @@ async function parseServicesCSV(validCategoryIds: Set<string>): Promise<Service[
     // Parse featured flag
     const featured = parseBoolean(row.featured);
 
+    // Auto-generate SEO metadata from service data
+    const seoData = generateServiceSEO({
+      id: row.id,
+      name: row.name,
+      category: row.category,
+      shortDescription: row.shortDescription || '',
+      equipmentUsed,
+    });
+
     services.push({
       id: row.id,
       category: row.category as ServiceCategory,
@@ -235,7 +245,8 @@ async function parseServicesCSV(validCategoryIds: Set<string>): Promise<Service[
         images: imageUrls,
         heroImage: heroImageUrl
       },
-      featured
+      featured,
+      ...seoData, // Spread SEO fields (adds seo object)
     });
   }
 
