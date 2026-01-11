@@ -214,7 +214,7 @@ export async function listHeroImages(): Promise<string[]> {
 export async function listTeamPhotos(): Promise<string[]> {
   const r2Prefix = process.env.R2_BASE_PATH || '';
   const basePath = r2Prefix ? `${r2Prefix}/` : '';
-  const prefix = `${basePath}team/`;
+  const prefix = `${basePath}team/images/`;
 
   try {
     const files = await listR2Files(prefix);
