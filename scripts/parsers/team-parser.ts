@@ -35,7 +35,7 @@ function generateSlug(name: string): string {
  */
 function constructImagePath(filename: string): string {
   return isR2Mode()
-    ? constructR2Url('team', filename)
+    ? constructR2Url('team', filename, 'images')
     : `/team/${filename}`;
 }
 

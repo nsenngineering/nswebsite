@@ -101,13 +101,55 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.nsengineering.com.np/services#Lateral-load-test</loc>
+    <lastmod>2026-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.nsengineering.com.np/services#Pile-Pullout-test</loc>
+    <lastmod>2026-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.nsengineering.com.np/services#rebar-detection</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.nsengineering.com.np/services#schmidt-rebound-hammer-test</loc>
+    <lastmod>2026-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.nsengineering.com.np/services#us-pulse-velocity-test</loc>
+    <lastmod>2026-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.nsengineering.com.np/services#half-cell-potential-test</loc>
+    <lastmod>2026-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.nsengineering.com.np/services#core-cutting-test</loc>
+    <lastmod>2026-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.nsengineering.com.np/services#compaction-test</loc>
+    <lastmod>2026-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.nsengineering.com.np/services#la-test</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -137,6 +179,18 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.nsengineering.com.np/services#consolidation-test</loc>
+    <lastmod>2026-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.nsengineering.com.np/services#ucs-soil</loc>
+    <lastmod>2026-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.nsengineering.com.np/services#ucs-test</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
@@ -149,7 +203,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#Direct-Shear-Test</loc>
+    <loc>https://www.nsengineering.com.np/services#direct-shear-rock</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -161,31 +215,31 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#slake durability test</loc>
+    <loc>https://www.nsengineering.com.np/services#slake-durability-test</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#triaxial-test</loc>
+    <loc>https://www.nsengineering.com.np/services#triaxial-test-strength</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#Modulus of Elasticity</loc>
+    <loc>https://www.nsengineering.com.np/services#modulus-elasticity</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#Poisson's Ratio</loc>
+    <loc>https://www.nsengineering.com.np/services#poisson-ratio</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#Petrography Analysis</loc>
+    <loc>https://www.nsengineering.com.np/services#petrography-analysis</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -203,19 +257,25 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#Specific Gravity</loc>
+    <loc>https://www.nsengineering.com.np/services#specific-gravity</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#Water Absorption</loc>
+    <loc>https://www.nsengineering.com.np/services#water-absorption</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#Ultrasonic Pulse Velocity Test</loc>
+    <loc>https://www.nsengineering.com.np/services#us-pulse-velocity</loc>
+    <lastmod>2026-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.nsengineering.com.np/services#borehole-camera</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -227,25 +287,25 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#Standard-Penetration-Test (SPT)</loc>
+    <loc>https://www.nsengineering.com.np/services#Standard-Penetration-Test</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#Dynamic-Cone-Penetration Test (DCPT)</loc>
+    <loc>https://www.nsengineering.com.np/services#Dynamic-Cone-Penetration-Test</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#Permeability Test of Soil</loc>
+    <loc>https://www.nsengineering.com.np/services#permeability-test-soil</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#Lugeon/Permeability of Rock</loc>
+    <loc>https://www.nsengineering.com.np/services#permeability-test-rock</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -281,7 +341,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#Down-the-hole (DTH)-drilling</loc>
+    <loc>https://www.nsengineering.com.np/services#Down-the-hole-drilling</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -323,7 +383,19 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.nsengineering.com.np/services#Direct Shear Test</loc>
+    <loc>https://www.nsengineering.com.np/services#down-hole-test</loc>
+    <lastmod>2026-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.nsengineering.com.np/services#mam-survey</loc>
+    <lastmod>2026-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.nsengineering.com.np/services#direct-shear-rock-mechanical</loc>
     <lastmod>2026-01-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
