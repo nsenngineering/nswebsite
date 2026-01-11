@@ -140,10 +140,37 @@ export async function parseStandardCode(record: CSVRecord): Promise<StandardCode
   validateItemId(id);
 
   const title = validateRequired(record.title, 'title', id);
-  const externalUrl = validateRequired(record.externalUrl, 'externalUrl', id);
-  validateUrl(externalUrl, id);
+  const externalUrlRaw = validateRequired(record.externalUrl, 'externalUrl', id);
 
-  const organization = record.organization?.trim() || undefined;
+  // Parse multiple URLs and organizations (semicolon-separated)
+  const urls = parseSemicolonArray(externalUrlRaw);
+  const organizations = parseSemicolonArray(record.organization || '');
+
+  // Validate all URLs
+  urls.forEach(url => {
+    if (url.trim()) {
+      validateUrl(url.trim(), id);
+    }
+  });
+
+  // Create StandardReference array - pair URLs with organizations
+  // If organizations count doesn't match URLs, reuse organizations cyclically
+  const standards = urls.map((url, i) => {
+    const org = organizations.length > 0
+      ? organizations[i % organizations.length].trim()
+      : 'Unknown';
+
+    return {
+      organization: org,
+      url: url.trim()
+    };
+  }).filter(std => std.url); // Remove any empty entries
+
+  // Ensure at least one standard exists
+  if (standards.length === 0) {
+    throw new Error(`❌ No valid standards found for item: ${id}`);
+  }
+
   const category = record.category?.trim() || undefined;
   const tags = parseSemicolonArray(record.tags);
   const featured = parseBoolean(record.featured);
@@ -155,8 +182,7 @@ export async function parseStandardCode(record: CSVRecord): Promise<StandardCode
     id,
     title,
     section: 'standard-codes',
-    externalUrl,
-    organization,
+    standards,
     category,
     tags,
     featured,

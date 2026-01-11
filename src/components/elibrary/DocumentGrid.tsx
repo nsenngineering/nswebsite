@@ -62,13 +62,11 @@ export default function DocumentGrid({ items, onItemClick, selectedItemId }: Doc
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                 {isStandardCode(item) && (
                   <>
-                    {/* Organization */}
-                    {item.organization && (
-                      <div className="flex items-center gap-1.5">
-                        <Building2 className="w-4 h-4" />
-                        <span>{item.organization}</span>
-                      </div>
-                    )}
+                    {/* Standards Count */}
+                    <div className="flex items-center gap-1.5">
+                      <Building2 className="w-4 h-4" />
+                      <span>{item.standards.length} {item.standards.length === 1 ? 'Standard' : 'Standards'}</span>
+                    </div>
                     {/* Category */}
                     {item.category && (
                       <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
@@ -191,9 +189,26 @@ export default function DocumentGrid({ items, onItemClick, selectedItemId }: Doc
               )}
 
               {isStandardCode(item) && (
-                <div className="flex items-center gap-2 text-sm text-blue-600">
-                  <ExternalLink className="w-4 h-4" />
-                  <span>View on {item.organization || 'Standards'} website</span>
+                <div className="space-y-2">
+                  <div className="text-sm text-gray-600 font-medium mb-2">
+                    Available Standards:
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {item.standards.map((std, idx) => (
+                      <a
+                        key={idx}
+                        href={std.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded-md hover:bg-blue-100 border border-blue-200 transition-colors"
+                      >
+                        <Building2 className="w-3.5 h-3.5" />
+                        <span>{std.organization}</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -226,9 +241,9 @@ export default function DocumentGrid({ items, onItemClick, selectedItemId }: Doc
 
             {/* Card Footer - Action Button */}
             <div className="p-6 pt-0">
-              {isStandardCode(item) && (
+              {isStandardCode(item) && item.standards.length === 1 && (
                 <a
-                  href={item.externalUrl}
+                  href={item.standards[0].url}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
@@ -237,6 +252,12 @@ export default function DocumentGrid({ items, onItemClick, selectedItemId }: Doc
                   <ExternalLink className="w-4 h-4" />
                   View Standard
                 </a>
+              )}
+
+              {isStandardCode(item) && item.standards.length > 1 && (
+                <div className="text-sm text-gray-500 italic">
+                  Click any standard badge above to view
+                </div>
               )}
 
               {isPublication(item) && (

@@ -67,12 +67,10 @@ export default function ReadingPanel({ item, onClose }: ReadingPanelProps) {
           <div className="flex flex-wrap gap-4 text-sm text-gray-600">
             {isStandardCode(item) && (
               <>
-                {item.organization && (
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4" />
-                    <span>{item.organization}</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-4 h-4" />
+                  <span>{item.standards.length} {item.standards.length === 1 ? 'Standard' : 'Standards'}</span>
+                </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   <span>
@@ -192,12 +190,31 @@ export default function ReadingPanel({ item, onClose }: ReadingPanelProps) {
             )}
 
             {isStandardCode(item) && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">About</h3>
-                <p className="text-gray-600 text-sm">
-                  Industry standard for geotechnical engineering and testing protocols.
-                  Click "View Standard" below to access the full document on the official website.
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-900">Available Standards</h3>
+                <p className="text-gray-600 text-sm mb-3">
+                  Industry standards for geotechnical engineering and testing protocols.
+                  Click any standard below to access the full document.
                 </p>
+                <div className="space-y-2">
+                  {item.standards.map((std, idx) => (
+                    <a
+                      key={idx}
+                      href={std.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4 text-blue-600" />
+                          <span className="font-medium text-blue-900">{std.organization}</span>
+                        </div>
+                        <ExternalLink className="w-4 h-4 text-blue-600" />
+                      </div>
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -233,9 +250,9 @@ export default function ReadingPanel({ item, onClose }: ReadingPanelProps) {
 
           {/* Action Button */}
           <div className="pt-4 border-t border-gray-200">
-            {isStandardCode(item) && (
+            {isStandardCode(item) && item.standards.length === 1 && (
               <a
-                href={item.externalUrl}
+                href={item.standards[0].url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm w-full justify-center"
@@ -243,6 +260,12 @@ export default function ReadingPanel({ item, onClose }: ReadingPanelProps) {
                 <ExternalLink className="w-5 h-5" />
                 <span>View Standard</span>
               </a>
+            )}
+
+            {isStandardCode(item) && item.standards.length > 1 && (
+              <div className="text-center text-sm text-gray-500 italic py-3">
+                Multiple standards available - click any standard above to view
+              </div>
             )}
 
             {isPublication(item) && (
