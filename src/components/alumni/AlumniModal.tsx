@@ -21,27 +21,27 @@ export default function AlumniModal({ alumnus, isOpen, onClose }: AlumniModalPro
         {/* Profile Image - Centered */}
         <div className="flex justify-center">
           {alumnus.profileImage ? (
-            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg">
+            <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg">
               <img
                 src={withBasePath(alumnus.profileImage)}
                 alt={alumnus.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-[center_30%]"
                 onError={(e) => {
                   // Fallback to icon if image fails
                   e.currentTarget.style.display = 'none';
                   const parent = e.currentTarget.parentElement;
                   if (parent) {
-                    parent.className = 'w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg';
+                    parent.className = 'w-40 h-40 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg';
                     const icon = document.createElement('div');
-                    icon.innerHTML = '<svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
+                    icon.innerHTML = '<svg class="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
                     parent.appendChild(icon);
                   }
                 }}
               />
             </div>
           ) : (
-            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg">
-              <User className="w-16 h-16 text-white" />
+            <div className="w-40 h-40 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg">
+              <User className="w-20 h-20 text-white" />
             </div>
           )}
         </div>
@@ -88,7 +88,7 @@ export default function AlumniModal({ alumnus, isOpen, onClose }: AlumniModalPro
         {alumnus.linkedinUrl && (
           <div className="pt-2">
             <a
-              href={alumnus.linkedinUrl}
+              href={alumnus.linkedinUrl.startsWith('http') ? alumnus.linkedinUrl : `https://${alumnus.linkedinUrl}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"

@@ -23,28 +23,28 @@ export default function AlumniCard({ alumnus, onOpenModal }: AlumniCardProps) {
         {/* Profile Image or Icon */}
         <div className="flex justify-center mb-4">
           {alumnus.profileImage ? (
-            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg group-hover:scale-105 transition-transform">
+            <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg group-hover:scale-105 transition-transform">
               <img
                 src={withBasePath(alumnus.profileImage)}
                 alt={alumnus.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-[center_30%]"
                 loading="lazy"
                 onError={(e) => {
                   // Fallback to icon if image fails
                   e.currentTarget.style.display = 'none';
                   const parent = e.currentTarget.parentElement;
                   if (parent) {
-                    parent.className = 'w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg';
+                    parent.className = 'w-28 h-28 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg';
                     const icon = document.createElement('div');
-                    icon.innerHTML = '<svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
+                    icon.innerHTML = '<svg class="w-14 h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
                     parent.appendChild(icon);
                   }
                 }}
               />
             </div>
           ) : (
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-              <User className="w-12 h-12 text-white" />
+            <div className="w-28 h-28 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+              <User className="w-14 h-14 text-white" />
             </div>
           )}
         </div>
