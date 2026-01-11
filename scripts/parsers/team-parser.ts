@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import { parseNumber, parseSemicolonArray, parseBoolean } from './csv-parser.js';
 import { fetchDataWithFallback } from './data-source.js';
 import { isR2Mode, constructR2Url } from './r2-utils.js';
+import { listTeamPhotos, isR2ApiConfigured } from './r2-client.js';
 import type { TeamMember, TeamConfig } from '../../src/types/team.js';
 
 const TEAM_CSV_PATH = path.join(process.cwd(), 'content', 'team', 'team.csv');
@@ -38,21 +39,54 @@ function constructImagePath(filename: string): string {
     : `/team/${filename}`;
 }
 
+// Cache for R2 team photos (to avoid multiple API calls)
+let r2TeamPhotosCache: string[] | null = null;
+
 /**
  * Auto-detect image for a team member
  */
 async function autoDetectImage(memberName: string): Promise<string | undefined> {
-  // Skip auto-detection in R2 mode (images must be explicitly defined)
+  const slug = generateSlug(memberName);
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
+
+  // R2 Mode: List photos from R2 and match by slug
   if (isR2Mode()) {
+    if (isR2ApiConfigured()) {
+      try {
+        // Load R2 photos once and cache
+        if (r2TeamPhotosCache === null) {
+          r2TeamPhotosCache = await listTeamPhotos();
+        }
+
+        // Try exact slug match first
+        for (const ext of imageExtensions) {
+          const filename = `${slug}${ext}`;
+          if (r2TeamPhotosCache.includes(filename)) {
+            return constructImagePath(filename);
+          }
+        }
+
+        // Try fuzzy match (find any image containing the slug)
+        const matchingFile = r2TeamPhotosCache.find(file => {
+          const ext = path.extname(file).toLowerCase();
+          return imageExtensions.includes(ext) && file.toLowerCase().includes(slug);
+        });
+
+        if (matchingFile) {
+          return constructImagePath(matchingFile);
+        }
+      } catch (error) {
+        console.warn(`⚠️  R2 auto-detection failed for ${memberName}:`, error instanceof Error ? error.message : error);
+      }
+    }
+    // If R2 API not configured, return undefined (no fallback to local in R2 mode)
     return undefined;
   }
 
+  // Local Mode: Check filesystem
   if (!await fs.pathExists(TEAM_IMAGES_DIR)) {
     return undefined;
   }
-
-  const slug = generateSlug(memberName);
-  const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
 
   // Try exact slug match first
   for (const ext of imageExtensions) {
