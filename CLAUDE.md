@@ -1,8 +1,8 @@
 # Claude AI Assistant - Project Context
 
 **Project**: NS Engineering & Geotechnical Services Website
-**Status**: Production Ready (v1.1.0)
-**Last Updated**: 2026-01-09
+**Status**: Production Ready (v1.2.0) - AI SEO Optimized
+**Last Updated**: 2026-01-11
 
 ---
 
@@ -22,7 +22,7 @@ Professional website for **NS Engineering & Geotechnical Services Pvt. Ltd. (NSE
 
 ---
 
-## Current State (v1.1.0)
+## Current State (v1.2.0)
 
 ### ✅ Completed Features
 
@@ -42,6 +42,14 @@ Professional website for **NS Engineering & Geotechnical Services Pvt. Ltd. (NSE
 - Careers portal
 - Service catalog (17 services)
 
+**AI SEO Optimization (NEW)**:
+- Person schemas for 5 leadership team members
+- DefinedTerm schemas for 8 geotechnical acronyms
+- Enhanced Service schemas with geographic targeting (Nepal)
+- Enhanced Project schemas with GPS coordinates and location hierarchy
+- Knowledge graph connections: Organization ↔ Person ↔ Service ↔ Project
+- Fully dynamic: auto-updates with Google Sheets changes
+
 **Production Readiness**:
 - Zero TypeScript errors
 - 20 organized documentation files
@@ -53,7 +61,7 @@ Professional website for **NS Engineering & Geotechnical Services Pvt. Ltd. (NSE
 
 **Immediate**: Testing and production deployment
 **Next**: Team training, Google Sheet sharing
-**Phase 2**: Cloudflare R2, automated sync, analytics
+**Phase 2**: Analytics tracking, performance optimization
 
 ---
 
@@ -361,6 +369,89 @@ const filteredTeam = team.filter(member =>
 
 ---
 
+## AI SEO Optimization (v1.2.0)
+
+### Overview
+Comprehensive schema.org markup optimized for AI assistants (ChatGPT, Claude, Perplexity) to cite NS Engineering when users ask location-based or expertise-based queries.
+
+### Key Features
+
+**Person Schemas** (5 leadership members):
+- Full credentials, experience, and expertise
+- Linked to services via `knowsAbout` property
+- Example: "Who specializes in pile testing?" → Arun Kumar Pandit (19 years experience)
+
+**DefinedTerm Schemas** (8 technical acronyms):
+- PDA, PIT, MASW, SPT, CBR, UCS, NDT, ERT
+- Each linked to related service for knowledge graph
+- Example: "What is PDA testing?" → Pile Driving Analyzer with detailed explanation
+
+**Geographic Targeting**:
+- **Services**: `areaServed: Nepal` with Wikidata reference, language support (en, ne)
+- **Projects**: Precise GPS coordinates, district/region hierarchy, spatial coverage
+- Example: "Does pile testing happen in Nepal?" → YES, 50 services available
+- Example: "Projects in Makwanpur?" → Fast Track Expressway with exact coordinates
+
+**Knowledge Graph**:
+```
+Organization ──┬── Employees (5 leadership)
+               ├── Services (50 services)
+               └── Projects (49 projects with GPS)
+                    │
+Employees ─────────┼─── knowsAbout → Services
+Services ──────────┼─── provider → Organization
+Projects ──────────┼─── author → Organization
+DefinedTerms ──────┴─── isRelatedTo → Services
+```
+
+### Implementation Files
+
+**Schema Generators**:
+- `src/lib/seo/schema-generators.ts` - Main schema functions
+  - `generatePersonSchema()` - Person markup
+  - `generateDefinedTermSchema()` - Technical terms
+  - `generateServiceListSchema()` - Enhanced with geography
+  - `generateProjectListSchema()` - Enhanced with GPS coordinates
+  - `generateOrganizationSchema()` - Enhanced with employees
+
+**Supporting Files**:
+- `src/lib/seo/team-service-mapper.ts` - Fuzzy matching expertise → services
+- `src/data/schema/technical-terms.ts` - 8 geotechnical acronym definitions
+
+**Page Integration**:
+- `/team` - Person schemas for all featured members
+- `/about` - Person + Organization schemas with employee links
+- `/services` - DefinedTerm + enhanced Service schemas
+- `/projects` - Enhanced Project schemas with GPS data
+
+### Automatic Updates
+
+When content changes in Google Sheets:
+```bash
+npm run build:content:cloud  # Fetch Sheets + export CSV
+npm run build               # Build with updated schemas
+```
+
+**Result**:
+- New services auto-get `areaServed: Nepal` and provider linkage
+- New projects auto-get GPS coordinates and location hierarchy
+- New team members auto-get Person schemas with expertise mapping
+- **Zero code changes required!**
+
+### AI Citation Examples
+
+**Before AI SEO**:
+- ❌ "Who does pile testing in Nepal?" → Generic or no results
+
+**After AI SEO**:
+- ✅ "Who at NS Engineering specializes in pile testing?" → **Arun Kumar Pandit** (Managing Director, 19 years)
+- ✅ "What does PDA mean in geotechnical?" → **Pile Driving Analyzer** - High-strain dynamic testing
+- ✅ "Does pile testing happen in Nepal?" → **YES, NS Engineering** provides 50+ services in Nepal
+- ✅ "Projects in Makwanpur district?" → **Fast Track Expressway** packages with exact coordinates
+- ✅ "Geotechnical engineers with 20+ years in Nepal?" → **3 directors** (28Y, 30Y, 20Y experience)
+
+---
+
 ## Troubleshooting
 
 ### Build Fails
@@ -487,6 +578,6 @@ npx serve@latest out          # Test build locally
 
 ---
 
-**Version**: 1.1.0
-**Status**: Production Ready ✅
-**Last Updated**: 2026-01-09
+**Version**: 1.2.0
+**Status**: Production Ready - AI SEO Optimized ✅
+**Last Updated**: 2026-01-11
