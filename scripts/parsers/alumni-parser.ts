@@ -10,6 +10,7 @@ import path from 'path';
 import type { Alumni } from '../../src/types/alumni.js';
 import { fetchDataWithFallback } from './data-source.js';
 import { isR2Mode, constructR2Url } from './r2-utils.js';
+import { listAlumniPhotos, isR2ApiConfigured } from './r2-client.js';
 import { parseSemicolonArray, parseBoolean } from './csv-parser.js';
 
 interface AlumniCSVRow {
@@ -28,41 +29,103 @@ interface AlumniOutput {
 }
 
 const CONTENT_DIR = path.join(process.cwd(), 'content/alumni');
+const ALUMNI_IMAGES_DIR = path.join(process.cwd(), 'content/alumni/images');
 const OUTPUT_DIR = path.join(process.cwd(), 'src/data/generated');
 const PUBLIC_ALUMNI_DIR = path.join(process.cwd(), 'public/alumni');
+
+// Cache for R2 alumni photos (to avoid multiple API calls)
+let r2AlumniPhotosCache: string[] | null = null;
+
+/**
+ * Generate slug from name for image matching
+ */
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+}
+
+/**
+ * Construct image path for an alumnus
+ */
+function constructImagePath(filename: string): string {
+  return isR2Mode()
+    ? constructR2Url('alumni', filename, 'images')
+    : `/alumni/${filename}`;
+}
 
 /**
  * Auto-detect profile image for an alumnus
  * Returns URL or undefined if no image found
  */
-async function autoDetectProfileImage(alumniId: string): Promise<string | undefined> {
-  const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
+async function autoDetectProfileImage(alumniName: string): Promise<string | undefined> {
+  const slug = generateSlug(alumniName);
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
 
-  // In R2 mode, construct R2 URL for first extension found
+  // R2 Mode: List photos from R2 and match by slug
   if (isR2Mode()) {
-    // Check if any extension exists (assuming R2 sync handles this)
-    // Return first possible URL (validation happens during R2 sync)
-    for (const ext of IMAGE_EXTENSIONS) {
-      const r2Url = constructR2Url(`alumni/${alumniId}`, `profile${ext}`, '');
-      // In R2 mode, we assume the file exists if configured
-      // Actual validation happens during rclone sync
-      return r2Url;
+    if (isR2ApiConfigured()) {
+      try {
+        // Load R2 photos once and cache
+        if (r2AlumniPhotosCache === null) {
+          r2AlumniPhotosCache = await listAlumniPhotos();
+        }
+
+        // Try exact slug match first
+        for (const ext of imageExtensions) {
+          const filename = `${slug}${ext}`;
+          if (r2AlumniPhotosCache.includes(filename)) {
+            return constructImagePath(filename);
+          }
+        }
+
+        // Try fuzzy match (find any image containing the slug)
+        const matchingFile = r2AlumniPhotosCache.find(file => {
+          const ext = path.extname(file).toLowerCase();
+          return imageExtensions.includes(ext) && file.toLowerCase().includes(slug);
+        });
+
+        if (matchingFile) {
+          return constructImagePath(matchingFile);
+        }
+      } catch (error) {
+        console.warn(`⚠️  R2 auto-detection failed for ${alumniName}:`, error instanceof Error ? error.message : error);
+      }
     }
+    // If R2 API not configured, return undefined (no fallback to local in R2 mode)
     return undefined;
   }
 
-  // Local mode: check filesystem
-  const alumniDir = path.join(CONTENT_DIR, alumniId);
+  // Local Mode: Check filesystem
+  if (!await fs.pathExists(ALUMNI_IMAGES_DIR)) {
+    return undefined;
+  }
 
-  for (const ext of IMAGE_EXTENSIONS) {
-    const imagePath = path.join(alumniDir, `profile${ext}`);
+  // Try exact slug match first
+  for (const ext of imageExtensions) {
+    const filename = `${slug}${ext}`;
+    const imagePath = path.join(ALUMNI_IMAGES_DIR, filename);
     if (await fs.pathExists(imagePath)) {
-      return `/alumni/${alumniId}/profile${ext}`;
+      return constructImagePath(filename);
     }
   }
 
-  // No image found
-  console.warn(`⚠️  No profile image found for alumnus: ${alumniId}`);
+  // Try fuzzy match (find any image containing the slug)
+  try {
+    const files = await fs.readdir(ALUMNI_IMAGES_DIR);
+    const matchingFile = files.find(file => {
+      const ext = path.extname(file).toLowerCase();
+      return imageExtensions.includes(ext) && file.toLowerCase().includes(slug);
+    });
+
+    if (matchingFile) {
+      return constructImagePath(matchingFile);
+    }
+  } catch (error) {
+    // Directory doesn't exist or can't be read
+  }
+
   return undefined;
 }
 
@@ -85,8 +148,8 @@ async function parseAlumniRecord(record: AlumniCSVRow): Promise<Alumni> {
   // Parse achievements (semicolon-separated)
   const achievements = parseSemicolonArray(record.achievements);
 
-  // Auto-detect profile image
-  const profileImage = await autoDetectProfileImage(record.id);
+  // Auto-detect profile image (using name for slug matching)
+  const profileImage = await autoDetectProfileImage(record.name);
 
   return {
     id: record.id,
@@ -136,37 +199,38 @@ async function parseAlumni(): Promise<AlumniOutput> {
  * Copy alumni profile images to public directory
  */
 async function copyAlumniMedia(alumni: Alumni[]): Promise<void> {
+  console.log('\n📂 Copying alumni images to public folder...');
+
+  // Skip copying in R2 mode
   if (isR2Mode()) {
-    console.log('⚠️  R2 Mode: Alumni images served from R2 CDN');
+    console.log('⏭️  R2 Mode: Skipping alumni image copy (images served from R2)');
     return;
   }
 
-  console.log('📁 Copying alumni media files...');
+  // Ensure public/alumni directory exists
+  await fs.ensureDir(PUBLIC_ALUMNI_DIR);
 
   let copiedCount = 0;
 
   for (const alumnus of alumni) {
     if (alumnus.profileImage) {
       const filename = path.basename(alumnus.profileImage);
-      const sourcePath = path.join(CONTENT_DIR, alumnus.id, filename);
-      const destPath = path.join(PUBLIC_ALUMNI_DIR, alumnus.id, filename);
+      const sourcePath = path.join(ALUMNI_IMAGES_DIR, filename);
+      const destPath = path.join(PUBLIC_ALUMNI_DIR, filename);
 
-      // Skip if source doesn't exist
-      if (!(await fs.pathExists(sourcePath))) {
-        console.warn(`⚠️  Source file not found: ${sourcePath}`);
-        continue;
+      // Check if source exists
+      if (await fs.pathExists(sourcePath)) {
+        await fs.copy(sourcePath, destPath, { overwrite: true });
+        copiedCount++;
       }
-
-      // Ensure destination directory exists
-      await fs.ensureDir(path.dirname(destPath));
-
-      // Copy file
-      await fs.copy(sourcePath, destPath);
-      copiedCount++;
     }
   }
 
-  console.log(`✅ Copied ${copiedCount} profile images to public/alumni/`);
+  if (copiedCount > 0) {
+    console.log(`✅ Copied ${copiedCount} alumni images to public/alumni/`);
+  } else {
+    console.log(`ℹ️  No alumni images to copy`);
+  }
 }
 
 /**
