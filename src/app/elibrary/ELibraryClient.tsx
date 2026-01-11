@@ -59,7 +59,8 @@ export default function ELibraryClient() {
       if (isStandardCode(item)) {
         return (
           baseMatch ||
-          item.organization?.toLowerCase().includes(searchLower) ||
+          item.standards.some(std => std.organization.toLowerCase().includes(searchLower)) ||
+          item.standards.some(std => std.url.toLowerCase().includes(searchLower)) ||
           item.category?.toLowerCase().includes(searchLower)
         );
       }

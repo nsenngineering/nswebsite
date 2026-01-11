@@ -19,11 +19,16 @@ interface ELibraryItemBase {
   featured?: boolean;
 }
 
+// Individual standard reference
+export interface StandardReference {
+  organization: string;  // e.g., "BIS", "ASTM International"
+  url: string;           // e.g., "https://www.bis.gov.in/..."
+}
+
 // Standard Code (external link to standards organizations)
 export interface StandardCode extends ELibraryItemBase {
   section: 'standard-codes';
-  externalUrl: string;
-  organization?: string;
+  standards: StandardReference[];  // Array of standards with organization and URL
   category?: string;
   dateAdded: string;
 }
