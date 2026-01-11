@@ -237,6 +237,34 @@ export async function listTeamPhotos(): Promise<string[]> {
 }
 
 /**
+ * List alumni photos from R2
+ */
+export async function listAlumniPhotos(): Promise<string[]> {
+  const r2Prefix = process.env.R2_BASE_PATH || '';
+  const basePath = r2Prefix ? `${r2Prefix}/` : '';
+  const prefix = `${basePath}alumni/images/`;
+
+  try {
+    const files = await listR2Files(prefix);
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
+
+    return files
+      .filter(file => {
+        const ext = file.key.toLowerCase().slice(file.key.lastIndexOf('.'));
+        return imageExtensions.includes(ext);
+      })
+      .map(file => {
+        const parts = file.key.split('/');
+        return parts[parts.length - 1];
+      })
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+  } catch (error) {
+    console.warn('⚠️  Could not list R2 alumni photos:', error instanceof Error ? error.message : error);
+    return [];
+  }
+}
+
+/**
  * List image files for a specific service in R2
  *
  * @param serviceId - Service ID (e.g., 'pile-dynamic-analysis')
