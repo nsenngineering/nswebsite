@@ -6,6 +6,7 @@
     "build:content": "tsx scripts/build-content.ts",
     "build:content:local": "cross-env CONTENT_SOURCE_MODE=csv tsx scripts/build-content.ts",
     "build:content:cloud": "dotenv -e .env.cloud -- cross-env CONTENT_SOURCE_MODE=sheets tsx scripts/build-content.ts",
+    "generate:redirects": "tsx scripts/generate-redirects.ts",
     "prebuild": "npm run build:content",
     "dev": "npm run build:content && next dev",
     "dev:local": "npm run build:content:local && cross-env CONTENT_SOURCE_MODE=csv next dev",
