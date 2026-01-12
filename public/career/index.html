@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Canonical URL points to new location -->
+  <link rel="canonical" href="https://www.nsengineering.com.np/careers/">
+
+  <!-- Meta refresh for SEO-friendly redirect (treated as 301 by Google) -->
+  <meta http-equiv="refresh" content="0; url=/careers/">
+
+  <title>Redirecting to careers/...</title>
+
+  <!-- Prevent indexing of redirect page -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- JavaScript redirect fallback -->
+  <script>
+    window.location.replace('/careers/');
+  </script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      color: white;
+    }
+    .redirect-message {
+      text-align: center;
+      padding: 2rem;
+      max-width: 600px;
+    }
+    .spinner {
+      border: 4px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top: 4px solid white;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 1rem auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    a {
+      color: #dbeafe;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="redirect-message">
+    <div class="spinner"></div>
+    <h1>Page Moved</h1>
+    <p>This page has moved to <a href="/careers/">careers</a>.</p>
+    <p>You will be redirected automatically in a moment...</p>
+    <p style="font-size: 0.875rem; margin-top: 2rem; opacity: 0.8;">
+      If you are not redirected, <a href="/careers/">click here</a>.
+    </p>
+  </div>
+
+  <!-- Noscript fallback -->
+  <noscript>
+    <meta http-equiv="refresh" content="0; url=/careers/">
+  </noscript>
+</body>
+</html>

@@ -222,6 +222,23 @@ npx tsc --noEmit
 npm run lint
 ```
 
+### Managing Redirects
+
+**Add new redirect**:
+1. Edit `src/data/redirects.ts`
+2. Run: `npm run generate:redirects`
+3. Commit and deploy
+
+**Test redirects**:
+```bash
+npm run generate:redirects
+npm run build:local
+npx serve@latest out
+# Visit old URLs to test (e.g., http://localhost:3000/career/)
+```
+
+**Location**: `docs/guides/URL_MIGRATION_GUIDE.md`
+
 ### Deployment
 
 ```bash

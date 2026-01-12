@@ -19,7 +19,9 @@
       "Bash(npx tsc:*)",
       "Bash(if not exist \"D:\\\\My Documents\\\\NS Website\\\\ns-engineering-website\\\\src\\\\hooks\" mkdir \"D:\\\\My Documents\\\\NS Website\\\\ns-engineering-website\\\\src\\\\hooks\")",
       "Bash(npm run build:content:local:*)",
-      "Bash(npm run build:local:*)"
+      "Bash(npm run build:local:*)",
+      "WebFetch(domain:nsengineering.com.np)",
+      "Bash(npm run generate:redirects:*)"
     ],
     "deny": [],
     "ask": []

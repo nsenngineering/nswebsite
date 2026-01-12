@@ -141,6 +141,26 @@ npm run build:content:local
 npm run build:content:cloud
 ```
 
+### URL Migration & Redirects
+
+```bash
+# Generate redirect pages for old WordPress URLs
+npm run generate:redirects
+
+# Test redirects locally
+npm run build:local
+npx serve@latest out
+# Visit http://localhost:3000/career/ (should redirect to /careers/)
+```
+
+**Key Changes**:
+- `/career/` → `/careers/`
+- `/downloads/` → `/elibrary/`
+- `/gallery/` → `/projects/`
+- Individual test pages → `/services/` (with anchors)
+
+See [URL Migration Guide](./docs/guides/URL_MIGRATION_GUIDE.md) for complete details.
+
 ---
 
 ## 📁 Project Structure
