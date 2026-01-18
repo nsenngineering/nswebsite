@@ -340,7 +340,7 @@ export default function AboutClient() {
           <FadeIn delay={0.4}>
             <div className="text-center mt-12">
               <Link href="/team">
-                <Button size="lg" variant="primary">
+                <Button size="lg" variant="purple">
                   View Full Team
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
