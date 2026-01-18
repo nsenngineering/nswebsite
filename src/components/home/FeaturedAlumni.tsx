@@ -91,11 +91,13 @@ export default function FeaturedAlumni() {
                     </p>
 
                     {/* Testimonial Preview */}
-                    <div className="flex-grow">
-                      <p className="text-sm text-gray-600 italic line-clamp-4 text-center">
-                        "{alumnus.testimonial}"
-                      </p>
-                    </div>
+                    {alumnus.testimonial && (
+                      <div className="flex-grow">
+                        <p className="text-sm text-gray-600 italic line-clamp-4 text-center">
+                          "{alumnus.testimonial}"
+                        </p>
+                      </div>
+                    )}
 
                     {/* View More Link */}
                     <div className="flex items-center justify-center text-primary-600 text-sm font-medium mt-4 hover:text-primary-700 transition-colors">

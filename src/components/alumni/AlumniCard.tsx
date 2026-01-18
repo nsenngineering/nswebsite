@@ -93,11 +93,13 @@ export default function AlumniCard({ alumnus, onOpenModal }: AlumniCardProps) {
         )}
 
         {/* Testimonial Preview */}
-        <div className="border-t border-gray-100 pt-4">
-          <p className="text-sm text-gray-600 italic line-clamp-3 text-center">
-            "{alumnus.testimonial}"
-          </p>
-        </div>
+        {alumnus.testimonial && (
+          <div className="border-t border-gray-100 pt-4">
+            <p className="text-sm text-gray-600 italic line-clamp-3 text-center">
+              "{alumnus.testimonial}"
+            </p>
+          </div>
+        )}
 
         {/* Hover Overlay with "View Details" Button */}
         <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-4">

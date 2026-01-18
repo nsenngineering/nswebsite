@@ -33,12 +33,14 @@ export interface StandardCode extends ELibraryItemBase {
   dateAdded: string;
 }
 
-// Publication (internal PDF - technical papers/research)
+// Publication (internal PDF or external link - technical papers/research)
 export interface Publication extends ELibraryItemBase {
   section: 'publications';
   description: string;
-  fileUrl: string;
-  author?: string;
+  fileUrl?: string;       // Internal PDF file URL (optional if external)
+  externalUrl?: string;   // External URL (e.g., Springer, ResearchGate)
+  source?: string;        // Source name for external URLs (e.g., "Springer", "ResearchGate")
+  authors: string[];      // Array of author names (semicolon-separated in CSV)
   publishDate: string;
   category?: string;
 }
