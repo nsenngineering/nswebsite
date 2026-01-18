@@ -68,7 +68,7 @@ export default function ELibraryClient() {
         return (
           baseMatch ||
           item.description.toLowerCase().includes(searchLower) ||
-          item.author?.toLowerCase().includes(searchLower) ||
+          item.authors.some(author => author.toLowerCase().includes(searchLower)) ||
           item.category?.toLowerCase().includes(searchLower)
         );
       }

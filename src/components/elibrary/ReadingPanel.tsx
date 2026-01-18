@@ -85,10 +85,16 @@ export default function ReadingPanel({ item, onClose }: ReadingPanelProps) {
 
             {isPublication(item) && (
               <>
-                {item.author && (
+                {item.authors.length > 0 && (
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>{item.author}</span>
+                    <span>{item.authors.join(', ')}</span>
+                  </div>
+                )}
+                {item.source && (
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4" />
+                    <span>{item.source}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2">
@@ -268,7 +274,19 @@ export default function ReadingPanel({ item, onClose }: ReadingPanelProps) {
               </div>
             )}
 
-            {isPublication(item) && (
+            {isPublication(item) && item.externalUrl && (
+              <a
+                href={item.externalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm w-full justify-center"
+              >
+                <ExternalLink className="w-5 h-5" />
+                <span>Read Paper</span>
+              </a>
+            )}
+
+            {isPublication(item) && item.fileUrl && !item.externalUrl && (
               <a
                 href={item.fileUrl}
                 download

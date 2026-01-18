@@ -222,7 +222,15 @@ export async function parseStandardCodes(records: CSVRecord[]): Promise<Standard
 // ============================================================================
 
 /**
+ * Check if a string is an external URL
+ */
+function isExternalUrl(url: string): boolean {
+  return url.startsWith('http://') || url.startsWith('https://');
+}
+
+/**
  * Parse a single publication from CSV record
+ * Supports both internal PDF files and external URLs (e.g., Springer, ResearchGate)
  */
 export async function parsePublication(record: CSVRecord): Promise<Publication> {
   const id = validateRequired(record.id, 'id', record.id || 'unknown');
@@ -231,29 +239,46 @@ export async function parsePublication(record: CSVRecord): Promise<Publication> 
   const title = validateRequired(record.title, 'title', id);
   const description = validateRequired(record.description, 'description', id);
 
-  // fileUrl is optional - if not provided, use {id}.pdf
-  const fileUrl = record.fileUrl?.trim() || `${id}.pdf`;
-
-  const author = record.author?.trim() || undefined;
+  // Authors can be semicolon-separated (e.g., "Anand Gupta;Suman Panthee;Dr. Janani Selvam")
+  const authors = parseSemicolonArray(record.author);
   const category = record.category?.trim() || undefined;
   const tags = parseSemicolonArray(record.tags);
   const featured = parseBoolean(record.featured);
+  const source = record.source?.trim() || undefined;
 
   const publishDate = validateRequired(record.publishDate, 'publishDate', id);
   validateDate(publishDate, id);
 
-  // Construct flat file path: publications/{filename}
-  const fileUrlPath = isR2Mode()
-    ? constructR2Url('elibrary', `publications/${fileUrl}`)
-    : `publications/${fileUrl}`;
+  // fileUrl can be either:
+  // 1. An external URL (starts with http:// or https://) -> use as externalUrl
+  // 2. A filename (e.g., "paper.pdf") -> construct internal path
+  // 3. Empty -> default to {id}.pdf
+  const rawFileUrl = record.fileUrl?.trim() || '';
+
+  let fileUrl: string | undefined;
+  let externalUrl: string | undefined;
+
+  if (isExternalUrl(rawFileUrl)) {
+    // External URL (e.g., Springer, ResearchGate)
+    validateUrl(rawFileUrl, id);
+    externalUrl = rawFileUrl;
+  } else {
+    // Internal PDF file
+    const filename = rawFileUrl || `${id}.pdf`;
+    fileUrl = isR2Mode()
+      ? constructR2Url('elibrary', `publications/${filename}`)
+      : `publications/${filename}`;
+  }
 
   return {
     id,
     title,
     section: 'publications',
     description,
-    fileUrl: fileUrlPath,
-    author,
+    fileUrl,
+    externalUrl,
+    source,
+    authors,
     publishDate,
     category,
     tags,

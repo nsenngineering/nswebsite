@@ -88,11 +88,18 @@ export default function DocumentGrid({ items, onItemClick, selectedItemId }: Doc
                         })}
                       </span>
                     </div>
-                    {/* Author */}
-                    {item.author && (
+                    {/* Authors */}
+                    {item.authors.length > 0 && (
                       <div className="flex items-center gap-1.5">
                         <User className="w-4 h-4" />
-                        <span>{item.author}</span>
+                        <span>{item.authors.length > 2 ? `${item.authors[0]} et al.` : item.authors.join(', ')}</span>
+                      </div>
+                    )}
+                    {/* Source (for external publications) */}
+                    {item.source && (
+                      <div className="flex items-center gap-1.5">
+                        <Globe className="w-4 h-4" />
+                        <span>{item.source}</span>
                       </div>
                     )}
                     {/* Category */}
@@ -171,9 +178,17 @@ export default function DocumentGrid({ items, onItemClick, selectedItemId }: Doc
             <div className="p-6 space-y-4">
               {/* Description/Preview */}
               {isPublication(item) && (
-                <p className="text-sm text-gray-700 line-clamp-3">
-                  {item.description}
-                </p>
+                <>
+                  <p className="text-sm text-gray-700 line-clamp-3">
+                    {item.description}
+                  </p>
+                  {item.externalUrl && (
+                    <div className="flex items-center gap-2 text-sm text-blue-600 mt-2">
+                      <ExternalLink className="w-4 h-4" />
+                      <span>External publication</span>
+                    </div>
+                  )}
+                </>
               )}
 
               {isDownload(item) && item.description && (
@@ -260,7 +275,20 @@ export default function DocumentGrid({ items, onItemClick, selectedItemId }: Doc
                 </div>
               )}
 
-              {isPublication(item) && (
+              {isPublication(item) && item.externalUrl && (
+                <a
+                  href={item.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Read Paper
+                </a>
+              )}
+
+              {isPublication(item) && item.fileUrl && !item.externalUrl && (
                 <a
                   href={item.fileUrl}
                   download
