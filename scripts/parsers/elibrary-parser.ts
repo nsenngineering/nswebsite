@@ -230,7 +230,9 @@ export async function parsePublication(record: CSVRecord): Promise<Publication> 
 
   const title = validateRequired(record.title, 'title', id);
   const description = validateRequired(record.description, 'description', id);
-  const fileUrl = validateRequired(record.fileUrl, 'fileUrl', id);
+
+  // fileUrl is optional - if not provided, use {id}.pdf
+  const fileUrl = record.fileUrl?.trim() || `${id}.pdf`;
 
   const author = record.author?.trim() || undefined;
   const category = record.category?.trim() || undefined;
@@ -240,8 +242,10 @@ export async function parsePublication(record: CSVRecord): Promise<Publication> 
   const publishDate = validateRequired(record.publishDate, 'publishDate', id);
   validateDate(publishDate, id);
 
-  // Construct full file path
-  const fileUrlPath = getFileUrlPath('publications', id, fileUrl);
+  // Construct flat file path: publications/{filename}
+  const fileUrlPath = isR2Mode()
+    ? constructR2Url('elibrary', `publications/${fileUrl}`)
+    : `publications/${fileUrl}`;
 
   return {
     id,
@@ -361,7 +365,9 @@ export async function parseDownload(record: CSVRecord): Promise<Download> {
   validateItemId(id);
 
   const title = validateRequired(record.title, 'title', id);
-  const fileUrl = validateRequired(record.fileUrl, 'fileUrl', id);
+
+  // fileUrl is optional - if not provided, use {id}.pdf
+  const fileUrl = record.fileUrl?.trim() || `${id}.pdf`;
 
   const description = record.description?.trim() || undefined;
   const category = record.category?.trim() || undefined;
@@ -374,13 +380,15 @@ export async function parseDownload(record: CSVRecord): Promise<Download> {
   // Auto-detect file type from extension
   const fileType = record.fileType?.trim() || detectFileType(fileUrl);
 
-  // Construct full file path
-  const fileUrlPath = getFileUrlPath('downloads', id, fileUrl);
+  // Construct flat file path: downloads/{filename}
+  const fileUrlPath = isR2Mode()
+    ? constructR2Url('elibrary', `downloads/${fileUrl}`)
+    : `downloads/${fileUrl}`;
 
   // Try to detect file size if not provided
   let fileSize = record.fileSize?.trim() || undefined;
   if (!fileSize) {
-    const localPath = path.join(process.cwd(), 'content', 'elibrary', 'downloads', id, fileUrl);
+    const localPath = path.join(process.cwd(), 'public', 'elibrary', 'downloads', fileUrl);
     fileSize = await detectFileSize(localPath);
   }
 
@@ -438,7 +446,9 @@ export async function parseNewsletter(record: CSVRecord): Promise<Newsletter> {
   validateItemId(id);
 
   const title = validateRequired(record.title, 'title', id);
-  const fileUrl = validateRequired(record.fileUrl, 'fileUrl', id);
+
+  // fileUrl is optional - if not provided, use {id}.pdf
+  const fileUrl = record.fileUrl?.trim() || `${id}.pdf`;
 
   const description = record.description?.trim() || undefined;
   const quarter = record.quarter?.trim() || undefined;
@@ -448,8 +458,10 @@ export async function parseNewsletter(record: CSVRecord): Promise<Newsletter> {
   const publishDate = validateRequired(record.publishDate, 'publishDate', id);
   validateDate(publishDate, id);
 
-  // Construct full file path
-  const fileUrlPath = getFileUrlPath('newsletters', id, fileUrl);
+  // Construct flat file path: newsletters/{filename}
+  const fileUrlPath = isR2Mode()
+    ? constructR2Url('elibrary', `newsletters/${fileUrl}`)
+    : `newsletters/${fileUrl}`;
 
   return {
     id,

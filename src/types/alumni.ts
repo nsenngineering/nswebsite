@@ -1,9 +1,9 @@
 export interface Alumni {
   id: string;
   name: string;
-  yearFrom: number;
-  yearTo: number;
-  yearsWorked: string;           // Computed: "2015 - 2018" or "2015 - Present"
+  yearFrom?: number;              // Optional - alumni shows without year info if missing
+  yearTo?: number;                // Optional - alumni shows without year info if missing
+  yearsWorked?: string;           // Computed: "2015 - 2018" or "2015 - Present" (only if years provided)
   achievements: string[];         // Semicolon-separated in CSV
   linkedinUrl?: string;
   testimonial: string;

@@ -133,16 +133,21 @@ async function autoDetectProfileImage(alumniName: string): Promise<string | unde
  * Parse a single alumni record from CSV
  */
 async function parseAlumniRecord(record: AlumniCSVRow): Promise<Alumni> {
-  const yearFrom = parseInt(record.yearFrom);
-  const yearToStr = record.yearTo.trim();
-  const yearTo = yearToStr === 'Present' ? new Date().getFullYear() : parseInt(yearToStr);
+  // Parse years - allow missing/invalid values
+  const yearFromStr = record.yearFrom?.trim() || '';
+  const yearToStr = record.yearTo?.trim() || '';
 
-  // Validate years
-  if (isNaN(yearFrom)) {
-    throw new Error(`Invalid yearFrom for alumnus ${record.id}: ${record.yearFrom}`);
-  }
-  if (yearToStr !== 'Present' && isNaN(yearTo)) {
-    throw new Error(`Invalid yearTo for alumnus ${record.id}: ${record.yearTo}`);
+  const yearFrom = yearFromStr ? parseInt(yearFromStr) : NaN;
+  const yearTo = yearToStr === 'Present' ? new Date().getFullYear() : (yearToStr ? parseInt(yearToStr) : NaN);
+
+  // Determine if we have valid years
+  const hasValidYearFrom = !isNaN(yearFrom);
+  const hasValidYearTo = yearToStr === 'Present' || !isNaN(yearTo);
+  const hasValidYears = hasValidYearFrom && hasValidYearTo;
+
+  // Log warning for missing years (but don't fail)
+  if (!hasValidYears) {
+    console.warn(`⚠️  Alumni "${record.name}" (${record.id}) has missing/invalid year data - will display without years`);
   }
 
   // Parse achievements (semicolon-separated)
@@ -154,9 +159,9 @@ async function parseAlumniRecord(record: AlumniCSVRow): Promise<Alumni> {
   return {
     id: record.id,
     name: record.name,
-    yearFrom,
-    yearTo,
-    yearsWorked: `${record.yearFrom} - ${record.yearTo}`,
+    yearFrom: hasValidYearFrom ? yearFrom : undefined,
+    yearTo: hasValidYearTo ? yearTo : undefined,
+    yearsWorked: hasValidYears ? `${yearFromStr} - ${yearToStr}` : undefined,
     achievements,
     linkedinUrl: record.linkedinUrl || undefined,
     testimonial: record.testimonial,

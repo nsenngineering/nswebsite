@@ -55,9 +55,11 @@ export default function AlumniCard({ alumnus, onOpenModal }: AlumniCardProps) {
         </h3>
 
         {/* Years Worked */}
-        <p className="text-sm font-medium text-primary-600 mb-4 text-center">
-          {alumnus.yearsWorked}
-        </p>
+        {alumnus.yearsWorked && (
+          <p className="text-sm font-medium text-primary-600 mb-4 text-center">
+            {alumnus.yearsWorked}
+          </p>
+        )}
 
         {/* Achievements Preview (first 2 items) */}
         {alumnus.achievements.length > 0 && (

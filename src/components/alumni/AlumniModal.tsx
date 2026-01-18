@@ -47,13 +47,15 @@ export default function AlumniModal({ alumnus, isOpen, onClose }: AlumniModalPro
         </div>
 
         {/* Years Worked */}
-        <div className="flex items-center justify-center gap-2 text-center">
-          <Calendar className="w-5 h-5 text-primary-600" />
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900">Years at NSEGS</h3>
-            <p className="text-lg font-bold text-primary-600">{alumnus.yearsWorked}</p>
+        {alumnus.yearsWorked && (
+          <div className="flex items-center justify-center gap-2 text-center">
+            <Calendar className="w-5 h-5 text-primary-600" />
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900">Years at NSEGS</h3>
+              <p className="text-lg font-bold text-primary-600">{alumnus.yearsWorked}</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Achievements */}
         {alumnus.achievements.length > 0 && (

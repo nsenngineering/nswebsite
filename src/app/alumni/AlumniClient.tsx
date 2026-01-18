@@ -13,10 +13,10 @@ import alumniDataRaw from '@/data/generated/alumni.json';
 const alumniData = alumniDataRaw as { alumni: Alumni[] };
 const alumni = alumniData.alumni as Alumni[];
 
-// Generate year range filters based on alumni data
-const allYears = alumni.flatMap(a => [a.yearFrom, a.yearTo]);
-const minYear = Math.min(...allYears);
-const maxYear = Math.max(...allYears);
+// Generate year range filters based on alumni data (filter out undefined years)
+const allYears = alumni.flatMap(a => [a.yearFrom, a.yearTo]).filter((y): y is number => y !== undefined);
+const minYear = allYears.length > 0 ? Math.min(...allYears) : 2015;
+const maxYear = allYears.length > 0 ? Math.max(...allYears) : new Date().getFullYear();
 
 const yearRanges = [
   { id: 'all', label: 'All Years' },
@@ -35,8 +35,11 @@ export default function AlumniPage() {
     // Search filter (name)
     const matchesSearch = alumnus.name.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // Year range filter
+    // Year range filter (alumni without years only show in "All Years")
     const matchesYearRange = selectedYearRange === 'all' || (() => {
+      if (alumnus.yearFrom === undefined || alumnus.yearTo === undefined) {
+        return false; // Exclude from specific year ranges if years are missing
+      }
       const [startYear, endYear] = selectedYearRange.split('-').map(Number);
       // Alumni matches if their employment period overlaps with the selected range
       return alumnus.yearFrom <= endYear && alumnus.yearTo >= startYear;
