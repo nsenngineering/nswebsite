@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { Search, HelpCircle, Wrench, DollarSign, FileQuestion, Info } from 'lucide-react';
 import FAQAccordion from '@/components/faq/FAQAccordion';
 import faqDataRaw from '@/data/generated/faq.json';
+import companyInfo from '@/data/generated/company-info.json';
 import type { FAQItem, FAQCategory } from '@/types/faq';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -145,13 +146,13 @@ export default function FAQClient() {
           </p>
           <div className="flex flex-wrap gap-4">
             <a
-              href="tel:+97715260121"
+              href={`tel:${companyInfo.contact.phone.replace(/-/g, '')}`}
               className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium"
             >
-              Call +977-01-5260121
+              Call {companyInfo.contact.phone}
             </a>
             <a
-              href="mailto:info@nsengineering.com.np"
+              href={`mailto:${companyInfo.contact.email}`}
               className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
             >
               Email Us
