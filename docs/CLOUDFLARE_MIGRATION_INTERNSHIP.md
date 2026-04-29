@@ -1,7 +1,7 @@
 # Cloudflare Migration — Internship Project Guide
 
 **Project**: NS Engineering Website — GitHub Pages → Cloudflare Pages  
-**Intern**: _(your name here)_  
+**Intern**:Ritika Kunwar  
 **Mentor**: Shobhit Tripathi  
 **Branch**: `feature/cloudflareMigration`  
 **Started**: 2026-04-29
