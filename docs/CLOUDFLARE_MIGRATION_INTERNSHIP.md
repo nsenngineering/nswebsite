@@ -75,6 +75,26 @@ Developer pushes to main
 Answer the following questions in writing (a short notes file is fine). Walk your mentor through your answers in a 30-minute session.
 
 1. What does `npm run build:cloud` do, step by step? Trace it from the npm script to the final `out/` directory.
+=>
+step 1 : npm reads the script
+npm run build:cloud looks into the package.json file and finds the corresponding script
+step 2 : Load cloud environment variables
+The command used :
+dotenv -e .env.cloud
+step 3 : set build mode
+Next, this part runs:
+cross-env CONTENT_SOURCE_MODE=sheets
+This sets an environment variable:
+CONTENT_SOURCE_MODE = sheets
+This tells the system to fetch content from Google Sheets (cloud source) instead of local files like CSV.
+Step 4: Run the build script
+The main script is executed:
+tsx scripts/build-content.ts
+This TypeScript file controls the full build process.
+Step 5: Fetch content from cloud
+Step 6: Process and transform content
+Step 7: Generate static website
+
 2. What is the difference between `CONTENT_SOURCE_MODE=csv` and `CONTENT_SOURCE_MODE=sheets`? When is each used?
 3. Why does the GitHub Actions pipeline have four separate jobs instead of one big script?
 4. What is rclone and what specific problem does it solve here?
