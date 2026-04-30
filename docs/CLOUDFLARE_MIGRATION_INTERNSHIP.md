@@ -74,57 +74,58 @@ Developer pushes to main
 
 Answer the following questions in writing (a short notes file is fine). Walk your mentor through your answers in a 30-minute session.
 
-1. What does `npm run build:cloud` do, step by step? Trace it from the npm script to the final `out/` directory.
+### 1. What does `npm run build:cloud` do, step by step? Trace it from the npm script to the final `out/` directory.
 =>
-### Step 1 : npm reads the script
+#### Step 1 : npm reads the script
 npm run build:cloud looks into the package.json file and finds the corresponding script
-### Step 2 : Load cloud environment variables
+#### Step 2 : Load cloud environment variables
 The command used :
 dotenv -e .env.cloud
-### Step 3 : Set build mode
+#### Step 3 : Set build mode
 Next, this part runs:
 cross-env CONTENT_SOURCE_MODE=sheets
 This sets an environment variable:
 CONTENT_SOURCE_MODE = sheets
 This tells the system to fetch content from Google Sheets (cloud source) instead of local files like CSV.
-### Step 4: Run the build script
+#### Step 4: Run the build script
 The main script is executed:
 tsx scripts/build-content.ts
 This TypeScript file controls the full build process.
-### Step 5: Fetch content from cloud
-### Step 6: Process and transform content
-### Step 7: Generate static website
-### Step 8: Write output to out/ directory
+#### Step 5: Fetch content from cloud
+#### Step 6: Process and transform content
+#### Step 7: Generate static website
+#### Step 8: Write output to out/ directory
 Finally, everything is saved into the out/ folder
 
-2. What is the difference between `CONTENT_SOURCE_MODE=csv` and `CONTENT_SOURCE_MODE=sheets`? When is each used?
+### 2. What is the difference between `CONTENT_SOURCE_MODE=csv` and `CONTENT_SOURCE_MODE=sheets`? When is each used?
+
 =>
 | Mode                         | Source          | Usage                                  |
 | ---------------------------- | --------------- | -------------------------------------- |
 | `CONTENT_SOURCE_MODE=csv`    | Local CSV files | Used for local development and testing |
 | `CONTENT_SOURCE_MODE=sheets` | Google Sheets   | Used for cloud/production builds       |
 
-3. Why does the GitHub Actions pipeline have four separate jobs instead of one big script?
+### 3. Why does the GitHub Actions pipeline have four separate jobs instead of one big script?
 =>
 The GitHub Actions pipeline is split into four separate jobs instead of one big script to improve reliability, speed, and control.
-## Reasons:
-### 1. Separation of concerns
+#### Reasons:
+#### 1. Separation of concerns
 Each job has one responsibility (e.g., sync content, build site, deploy, promote). This makes the workflow easier to understand and maintain.
-### 2. Faster execution (parallelism)
+#### 2. Faster execution (parallelism)
 Independent jobs can run in parallel, reducing total pipeline time instead of waiting for one long script.
-### 3. Better failure handling
+#### 3. Better failure handling
 If one job fails, only that part needs to be re-run instead of restarting the entire pipeline.
-### 4. Controlled deployment flow
+##### 4. Controlled deployment flow
 It allows staged deployment (e.g., dev → staging → production with approval steps).
 Easier debugging
 Logs are separated per job, so it is easier to find where something broke.
 The four separate jobs used in our system are :
 
-## For deploy.yml
-## Job 1: Sync-assests:
+#### For deploy.yml
+#### Job 1: Sync-assests:
 Google Drive → Cloudflare R2
 It moves images and files from Google Drive into Cloudflare R2 storage.
-### Steps:
+##### Steps:
 1. Download rclone
 Tool that connects cloud storage services
 2. Configure Google Drive
@@ -137,11 +138,11 @@ Copies only:
 images (jpg, png, webp)
 PDFs
 Skips CSV files
-## Job 2: Build
+#### Job 2: Build
 Build Next.js Website
 Depends on:
 Job 1 must finish first (assets must be ready in R2)
-### What it does:
+##### What it does:
 1. Install dependencies
 Runs npm ci (installs project packages)
 2. Load Google credentials
@@ -149,7 +150,7 @@ Allows access to Google Sheets
 3. Build website
 Runs:
 npm run build:cloud
-### This step:
+##### This step:
 Fetches content from Google Sheets
 Pulls images from R2
 Generates static website files
@@ -158,21 +159,21 @@ Output:
 (static HTML website)
 4. Upload artifact
 Saves build output for deployment
-## Job 3: Deploy
+#### Job 3: Deploy
 Send website to GitHub Pages
 Depends on:
 Job 2 (build must be ready)
-### What it does:
+##### What it does:
 Takes the /out folder
 Deploys it to GitHub Pages using:
 actions/deploy-pages@v4
 Result:
 Your website becomes live on a public URL
-## Job 4: Commit-csv
+#### Job 4: Commit-csv
 Save content backup into Git
 Depends on:
 Job 2 (build must finish first)
-### What it does:
+##### What it does:
 1. Re-fetch content from Google Sheets
 Runs:
 npm run build:content:cloud
@@ -183,71 +184,73 @@ content/**/*.csv
 If changes exist:
 Update content from Google Sheets [skip ci]
 
-## For manual-sync.yml
-## Steps:
-### Step 1: Checkout code
+#### For manual-sync.yml
+#### Steps:
+#### Step 1: Checkout code
 uses: actions/checkout@v4
-### Step 2: Install rclone
-### Step 3: Configure Google Drive
-### Step 4: Configure Cloudflare R2
-### Step 5: Debug Google Drive
-### Step 6: Sync files
+#### Step 2: Install rclone
+#### Step 3: Configure Google Drive
+#### Step 4: Configure Cloudflare R2
+#### Step 5: Debug Google Drive
+#### Step 6: Sync files
 
-4. What is rclone and what specific problem does it solve here?
+### 4. What is rclone and what specific problem does it solve here?
 =>
-### rclone is a command-line tool used to sync and transfer files between cloud storage services and local systems.
+rclone is a command-line tool used to sync and transfer files between cloud storage services and local systems.
+
 In this pipeline, it is used to automatically sync media files (like images and assets) from storage sources such as Google Drive to cloud storage (like R2) during CI/CD, ensuring all required files are available for the build and deployment.
 
-5. What is Cloudflare Turnstile and what happens to the contact form if the Turnstile token is missing or invalid?
+### 5. What is Cloudflare Turnstile and what happens to the contact form if the Turnstile token is missing or invalid?
 =>
-### Cloudflare Turnstile is a bot protection and CAPTCHA alternative service that verifies whether a form is being submitted by a real human or an automated bot, without requiring users to solve puzzles.
+Cloudflare Turnstile is a bot protection and CAPTCHA alternative service that verifies whether a form is being submitted by a real human or an automated bot, without requiring users to solve puzzles.
 
-### If the Turnstile token is missing or invalid:
-i.The backend rejects the form submission
-ii.The contact form request is not processed or stored
-iii.The user may see an error or validation failure message
+#### If the Turnstile token is missing or invalid:
+1.The backend rejects the form submission
+2.The contact form request is not processed or stored
+3.The user may see an error or validation failure message
 
-6. What is the `CNAME` file in the repo root? Why does it exist and what will happen to it after this migration?
+### 6. What is the `CNAME` file in the repo root? Why does it exist and what will happen to it after this migration?
 =>
-### A CNAME file in the repo root is used by GitHub Pages to map the site to a custom domain.
+ A CNAME file in the repo root is used by GitHub Pages to map the site to a custom domain.
 
-### After migration, (suppose moving to Cloudflare Pages or another host):
+#### After migration, (suppose moving to Cloudflare Pages or another host):
 it is no longer needed because the domain is managed in the new hosting (e.g., Cloudflare DNS/Pages), so it is usually ignored or removed.
 
-7. List all GitHub Actions secrets the pipeline uses today. For each one, write one sentence on what it does.
+### 7. List all GitHub Actions secrets the pipeline uses today. For each one, write one sentence on what it does.
 =>
-### A GitHub Actions secret is a secure place to store sensitive data (like passwords, API keys, tokens) that your workflow needs — without exposing them in your code.
-### 1. GDRIVE_CLIENT_ID =>
+A GitHub Actions secret is a secure place to store sensitive data (like passwords, API keys, tokens) that your workflow needs — without exposing them in your code.
+#### The GitHub Actions secrets the pipeline uses today are:
+##### 1. GDRIVE_CLIENT_ID =>
 OAuth client ID used to validate and authenticate the Google Drive service account.
-### 2. GDRIVE_PRIVATE_KEY =>
+##### 2. GDRIVE_PRIVATE_KEY =>
 The actual private key used to securely authenticate the service account to Google Drive.
-### 3. GDRIVE_PRIVATE_KEY_ID =>
+##### 3. GDRIVE_PRIVATE_KEY_ID =>
 Specifies which private key is being used for the Google service account authentication.
-### 4. GDRIVE_PROJECT_ID =>
+##### 4. GDRIVE_PROJECT_ID =>
 Identifies the Google Cloud project that owns the service account used to access Google Drive.
-### 5. GDRIVE_ROOT_FOLDER_ID =>
+##### 5. GDRIVE_ROOT_FOLDER_ID =>
 Defines the Google Drive folder that acts as the root source directory for syncing files.
-### 6. GDRIVE_SERVICE_ACCOUNT_EMAIL =>
+##### 6. GDRIVE_SERVICE_ACCOUNT_EMAIL =>
 The service account email that rclone uses to access Google Drive files.
-### 7. GOOGLE_CREDENTIALS_JSON =>
+##### 7. GOOGLE_CREDENTIALS_JSON =>
 GOOGLE_CREDENTIALS_JSON is a GitHub Actions secret (or environment variable) that stores the full Google service account credentials in JSON format.
-### 8.GOOGLE_SERVICE_ACCOUNT_EMAIL =>
+##### 8.GOOGLE_SERVICE_ACCOUNT_EMAIL =>
 This is the email identity of a Google service account used to authenticate server-side access to Google APIs like Google Drive or Google Sheets.
-### 9. GOOGLE_SHEET_ID =>
+##### 9. GOOGLE_SHEET_ID =>
 This is the unique ID of a Google Sheet that your app or workflow reads from or writes to.
-### 10. NEXT_PUBLIC_EMAIL_WORKER_URL =>
+##### 10. NEXT_PUBLIC_EMAIL_WORKER_URL =>
 This is the public URL of a backend email worker (likely Cloudflare Worker) used by the frontend to send form submissions or emails.
-### 11. NEXT_PUBLIC_R2_BASE_URL =>
+##### 11. NEXT_PUBLIC_R2_BASE_URL =>
 This is the public base URL used to access files stored in Cloudflare R2 (usually for images, PDFs, or media assets).
-### 12. NEXT_PUBLIC_TURNSTILE_SITE_KEY =>
+##### 12. NEXT_PUBLIC_TURNSTILE_SITE_KEY =>
 This is the public site key for Cloudflare Turnstile used in the frontend to render and activate bot protection on forms.
-### 13. R2_ACCESS_KEY_ID =>
+##### 13. R2_ACCESS_KEY_ID =>
 This is the public access key used to authenticate requests to Cloudflare R2 storage
-### 14. R2_ACCOUNT_ID =>
+##### 14. R2_ACCOUNT_ID =>
 This identifies the Cloudflare account and is used to build the correct R2 API endpoint URL.
-### 15. R2_BUCKET_NAME =>
+##### 15. R2_BUCKET_NAME =>
 This is the name of the storage bucket inside Cloudflare R2 where your files are stored and managed.
-### 16. R2_SECRET_ACCESS_KEY =>
+##### 16. R2_SECRET_ACCESS_KEY =>
 This is the private secret key paired with the access key, used to securely authorize file uploads and downloads in R2.
 
 **Files to read**:
