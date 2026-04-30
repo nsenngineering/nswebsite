@@ -170,7 +170,7 @@ This is the public site key for Cloudflare Turnstile used in the frontend to ren
 ### 13. R2_ACCESS_KEY_ID =>
 This is the public access key used to authenticate requests to Cloudflare R2 storage
 ### 14. R2_ACCOUNT_ID =>
-This identifies your Cloudflare account and is used to build the correct R2 API endpoint URL.
+This identifies the Cloudflare account and is used to build the correct R2 API endpoint URL.
 ### 15. R2_BUCKET_NAME =>
 This is the name of the storage bucket inside Cloudflare R2 where your files are stored and managed.
 ### 16. R2_SECRET_ACCESS_KEY =>
