@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -14,12 +14,35 @@ const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
 
+  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
+
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
+
+  const toggleMenu = useCallback(() => {
+    setIsMenuOpen((prev) => !prev);
   }, []);
 
   const navigation = [
@@ -32,6 +55,10 @@ const Header: React.FC = () => {
     { name: 'Careers', href: '/careers' },
   ];
 
+  const isActiveLink = (href: string) => {
+    return href === '/' ? pathname === '/' : pathname.startsWith(href);
+  };
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
@@ -40,6 +67,7 @@ const Header: React.FC = () => {
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
+
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3">
             <div className="relative w-12 h-12 flex-shrink-0">
@@ -64,10 +92,8 @@ const Header: React.FC = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">
             {navigation.map((item) => {
-              const isActive =
-                item.href === '/'
-                  ? pathname === item.href
-                  : pathname.startsWith(item.href);
+              const isActive = isActiveLink(item.href);
+
               return (
                 <Link
                   key={item.name}
@@ -93,11 +119,16 @@ const Header: React.FC = () => {
 
           {/* Mobile Menu Button */}
           <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={toggleMenu}
             className="lg:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100"
             aria-label="Toggle menu"
+            aria-expanded={isMenuOpen}
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
 
@@ -106,10 +137,8 @@ const Header: React.FC = () => {
           <div className="lg:hidden border-t border-gray-200 py-4">
             <div className="flex flex-col space-y-2">
               {navigation.map((item) => {
-                const isActive =
-                item.href === '/'
-                  ? pathname === item.href
-                  : pathname.startsWith(item.href);
+                const isActive = isActiveLink(item.href);
+
                 return (
                   <Link
                     key={item.name}
@@ -125,9 +154,15 @@ const Header: React.FC = () => {
                   </Link>
                 );
               })}
+
               <div className="pt-2 px-4">
-                <Link href="/contact" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="w-full" size="sm">Request Quote</Button>
+                <Link
+                  href="/contact"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Button className="w-full" size="sm">
+                    Request Quote
+                  </Button>
                 </Link>
               </div>
             </div>
