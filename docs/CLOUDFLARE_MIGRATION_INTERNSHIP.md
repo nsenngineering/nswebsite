@@ -118,6 +118,79 @@ If one job fails, only that part needs to be re-run instead of restarting the en
 It allows staged deployment (e.g., dev → staging → production with approval steps).
 Easier debugging
 Logs are separated per job, so it is easier to find where something broke.
+The four separate jobs used in our system are :
+### for deploy.yml
+### job 1: sync-assests:
+Google Drive → Cloudflare R2
+It moves images and files from Google Drive into Cloudflare R2 storage.
+### Steps:
+1. Download rclone
+Tool that connects cloud storage services
+2. Configure Google Drive
+Uses service account (robot login)
+Gives access to Google Drive folder
+3. Configure Cloudflare R2
+Connects to your R2 bucket (like AWS S3 storage)
+4. Sync files
+Copies only:
+images (jpg, png, webp)
+PDFs
+Skips CSV files
+### job 2: build
+Build Next.js Website
+Depends on:
+Job 1 must finish first (assets must be ready in R2)
+### What it does:
+1. Install dependencies
+Runs npm ci (installs project packages)
+2. Load Google credentials
+Allows access to Google Sheets
+3. Build website
+Runs:
+npm run build:cloud
+# This step:
+Fetches content from Google Sheets
+Pulls images from R2
+Generates static website files
+Output:
+./out
+(static HTML website)
+4. Upload artifact
+Saves build output for deployment
+### JOB 3: deploy
+Send website to GitHub Pages
+Depends on:
+Job 2 (build must be ready)
+# What it does:
+Takes the /out folder
+Deploys it to GitHub Pages using:
+actions/deploy-pages@v4
+Result:
+Your website becomes live on a public URL
+### JOB 4: commit-csv
+Save content backup into Git
+Depends on:
+Job 2 (build must finish first)
+# What it does:
+1. Re-fetch content from Google Sheets
+Runs:
+npm run build:content:cloud
+This generates CSV files
+2. Saves CSV files into GitHub repo
+content/**/*.csv
+3. Git commit
+If changes exist:
+Update content from Google Sheets [skip ci]
+
+### for manual-sync.yml
+# Steps:
+STEP 1: Checkout code
+uses: actions/checkout@v4
+STEP 2: Install rclone
+STEP 3: Configure Google Drive
+STEP 4: Configure Cloudflare R2
+STEP 5: Debug Google Drive
+STEP 6: Sync files
 
 4. What is rclone and what specific problem does it solve here?
 =>
