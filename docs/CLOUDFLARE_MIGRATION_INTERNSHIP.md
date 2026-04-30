@@ -76,12 +76,12 @@ Answer the following questions in writing (a short notes file is fine). Walk you
 
 1. What does `npm run build:cloud` do, step by step? Trace it from the npm script to the final `out/` directory.
 =>
-### step 1 : npm reads the script
+### Step 1 : npm reads the script
 npm run build:cloud looks into the package.json file and finds the corresponding script
-### step 2 : Load cloud environment variables
+### Step 2 : Load cloud environment variables
 The command used :
 dotenv -e .env.cloud
-### step 3 : set build mode
+### Step 3 : Set build mode
 Next, this part runs:
 cross-env CONTENT_SOURCE_MODE=sheets
 This sets an environment variable:
@@ -107,20 +107,21 @@ Finally, everything is saved into the out/ folder
 3. Why does the GitHub Actions pipeline have four separate jobs instead of one big script?
 =>
 The GitHub Actions pipeline is split into four separate jobs instead of one big script to improve reliability, speed, and control.
-### Reasons:
-### i. Separation of concerns
+## Reasons:
+### 1. Separation of concerns
 Each job has one responsibility (e.g., sync content, build site, deploy, promote). This makes the workflow easier to understand and maintain.
-### ii. Faster execution (parallelism)
+### 2. Faster execution (parallelism)
 Independent jobs can run in parallel, reducing total pipeline time instead of waiting for one long script.
-### iii. Better failure handling
+### 3. Better failure handling
 If one job fails, only that part needs to be re-run instead of restarting the entire pipeline.
-### iv. Controlled deployment flow
+### 4. Controlled deployment flow
 It allows staged deployment (e.g., dev → staging → production with approval steps).
 Easier debugging
 Logs are separated per job, so it is easier to find where something broke.
 The four separate jobs used in our system are :
-### for deploy.yml
-### job 1: sync-assests:
+
+## For deploy.yml
+## Job 1: Sync-assests:
 Google Drive → Cloudflare R2
 It moves images and files from Google Drive into Cloudflare R2 storage.
 ### Steps:
@@ -130,13 +131,13 @@ Tool that connects cloud storage services
 Uses service account (robot login)
 Gives access to Google Drive folder
 3. Configure Cloudflare R2
-Connects to your R2 bucket (like AWS S3 storage)
+Connects to your R2 bucket storage
 4. Sync files
 Copies only:
 images (jpg, png, webp)
 PDFs
 Skips CSV files
-### job 2: build
+## Job 2: Build
 Build Next.js Website
 Depends on:
 Job 1 must finish first (assets must be ready in R2)
@@ -148,7 +149,7 @@ Allows access to Google Sheets
 3. Build website
 Runs:
 npm run build:cloud
-# This step:
+### This step:
 Fetches content from Google Sheets
 Pulls images from R2
 Generates static website files
@@ -157,21 +158,21 @@ Output:
 (static HTML website)
 4. Upload artifact
 Saves build output for deployment
-### JOB 3: deploy
+## Job 3: Deploy
 Send website to GitHub Pages
 Depends on:
 Job 2 (build must be ready)
-# What it does:
+### What it does:
 Takes the /out folder
 Deploys it to GitHub Pages using:
 actions/deploy-pages@v4
 Result:
 Your website becomes live on a public URL
-### JOB 4: commit-csv
+## Job 4: Commit-csv
 Save content backup into Git
 Depends on:
 Job 2 (build must finish first)
-# What it does:
+### What it does:
 1. Re-fetch content from Google Sheets
 Runs:
 npm run build:content:cloud
@@ -182,15 +183,15 @@ content/**/*.csv
 If changes exist:
 Update content from Google Sheets [skip ci]
 
-### for manual-sync.yml
-# Steps:
-STEP 1: Checkout code
+## For manual-sync.yml
+## Steps:
+### Step 1: Checkout code
 uses: actions/checkout@v4
-STEP 2: Install rclone
-STEP 3: Configure Google Drive
-STEP 4: Configure Cloudflare R2
-STEP 5: Debug Google Drive
-STEP 6: Sync files
+### Step 2: Install rclone
+### Step 3: Configure Google Drive
+### Step 4: Configure Cloudflare R2
+### Step 5: Debug Google Drive
+### Step 6: Sync files
 
 4. What is rclone and what specific problem does it solve here?
 =>
