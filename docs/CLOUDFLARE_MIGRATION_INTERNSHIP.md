@@ -236,7 +236,7 @@ This is the email identity of a Google service account used to authenticate serv
 ### 9. GOOGLE_SHEET_ID =>
 This is the unique ID of a Google Sheet that your app or workflow reads from or writes to.
 ### 10. NEXT_PUBLIC_EMAIL_WORKER_URL =>
-This is the public URL of a backend email worker (likely Cloudflare Worker) used by the frontend to send form submissions or emails.
+This is the public URL of a backend email worker i.e. Cloudflare Worker used by the frontend to send form submissions or emails.
 ### 11. NEXT_PUBLIC_R2_BASE_URL =>
 This is the public base URL used to access files stored in Cloudflare R2 (usually for images, PDFs, or media assets).
 ### 12. NEXT_PUBLIC_TURNSTILE_SITE_KEY =>
