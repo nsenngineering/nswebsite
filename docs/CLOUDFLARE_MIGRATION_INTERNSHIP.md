@@ -115,7 +115,7 @@ Each job has one responsibility (e.g., sync content, build site, deploy, promote
 Independent jobs can run in parallel, reducing total pipeline time instead of waiting for one long script.
 #### 3. Better failure handling
 If one job fails, only that part needs to be re-run instead of restarting the entire pipeline.
-##### 4. Controlled deployment flow
+#### 4. Controlled deployment flow
 It allows staged deployment (e.g., dev → staging → production with approval steps).
 Easier debugging
 Logs are separated per job, so it is easier to find where something broke.
