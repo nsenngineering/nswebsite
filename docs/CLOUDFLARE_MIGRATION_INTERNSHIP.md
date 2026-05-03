@@ -275,24 +275,21 @@ This is the private secret key paired with the access key, used to securely auth
 ### Completion Goal
 
 ### Write a short document (half a page) that answers: *why is GitHub Pages insufficient for a multi-environment deployment model?* Cover these specific points:
+=> GitHub Pages is insufficient for a multi-environment deployment model because it only supports a single live site per repository, which means you cannot create separate environments like development, staging, and production within the same project. It also automatically publishes changes as soon as they are pushed, without any built-in approval, so there is no safe way to test and review changes before the website go live. Additionally, it provides very limited control over deployment configuration and caching behavior, making it difficult to manage different environments properly.
 
 #### - What is the maximum number of deployment environments GitHub Pages supports per repository?
+=> GitHub Pages supports only one main deployment environment per repository. Even if we use different branches, they are not true separate environments. We cannot properly manage dev, staging, and production at the same time with full control.
+
 #### - What kind of approval mechanism does GitHub Pages offer before a deployment goes live?
+=> GitHub Pages does not have an approval system before deployment. When we push code, the website updates automatically. There is no option to review or approve changes before they go live. This can be risky because mistakes can be published immediately.
+
 #### - What control do you have over HTTP caching headers on GitHub Pages?
+=> GitHub Pages gives very little control over caching. We cannot properly decide how long files should be stored in the browser. Because of this, users might still see old content even after updates.
+
 #### - What does it mean that GitHub Pages is "vendor-coupled" to GitHub Actions in this context?
+=> GitHub Pages is closely connected to GitHub Actions. This means deployment mainly depends on GitHub’s system, and we cannot easily customize or use other tools. This limits flexibility.
 
 #### This is not a Google-copy exercise. Explore the GitHub Pages documentation, try to find the limits, and form your own opinion.
-
-
-=> GitHub Pages is good for simple websites, but it is not suitable when we need multiple environments like development, staging, and production.
-
-First, GitHub Pages supports only one main deployment environment per repository. Even if we use different branches, they are not true separate environments. We cannot properly manage dev, staging, and production at the same time with full control.
-
-Second, GitHub Pages does not have an approval system before deployment. When we push code, the website updates automatically. There is no option to review or approve changes before they go live. This can be risky because mistakes can be published immediately.
-
-Third, GitHub Pages gives very little control over caching. We cannot properly decide how long files should be stored in the browser. Because of this, users might still see old content even after updates.
-
-Finally, GitHub Pages is closely connected to GitHub Actions. This means deployment mainly depends on GitHub’s system, and we cannot easily customize or use other tools. This limits flexibility.
 
 ### Learning Goal
 
@@ -309,67 +306,11 @@ Finally, GitHub Pages is closely connected to GitHub Actions. This means deploym
 ### You should be able to explain the following without looking anything up:
 
 ### 1. What is a Cloudflare Pages **project**? What is a Cloudflare Pages **deployment**?
-=> A Cloudflare Pages project is the overall website setup in Cloudflare. It connects to a Git repository, stores build settings, and contains all deployments of the site.
-
-=> A Cloudflare Pages deployment is a single built and published version of the website. Each time code is pushed or deployed, a new deployment is created with its own live URL.
-
 ### 2. What is the difference between a **preview deployment** and a **production deployment** in Cloudflare Pages?
-=> A preview deployment is a temporary version of the website created from non-main branches (like feature branches) for testing and review. It is not the final live site.
-
-=> A production deployment is the final, live version of the website created from the main branch. It is the version that users see on the public domain.
-
 ### 3. What does `wrangler pages deploy <directory> --project-name <name>` do? How is this different from connecting Cloudflare Pages directly to a GitHub repository?
-=> The command wrangler pages deploy <directory> --project-name <name> uploads a directory of built static files to a Cloudflare Pages project and creates a new deployment.
-
-=> When using Wrangler, deployment is manual and requires the user to build and upload files directly. When connected to a GitHub repository, Cloudflare Pages automatically builds and deploys the site whenever code is pushed, without manual intervention.
-
 ### 4. What is `wrangler.toml` and what does the `[env.production]` block inside it do?
-=> 'wrangler.toml' is a configuration file used by Wrangler to define settings for your Cloudflare project, such as the project name, build settings, and environment variables.
-
-=> [env.production] is a special configuration block that lets safely change settings (like APIs, variables, and behavior) only for the live production deployment, while keeping development and preview environments separate.
-
 ### 5. What is a Cloudflare Worker and how does it differ from the static site itself?
-=> A Cloudflare Worker is a serverless function that runs on Cloudflare’s global edge network and lets you execute custom logic (like modifying requests, responses, routing, or calling APIs) before a user reaches your website.
-
-=> A static site (e.g., hosted on Cloudflare Pages) consists of pre-built files like HTML, CSS, and JavaScript that are served directly to users without any server-side processing.
-#### Difference:
-##### Static site:
-=> Delivers pre-built files exactly as they are (no server-side logic).
-
-##### Cloudflare Worker:
-=> Runs code in between the user and the site to add dynamic behavior (e.g., redirects, authentication, API handling, content modification).
-
 ### Create a simple hand-drawn or text-based diagram showing: a Cloudflare Pages project, its three environments (dev/stage/prod), and a Worker sitting alongside each environment.
-=>
-
-#### A[Cloudflare Pages Project -> ns-website]
-
-A --> B[Dev Environment -> Preview Deployments]
-
-A --> C[Stage Environment -> Preview Deployments]
-
-A --> D[Production Environment -> Live Site]
-
-#### Dev Branch
-B --> B1[feature/* branches]
-
-B1 --> B2[Static Site -> HTML / CSS]
-
-B2 --> B3[Worker (Dev Logic) => - Test APIs and - Debug enabled]
-
-#### Stage Branch
-C --> C1[main / test / release branches]
-
-C1 --> C2[Static Site -> HTML / CSS]
-
-C2 --> C3[Worker (Stage Logic) =>  Staging APIs and - Limited users]
-
-#### Prod Branch
-D --> D1[main branch users]
-
-D1 --> D2[Static Site -> HTML / CSS]
-
-D2 --> D3[Worker (Prod Logic) => - Real APIs and - Optimized rules]
 
 **Resources**:
 - Cloudflare Pages documentation: https://developers.cloudflare.com/pages/
