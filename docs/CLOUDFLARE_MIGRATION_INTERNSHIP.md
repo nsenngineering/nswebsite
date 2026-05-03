@@ -1,7 +1,7 @@
 # Cloudflare Migration — Internship Project Guide
 
 **Project**: NS Engineering Website — GitHub Pages → Cloudflare Pages  
-**Intern**: _(your name here)_  
+**Intern**:Ritika Kunwar  
 **Mentor**: Shobhit Tripathi  
 **Branch**: `feature/cloudflareMigration`  
 **Started**: 2026-04-29
@@ -74,13 +74,184 @@ Developer pushes to main
 
 Answer the following questions in writing (a short notes file is fine). Walk your mentor through your answers in a 30-minute session.
 
-1. What does `npm run build:cloud` do, step by step? Trace it from the npm script to the final `out/` directory.
-2. What is the difference between `CONTENT_SOURCE_MODE=csv` and `CONTENT_SOURCE_MODE=sheets`? When is each used?
-3. Why does the GitHub Actions pipeline have four separate jobs instead of one big script?
-4. What is rclone and what specific problem does it solve here?
-5. What is Cloudflare Turnstile and what happens to the contact form if the Turnstile token is missing or invalid?
-6. What is the `CNAME` file in the repo root? Why does it exist and what will happen to it after this migration?
-7. List all GitHub Actions secrets the pipeline uses today. For each one, write one sentence on what it does.
+### 1. What does `npm run build:cloud` do, step by step? Trace it from the npm script to the final `out/` directory.
+=>
+#### Step 1 : npm reads the script
+npm run build:cloud looks into the package.json file and finds the corresponding script
+#### Step 2 : Load cloud environment variables
+The command used :
+dotenv -e .env.cloud
+#### Step 3 : Set build mode
+Next, this part runs:
+cross-env CONTENT_SOURCE_MODE=sheets
+This sets an environment variable:
+CONTENT_SOURCE_MODE = sheets
+This tells the system to fetch content from Google Sheets (cloud source) instead of local files like CSV.
+#### Step 4: Run the build script
+The main script is executed:
+tsx scripts/build-content.ts
+This TypeScript file controls the full build process.
+#### Step 5: Fetch content from cloud
+#### Step 6: Process and transform content
+#### Step 7: Generate static website
+#### Step 8: Write output to out/ directory
+Finally, everything is saved into the out/ folder
+
+### 2. What is the difference between `CONTENT_SOURCE_MODE=csv` and `CONTENT_SOURCE_MODE=sheets`? When is each used?
+
+=>
+| Mode                         | Source          | Usage                                  |
+| ---------------------------- | --------------- | -------------------------------------- |
+| `CONTENT_SOURCE_MODE=csv`    | Local CSV files | Used for local development and testing |
+| `CONTENT_SOURCE_MODE=sheets` | Google Sheets   | Used for cloud/production builds       |
+
+### 3. Why does the GitHub Actions pipeline have four separate jobs instead of one big script?
+=>
+The GitHub Actions pipeline is split into four separate jobs instead of one big script to improve reliability, speed, and control.
+#### Reasons:
+#### 1. Separation of concerns
+Each job has one responsibility (e.g., sync content, build site, deploy, promote). This makes the workflow easier to understand and maintain.
+#### 2. Faster execution (parallelism)
+Independent jobs can run in parallel, reducing total pipeline time instead of waiting for one long script.
+#### 3. Better failure handling
+If one job fails, only that part needs to be re-run instead of restarting the entire pipeline.
+#### 4. Controlled deployment flow
+It allows staged deployment (e.g., dev → staging → production with approval steps).
+Easier debugging
+Logs are separated per job, so it is easier to find where something broke.
+The four separate jobs used in our system are :
+
+#### For deploy.yml
+#### Job 1: Sync-assests:
+Google Drive → Cloudflare R2
+It moves images and files from Google Drive into Cloudflare R2 storage.
+##### Steps:
+1. Download rclone
+Tool that connects cloud storage services
+2. Configure Google Drive
+Uses service account (robot login)
+Gives access to Google Drive folder
+3. Configure Cloudflare R2
+Connects to your R2 bucket storage
+4. Sync files
+Copies only:
+images (jpg, png, webp)
+PDFs
+Skips CSV files
+#### Job 2: Build
+Build Next.js Website
+Depends on:
+Job 1 must finish first (assets must be ready in R2)
+##### What it does:
+1. Install dependencies
+Runs npm ci (installs project packages)
+2. Load Google credentials
+Allows access to Google Sheets
+3. Build website
+Runs:
+npm run build:cloud
+##### This step:
+Fetches content from Google Sheets
+Pulls images from R2
+Generates static website files
+Output:
+./out
+(static HTML website)
+4. Upload artifact
+Saves build output for deployment
+#### Job 3: Deploy
+Send website to GitHub Pages
+Depends on:
+Job 2 (build must be ready)
+##### What it does:
+Takes the /out folder
+Deploys it to GitHub Pages using:
+actions/deploy-pages@v4
+Result:
+Your website becomes live on a public URL
+#### Job 4: Commit-csv
+Save content backup into Git
+Depends on:
+Job 2 (build must finish first)
+##### What it does:
+1. Re-fetch content from Google Sheets
+Runs:
+npm run build:content:cloud
+This generates CSV files
+2. Saves CSV files into GitHub repo
+content/**/*.csv
+3. Git commit
+If changes exist:
+Update content from Google Sheets [skip ci]
+
+#### For manual-sync.yml
+#### Steps:
+#### Step 1: Checkout code
+uses: actions/checkout@v4
+#### Step 2: Install rclone
+#### Step 3: Configure Google Drive
+#### Step 4: Configure Cloudflare R2
+#### Step 5: Debug Google Drive
+#### Step 6: Sync files
+
+### 4. What is rclone and what specific problem does it solve here?
+=>
+rclone is a command-line tool used to sync and transfer files between cloud storage services and local systems.
+
+In this pipeline, it is used to automatically sync media files (like images and assets) from storage sources such as Google Drive to cloud storage (like R2) during CI/CD, ensuring all required files are available for the build and deployment.
+
+### 5. What is Cloudflare Turnstile and what happens to the contact form if the Turnstile token is missing or invalid?
+=>
+Cloudflare Turnstile is a bot protection and CAPTCHA alternative service that verifies whether a form is being submitted by a real human or an automated bot, without requiring users to solve puzzles.
+
+#### If the Turnstile token is missing or invalid:
+1.The backend rejects the form submission
+2.The contact form request is not processed or stored
+3.The user may see an error or validation failure message
+
+### 6. What is the `CNAME` file in the repo root? Why does it exist and what will happen to it after this migration?
+=>
+ A CNAME file in the repo root is used by GitHub Pages to map the site to a custom domain.
+
+#### After migration, (suppose moving to Cloudflare Pages or another host):
+it is no longer needed because the domain is managed in the new hosting (e.g., Cloudflare DNS/Pages), so it is usually ignored or removed.
+
+### 7. List all GitHub Actions secrets the pipeline uses today. For each one, write one sentence on what it does.
+=>
+A GitHub Actions secret is a secure place to store sensitive data (like passwords, API keys, tokens) that your workflow needs — without exposing them in your code.
+#### The GitHub Actions secrets the pipeline uses today are:
+##### 1. GDRIVE_CLIENT_ID =>
+OAuth client ID used to validate and authenticate the Google Drive service account.
+##### 2. GDRIVE_PRIVATE_KEY =>
+The actual private key used to securely authenticate the service account to Google Drive.
+##### 3. GDRIVE_PRIVATE_KEY_ID =>
+Specifies which private key is being used for the Google service account authentication.
+##### 4. GDRIVE_PROJECT_ID =>
+Identifies the Google Cloud project that owns the service account used to access Google Drive.
+##### 5. GDRIVE_ROOT_FOLDER_ID =>
+Defines the Google Drive folder that acts as the root source directory for syncing files.
+##### 6. GDRIVE_SERVICE_ACCOUNT_EMAIL =>
+The service account email that rclone uses to access Google Drive files.
+##### 7. GOOGLE_CREDENTIALS_JSON =>
+GOOGLE_CREDENTIALS_JSON is a GitHub Actions secret (or environment variable) that stores the full Google service account credentials in JSON format.
+##### 8.GOOGLE_SERVICE_ACCOUNT_EMAIL =>
+This is the email identity of a Google service account used to authenticate server-side access to Google APIs like Google Drive or Google Sheets.
+##### 9. GOOGLE_SHEET_ID =>
+This is the unique ID of a Google Sheet that your app or workflow reads from or writes to.
+##### 10. NEXT_PUBLIC_EMAIL_WORKER_URL =>
+This is the public URL of a backend email worker i.e. Cloudflare Worker used by the frontend to send form submissions or emails.
+##### 11. NEXT_PUBLIC_R2_BASE_URL =>
+This is the public base URL used to access files stored in Cloudflare R2 (usually for images, PDFs, or media assets).
+##### 12. NEXT_PUBLIC_TURNSTILE_SITE_KEY =>
+This is the public site key for Cloudflare Turnstile used in the frontend to render and activate bot protection on forms.
+##### 13. R2_ACCESS_KEY_ID =>
+This is the public access key used to authenticate requests to Cloudflare R2 storage
+##### 14. R2_ACCOUNT_ID =>
+This identifies the Cloudflare account and is used to build the correct R2 API endpoint URL.
+##### 15. R2_BUCKET_NAME =>
+This is the name of the storage bucket inside Cloudflare R2 where your files are stored and managed.
+##### 16. R2_SECRET_ACCESS_KEY =>
+This is the private secret key paired with the access key, used to securely authorize file uploads and downloads in R2.
 
 **Files to read**:
 - `CLAUDE.md` (project overview)
@@ -103,14 +274,25 @@ Answer the following questions in writing (a short notes file is fine). Walk you
 
 ### Completion Goal
 
-Write a short document (half a page) that answers: *why is GitHub Pages insufficient for a multi-environment deployment model?* Cover these specific points:
+### Write a short document (half a page) that answers: *why is GitHub Pages insufficient for a multi-environment deployment model?* Cover these specific points:
 
-- What is the maximum number of deployment environments GitHub Pages supports per repository?
-- What kind of approval mechanism does GitHub Pages offer before a deployment goes live?
-- What control do you have over HTTP caching headers on GitHub Pages?
-- What does it mean that GitHub Pages is "vendor-coupled" to GitHub Actions in this context?
+#### - What is the maximum number of deployment environments GitHub Pages supports per repository?
+#### - What kind of approval mechanism does GitHub Pages offer before a deployment goes live?
+#### - What control do you have over HTTP caching headers on GitHub Pages?
+#### - What does it mean that GitHub Pages is "vendor-coupled" to GitHub Actions in this context?
 
-This is not a Google-copy exercise. Explore the GitHub Pages documentation, try to find the limits, and form your own opinion.
+#### This is not a Google-copy exercise. Explore the GitHub Pages documentation, try to find the limits, and form your own opinion.
+
+
+=> GitHub Pages is good for simple websites, but it is not suitable when we need multiple environments like development, staging, and production.
+
+First, GitHub Pages supports only one main deployment environment per repository. Even if we use different branches, they are not true separate environments. We cannot properly manage dev, staging, and production at the same time with full control.
+
+Second, GitHub Pages does not have an approval system before deployment. When we push code, the website updates automatically. There is no option to review or approve changes before they go live. This can be risky because mistakes can be published immediately.
+
+Third, GitHub Pages gives very little control over caching. We cannot properly decide how long files should be stored in the browser. Because of this, users might still see old content even after updates.
+
+Finally, GitHub Pages is closely connected to GitHub Actions. This means deployment mainly depends on GitHub’s system, and we cannot easily customize or use other tools. This limits flexibility.
 
 ### Learning Goal
 
@@ -124,15 +306,70 @@ This is not a Google-copy exercise. Explore the GitHub Pages documentation, try 
 
 ### Completion Goal
 
-You should be able to explain the following without looking anything up:
+### You should be able to explain the following without looking anything up:
 
-1. What is a Cloudflare Pages **project**? What is a Cloudflare Pages **deployment**?
-2. What is the difference between a **preview deployment** and a **production deployment** in Cloudflare Pages?
-3. What does `wrangler pages deploy <directory> --project-name <name>` do? How is this different from connecting Cloudflare Pages directly to a GitHub repository?
-4. What is `wrangler.toml` and what does the `[env.production]` block inside it do?
-5. What is a Cloudflare Worker and how does it differ from the static site itself?
+### 1. What is a Cloudflare Pages **project**? What is a Cloudflare Pages **deployment**?
+=> A Cloudflare Pages project is the overall website setup in Cloudflare. It connects to a Git repository, stores build settings, and contains all deployments of the site.
 
-Create a simple hand-drawn or text-based diagram showing: a Cloudflare Pages project, its three environments (dev/stage/prod), and a Worker sitting alongside each environment.
+=> A Cloudflare Pages deployment is a single built and published version of the website. Each time code is pushed or deployed, a new deployment is created with its own live URL.
+
+### 2. What is the difference between a **preview deployment** and a **production deployment** in Cloudflare Pages?
+=> A preview deployment is a temporary version of the website created from non-main branches (like feature branches) for testing and review. It is not the final live site.
+
+=> A production deployment is the final, live version of the website created from the main branch. It is the version that users see on the public domain.
+
+### 3. What does `wrangler pages deploy <directory> --project-name <name>` do? How is this different from connecting Cloudflare Pages directly to a GitHub repository?
+=> The command wrangler pages deploy <directory> --project-name <name> uploads a directory of built static files to a Cloudflare Pages project and creates a new deployment.
+
+=> When using Wrangler, deployment is manual and requires the user to build and upload files directly. When connected to a GitHub repository, Cloudflare Pages automatically builds and deploys the site whenever code is pushed, without manual intervention.
+
+### 4. What is `wrangler.toml` and what does the `[env.production]` block inside it do?
+=> 'wrangler.toml' is a configuration file used by Wrangler to define settings for your Cloudflare project, such as the project name, build settings, and environment variables.
+
+=> [env.production] is a special configuration block that lets safely change settings (like APIs, variables, and behavior) only for the live production deployment, while keeping development and preview environments separate.
+
+### 5. What is a Cloudflare Worker and how does it differ from the static site itself?
+=> A Cloudflare Worker is a serverless function that runs on Cloudflare’s global edge network and lets you execute custom logic (like modifying requests, responses, routing, or calling APIs) before a user reaches your website.
+
+=> A static site (e.g., hosted on Cloudflare Pages) consists of pre-built files like HTML, CSS, and JavaScript that are served directly to users without any server-side processing.
+#### Difference:
+##### Static site:
+=> Delivers pre-built files exactly as they are (no server-side logic).
+
+##### Cloudflare Worker:
+=> Runs code in between the user and the site to add dynamic behavior (e.g., redirects, authentication, API handling, content modification).
+
+### Create a simple hand-drawn or text-based diagram showing: a Cloudflare Pages project, its three environments (dev/stage/prod), and a Worker sitting alongside each environment.
+=>
+
+#### A[Cloudflare Pages Project -> ns-website]
+
+A --> B[Dev Environment -> Preview Deployments]
+
+A --> C[Stage Environment -> Preview Deployments]
+
+A --> D[Production Environment -> Live Site]
+
+#### Dev Branch
+B --> B1[feature/* branches]
+
+B1 --> B2[Static Site -> HTML / CSS]
+
+B2 --> B3[Worker (Dev Logic) => - Test APIs and - Debug enabled]
+
+#### Stage Branch
+C --> C1[main / test / release branches]
+
+C1 --> C2[Static Site -> HTML / CSS]
+
+C2 --> C3[Worker (Stage Logic) =>  Staging APIs and - Limited users]
+
+#### Prod Branch
+D --> D1[main branch users]
+
+D1 --> D2[Static Site -> HTML / CSS]
+
+D2 --> D3[Worker (Prod Logic) => - Real APIs and - Optimized rules]
 
 **Resources**:
 - Cloudflare Pages documentation: https://developers.cloudflare.com/pages/
