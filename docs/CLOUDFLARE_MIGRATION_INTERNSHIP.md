@@ -385,14 +385,109 @@ D2 --> D3[Worker (Prod Logic) => - Real APIs and - Optimized rules]
 
 ### Completion Goal
 
-Produce a written proposal (1 page maximum) for the branch-to-environment mapping. Your proposal must address:
+### Produce a written proposal (1 page maximum) for the branch-to-environment mapping. Your proposal must address:
+### Present two options, state your recommendation, and explain the trade-off.
+=>
+This proposal outlines two approaches for mapping Git branches to deployment environments.
 
-1. Which Git branch triggers which environment?
-2. Is the site rebuilt for each environment, or is one build artifact promoted across environments?
-3. What is the promotion mechanism — automatic, manual approval, or time-based?
-4. What happens when a hotfix needs to go directly to production?
+#### Option A : Build Per Environment
 
-Present two options, state your recommendation, and explain the trade-off.
+#### Overview
+The project follows a Build per Environment strategy, where each environment (Dev, Staging, Production) triggers its own independent build and deployment process. The same source code is used across all environments, but each environment produces a separate build artifact during deployment.
+
+#### 1. Which Git branch triggers which environment?
+
+=> The deployment flow is branch-based:
+
+##### feature/* branches
+- Used for development and feature work
+- No direct deployment to environments
+##### develop branch
+- Automatically deployed to Development environment
+- Used for testing
+##### staging branch
+- Deployed to Staging environment
+- Used for QA and pre-production validation
+##### main branch
+- Deployed to Production environment
+- Represents stable and release-ready code
+
+#### 2. Is the site rebuilt for each environment, or is one build artifact promoted across environments?
+
+=> The site is rebuilt for each environment so there is no single build artifact that is promoted across environments.
+
+1. Dev deployment → new build created for Dev
+2. Staging deployment → new build created for Staging
+3. Production deployment → new build created for Production
+
+#### 3. What is the promotion mechanism — automatic, manual approval, or time-based?
+
+=> Promotion is branch-driven and pipeline-triggered, not artifact-based.
+
+##### Dev → Staging
+- Fully automatic
+- Merge into staging triggers build and deployment to staging environment
+##### Staging → Production
+- Manual approval required
+- Deployment to production only occurs after approval of staging release
+
+#### 4. What happens when a hotfix needs to go directly to production?
+=>
+For critical production issues, a hotfix process is used:
+##### Steps:
+1. Create a branch from main:
+   - hotfix/*
+2. Implement and test the fix
+3. Merge directly into main
+4. Trigger immediate production build and deployment
+5. Back-merge changes into:
+   - staging
+   - develop
+
+#### Option B: Build Once, Promote Artifact(Recommended)
+
+#### 1. Which Git branch triggers which environment?
+=> The deployment flow is branch-based, but environments do not trigger separate builds:
+##### feature/* branches
+- Used for development work
+- No direct deployments
+##### develop branch
+- Deploys to Development environment (Preview)
+- Used for testing
+##### staging branch
+- Promotes the same build artifact to Staging environment
+- Used for QA and validation
+##### main branch
+- Promotes the same build artifact to Production environment
+- Represents stable release
+
+#### 2. Is the site rebuilt for each environment, or is one build artifact promoted across environments?
+=> This system follows a Build Once, Promote Artifact approach:
+
+1. The application is built only once, typically after merge into the first main integration branch (e.g., develop)
+2. The output is a single immutable build artifact
+3. That same artifact is promoted across all environments
+
+#### 3. What is the promotion mechanism — automatic, manual approval, or time-based?
+=> Promotion is artifact based.
+##### Dev → Staging
+- Automatic promotion
+- Successful build in Dev and promoted to Staging.
+##### Staging → Production
+- Manual approval required
+- Same artifact is promoted to Production after approval.
+
+#### 4. What happens when a hotfix needs to go directly to production?
+=> For critical production issues:
+
+##### Hotfix process:
+1. Create hotfix/* branch from main
+2. Fix issue and commit changes
+3. Build a new artifact specifically for hotfix
+4. Immediately promote to Production
+5. Back-merge fix into:
+   - staging
+   - develop
 
 **Do not implement anything yet.** Present this to your mentor first. This is a design review, not a ticket.
 
