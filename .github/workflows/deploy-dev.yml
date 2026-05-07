@@ -71,7 +71,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: ${{ secrets.nsengineering-dev }}
+          projectName: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
           directory: ./out
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
