@@ -1,8 +1,6 @@
 name: Deploy to Cloudflare Pages (Dev)
 
 on:
-  push:
-    branches: [cloudflare]
   workflow_dispatch:
 
 permissions:
