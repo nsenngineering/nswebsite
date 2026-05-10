@@ -45,7 +45,7 @@ jobs:
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
           NEXT_PUBLIC_EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
 
-        run: npm run build:cloud
+        run: npm run build:content
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
