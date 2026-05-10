@@ -5,20 +5,17 @@ on:
 
 permissions:
   contents: read
-  deployments: write
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 concurrency:
   group: "cloudflare-pages-dev"
   cancel-in-progress: false
 
+
 jobs:
 
   build:
     name: Build Next.js Site (Dev)
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -34,9 +31,8 @@ jobs:
         run: npm ci
 
       - name: Create Google credentials file
-        shell: powershell
         run: |
-          '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' | Out-File -FilePath google-credentials.json -Encoding utf8
+          echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > google-credentials.json
 
       - name: Build Next.js app
         env:
@@ -59,8 +55,9 @@ jobs:
 
 
   deploy:
-    name: Deploy to Cloudflare Pages (Dev)
-    runs-on: windows-latest
+    name: Deploy to Cloudflare Pages (Dev via Wrangler)
+    runs-on: ubuntu-latest
+    environment: dev
     needs: build
 
     steps:
@@ -70,14 +67,22 @@ jobs:
           name: site-build
           path: ./out
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1.5.0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
-          directory: ./out
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          node-version: "20"
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Deploy to Cloudflare Pages (Dev)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+        run: |
+          wrangler pages deploy ./out \
+            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }}
 
       - name: Deployment complete
-        run: echo "🚀 Dev deployment successful"
+        run: echo "🚀 Dev deployment successful via Wrangler"
