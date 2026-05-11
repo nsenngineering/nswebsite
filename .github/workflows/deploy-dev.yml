@@ -2,28 +2,36 @@ name: Deploy to Cloudflare Pages (Dev)
 
 on:
   push:
-    branches: [feature/ritika/Goal3]
+    branches:
+      - feature/ritika/Goal3
+
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: "cloudflare-pages-dev"
+  group: cloudflare-pages-dev
   cancel-in-progress: false
 
 env:
   CONTENT_SOURCE_MODE: sheets
   NEXT_PUBLIC_R2_BASE_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
-  R2_DEV_BUCKET_NAME: ${{ secrets.R2_DEV_BUCKET_NAME }}
   GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
   NEXT_PUBLIC_EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
 
 jobs:
+
   sync-assets:
     name: Sync Assets → R2
     runs-on: ubuntu-latest
+
+    # Enables ENVIRONMENT secrets
+    environment: dev
+
+    env:
+      R2_DEV_BUCKET_NAME: ${{ secrets.R2_DEV_BUCKET_NAME }}
 
     steps:
       - name: Checkout repository
@@ -59,7 +67,7 @@ jobs:
 
           echo "🚀 Syncing assets to Cloudflare R2..."
 
-          rclone sync ./public/assets r2:${{ env.R2_DEV_BUCKET_NAME }}/assets \
+          rclone sync ./public/assets r2:$R2_DEV_BUCKET_NAME/assets \
             --progress \
             --checksum \
             --transfers 8 \
@@ -73,6 +81,12 @@ jobs:
     name: Build Next.js Site (Dev)
     runs-on: ubuntu-latest
 
+    # Enables ENVIRONMENT secrets
+    environment: dev
+
+    env:
+      R2_DEV_BUCKET_NAME: ${{ secrets.R2_DEV_BUCKET_NAME }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -81,7 +95,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
@@ -92,11 +106,6 @@ jobs:
       - name: Build Next.js app
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ./google-credentials.json
-          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-          NEXT_PUBLIC_R2_BASE_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
-          R2_DEV_BUCKET_NAME: ${{ secrets.R2_DEV_BUCKET_NAME }}
-          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
-          NEXT_PUBLIC_EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
         run: npm run build
 
       - name: Upload build artifact
@@ -108,8 +117,12 @@ jobs:
   deploy:
     name: Deploy to Cloudflare Pages (Dev via Wrangler)
     runs-on: ubuntu-latest
+
     environment: dev
-    needs: [build, sync-assets]
+
+    needs:
+      - build
+      - sync-assets
 
     steps:
       - name: Download build artifact
@@ -126,10 +139,11 @@ jobs:
       - name: Install Wrangler
         run: npm install -g wrangler
 
-      - name: Deploy to Cloudflare Pages (Dev)
+      - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
         run: |
           wrangler pages deploy ./out \
             --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }}
