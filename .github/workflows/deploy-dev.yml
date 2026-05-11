@@ -23,7 +23,7 @@ jobs:
   sync-assets:
     name: Sync Google Drive → R2
     runs-on: ubuntu-latest
-    
+
     # Enables ENVIRONMENT secrets
     environment: dev
 
@@ -74,7 +74,7 @@ jobs:
           set -euo pipefail
           echo "🚀 Syncing media files from Google Drive to R2..."
 
-          rclone sync gdrive: r2:${{ secrets.R2_BUCKET_NAME }}/ \
+          rclone sync gdrive: r2:${{ secrets.R2_DEV_BUCKET_NAME }}/ \
             --filter "- *.csv" \
             --filter "+ *.jpg" \
             --filter "+ *.jpeg" \
