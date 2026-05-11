@@ -21,9 +21,9 @@ env:
 
 jobs:
   sync-assets:
-    name: Sync Assets → R2
+    name: Sync Google Drive → R2
     runs-on: ubuntu-latest
-
+    
     # Enables ENVIRONMENT secrets
     environment: dev
 
@@ -36,9 +36,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Debug assets folder
-        run: ls -la ./public || true
 
       - name: Install rclone
         run: |
@@ -90,6 +87,7 @@ jobs:
             --stats 30s
 
           echo "✅ Asset sync completed successfully"
+
 
           
   build:
