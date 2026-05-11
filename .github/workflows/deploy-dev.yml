@@ -2,9 +2,7 @@ name: Deploy to Cloudflare Pages (Dev)
 
 on:
   push:
-    branches:
-      - feature/ritika/Goal3
-
+    branches: [cloudflare]
   workflow_dispatch:
 
 permissions:
@@ -22,7 +20,6 @@ env:
   NEXT_PUBLIC_EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
 
 jobs:
-
   sync-assets:
     name: Sync Assets → R2
     runs-on: ubuntu-latest
@@ -49,12 +46,23 @@ jobs:
           curl https://rclone.org/install.sh | sudo bash
           rclone version
 
-      - name: Configure Cloudflare R2
+      - name: Configure Google Drive remote
         run: |
           set -euo pipefail
           mkdir -p ~/.config/rclone
-
           cat > ~/.config/rclone/rclone.conf <<EOF
+          [gdrive]
+          type = drive
+          scope = drive.readonly
+          service_account_credentials = {"type":"service_account","project_id":"${{ secrets.GDRIVE_PROJECT_ID }}","private_key_id":"${{ secrets.GDRIVE_PRIVATE_KEY_ID }}","private_key":"${{ secrets.GDRIVE_PRIVATE_KEY }}","client_email":"${{ secrets.GDRIVE_SERVICE_ACCOUNT_EMAIL }}","client_id":"${{ secrets.GDRIVE_CLIENT_ID }}","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_x509_cert_url":"https://www.googleapis.com/robot/v1/metadata/x509/${{ secrets.GDRIVE_SERVICE_ACCOUNT_EMAIL }}"}
+          root_folder_id = ${{ secrets.GDRIVE_ROOT_FOLDER_ID }}
+          EOF
+
+      - name: Configure Cloudflare R2 remote
+        run: |
+          set -euo pipefail
+          cat >> ~/.config/rclone/rclone.conf <<EOF
+
           [r2]
           type = s3
           provider = Cloudflare
@@ -64,22 +72,26 @@ jobs:
           acl = public-read
           EOF
 
-      - name: Sync assets to R2 bucket
+      - name: Sync media files to R2
         run: |
           set -euo pipefail
+          echo "🚀 Syncing media files from Google Drive to R2..."
 
-          echo "🚀 Syncing assets to Cloudflare R2..."
-
-          rclone sync ./public/assets r2:${{ secrets.R2_DEV_BUCKET_NAME }} \
+          rclone sync gdrive: r2:${{ secrets.R2_BUCKET_NAME }}/ \
+            --filter "- *.csv" \
+            --filter "+ *.jpg" \
+            --filter "+ *.jpeg" \
+            --filter "+ *.png" \
+            --filter "+ *.webp" \
+            --filter "+ *.pdf" \
             --progress \
             --checksum \
-            --transfers 8 \
-            --checkers 16 \
             --log-level INFO \
             --stats 30s
 
-          echo "✅ Assets synced successfully"
+          echo "✅ Asset sync completed successfully"
 
+          
   build:
     name: Build Next.js Site (Dev)
     runs-on: ubuntu-latest
