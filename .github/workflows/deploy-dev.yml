@@ -70,7 +70,7 @@ jobs:
 
           echo "🚀 Syncing assets to Cloudflare R2..."
 
-          rclone sync ./public/assets r2:$R2_DEV_BUCKET_NAME/assets \
+          rclone sync ./public/assets r2:${{ secrets.R2_DEV_BUCKET_NAME }} \
             --progress \
             --checksum \
             --transfers 8 \
