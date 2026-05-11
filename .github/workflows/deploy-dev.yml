@@ -1,17 +1,73 @@
 name: Deploy to Cloudflare Pages (Dev)
 
 on:
+  push:
+    branches: [feature/ritika/Goal3]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: "cloudflare-pages-dev"
   cancel-in-progress: false
 
+env:
+  CONTENT_SOURCE_MODE: sheets
+  NEXT_PUBLIC_R2_BASE_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
+  R2_DEV_BUCKET_NAME: ${{ secrets.R2_DEV_BUCKET_NAME }}
+  GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+  NEXT_PUBLIC_EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
 
 jobs:
+  sync-assets:
+    name: Sync Assets → R2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Debug assets folder
+        run: ls -la ./public || true
+
+      - name: Install rclone
+        run: |
+          set -euo pipefail
+          curl https://rclone.org/install.sh | sudo bash
+          rclone version
+
+      - name: Configure Cloudflare R2
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.config/rclone
+
+          cat > ~/.config/rclone/rclone.conf <<EOF
+          [r2]
+          type = s3
+          provider = Cloudflare
+          access_key_id = ${{ secrets.R2_ACCESS_KEY_ID }}
+          secret_access_key = ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          endpoint = https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          acl = public-read
+          EOF
+
+      - name: Sync assets to R2 bucket
+        run: |
+          set -euo pipefail
+
+          echo "🚀 Syncing assets to Cloudflare R2..."
+
+          rclone sync ./public/assets r2:${{ env.R2_DEV_BUCKET_NAME }}/assets \
+            --progress \
+            --checksum \
+            --transfers 8 \
+            --checkers 16 \
+            --log-level INFO \
+            --stats 30s
+
+          echo "✅ Assets synced successfully"
 
   build:
     name: Build Next.js Site (Dev)
@@ -31,20 +87,16 @@ jobs:
         run: npm ci
 
       - name: Create Google credentials file
-        run: |
-          echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > google-credentials.json
+        run: echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > google-credentials.json
 
       - name: Build Next.js app
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ./google-credentials.json
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-
           NEXT_PUBLIC_R2_BASE_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
-          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-
+          R2_DEV_BUCKET_NAME: ${{ secrets.R2_DEV_BUCKET_NAME }}
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
           NEXT_PUBLIC_EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
-
         run: npm run build
 
       - name: Upload build artifact
@@ -53,12 +105,11 @@ jobs:
           name: site-build
           path: ./out
 
-
   deploy:
     name: Deploy to Cloudflare Pages (Dev via Wrangler)
     runs-on: ubuntu-latest
     environment: dev
-    needs: build
+    needs: [build, sync-assets]
 
     steps:
       - name: Download build artifact
@@ -79,7 +130,6 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
         run: |
           wrangler pages deploy ./out \
             --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }}
