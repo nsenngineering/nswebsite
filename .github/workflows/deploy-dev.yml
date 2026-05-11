@@ -2,7 +2,7 @@ name: Deploy to Cloudflare Pages (Dev)
 
 on:
   push:
-    branches: [cloudflare]
+    branches: [feature/ritika/Goal3]
   workflow_dispatch:
 
 permissions:
@@ -87,8 +87,6 @@ jobs:
             --stats 30s
 
           echo "✅ Asset sync completed successfully"
-
-
           
   build:
     name: Build Next.js Site (Dev)
