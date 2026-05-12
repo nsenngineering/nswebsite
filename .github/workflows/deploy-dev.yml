@@ -94,8 +94,11 @@ jobs:
     # Enables ENVIRONMENT secrets
     environment: dev
 
+    needs: sync-assets
+
     env:
       R2_DEV_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+      NEXT_PUBLIC_R2_BASE_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
 
     steps:
       - name: Checkout code
