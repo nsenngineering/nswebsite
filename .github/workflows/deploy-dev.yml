@@ -74,7 +74,7 @@ jobs:
           set -euo pipefail
           echo "🚀 Syncing media files from Google Drive to R2..."
 
-          rclone sync gdrive: r2:${R2_DEV_BUCKET_NAME}  \
+          rclone sync gdrive: r2:${R2_DEV_BUCKET_NAME} \
             --filter "- *.csv" \
             --filter "+ *.jpg" \
             --filter "+ *.jpeg" \
