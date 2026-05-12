@@ -90,7 +90,7 @@ jobs:
   build:
     name: Build Next.js Site (Dev)
     runs-on: ubuntu-latest
-
+    
     # Enables ENVIRONMENT secrets
     environment: dev
 
