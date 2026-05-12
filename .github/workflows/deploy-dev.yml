@@ -63,18 +63,22 @@ jobs:
           [r2]
           type = s3
           provider = Cloudflare
-          access_key_id = R2_DEV_ACCESS_KEY_ID
-          secret_access_key = R2_DEV_SECRET_ACCESS_KEY
-          endpoint = https://R2_DEV_ACCOUNT_ID.r2.cloudflarestorage.com
+          access_key_id = $R2_DEV_ACCESS_KEY_ID
+          secret_access_key = $R2_DEV_SECRET_ACCESS_KEY
+          endpoint = https://$R2_DEV_ACCOUNT_ID.r2.cloudflarestorage.com
           acl = public-read
-          EOF
+          echo "secret_access_key:$R2_DEV_SECRET_ACCESS_KEY"
+          echo "access_key_id: $R2_DEV_ACCESS_KEY_ID"
+          echo "account_id: $R2_DEV_ACCOUNT_ID"
 
+          EOF
+        
       - name: Sync media files to R2
         run: |
           set -euo pipefail
           echo "🚀 Syncing media files from Google Drive to R2..."
 
-          rclone sync gdrive: r2: R2_DEV_BUCKET_NAME / \
+          rclone sync gdrive: r2: $R2_DEV_BUCKET_NAME / \
             --filter "- *.csv" \
             --filter "+ *.jpg" \
             --filter "+ *.jpeg" \
