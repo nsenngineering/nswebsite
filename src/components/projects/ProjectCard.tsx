@@ -26,7 +26,9 @@ export default function ProjectCard({
   const hasImages = project.media && (project.media.images.length > 0 || project.media.heroImage);
   const heroImage = project.media?.heroImage || project.media?.images[0];
   const imageCount = project.media?.images?.length || 0;
-
+  console.log(`Rendering ProjectCard for "${project.title}" with heroImage: ${heroImage}, imageCount: ${imageCount}`);
+  console.log('Project media object:', project.media);
+  console.log('------------------------------------');
   return (
     <div
       id={`project-${project.id}`}
