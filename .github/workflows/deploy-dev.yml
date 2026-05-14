@@ -28,10 +28,10 @@ jobs:
     environment: dev
 
     env:
-      R2_DEV_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-      R2_DEV_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_DEV_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-      R2_DEV_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
 
     steps:
       - name: Checkout repository
@@ -63,9 +63,9 @@ jobs:
           [r2]
           type = s3
           provider = Cloudflare
-          access_key_id = $R2_DEV_ACCESS_KEY_ID
-          secret_access_key = $R2_DEV_SECRET_ACCESS_KEY
-          endpoint = https://$R2_DEV_ACCOUNT_ID.r2.cloudflarestorage.com
+          access_key_id = $R2_ACCESS_KEY_ID
+          secret_access_key = $R2_SECRET_ACCESS_KEY
+          endpoint = https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com
           acl = public-read
           EOF
         
@@ -74,7 +74,7 @@ jobs:
           set -euo pipefail
           echo "🚀 Syncing media files from Google Drive to R2..."
 
-          rclone sync gdrive: r2:${R2_DEV_BUCKET_NAME} \
+          rclone sync gdrive: r2:${R2_BUCKET_NAME} \
             --filter "- *.csv" \
             --filter "+ *.jpg" \
             --filter "+ *.jpeg" \
@@ -89,7 +89,7 @@ jobs:
       - name: Verify uploaded R2 files
         run: |
           echo "📦 Listing R2 bucket files..."
-          rclone ls r2:${R2_DEV_BUCKET_NAME} | head -50
+          rclone ls r2:${R2_BUCKET_NAME} | head -50
           
   build:
     name: Build Next.js Site (Dev)
@@ -101,10 +101,10 @@ jobs:
     needs: sync-assets
 
     env:
-      R2_DEV_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      R2_DEV_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_DEV_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-      R2_DEV_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
       NEXT_PUBLIC_R2_BASE_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
 
       # Repository secrets

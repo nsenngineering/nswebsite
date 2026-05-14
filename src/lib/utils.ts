@@ -83,28 +83,31 @@ export function getMediaSrc(
   if (!mediaPath) return '';
 
   // Already full URL
-  if (
-    mediaPath.startsWith('http://') ||mediaPath.startsWith('https://')
-  ) {
+  if (mediaPath.startsWith('http://') || mediaPath.startsWith('https://')) {
     return mediaPath;
   }
 
-  // R2 MODE
   const r2BaseUrl = process.env.NEXT_PUBLIC_R2_BASE_URL;
 
-  if (r2BaseUrl) {
-    const cleanPrefix = prefix.replace(/^\/+/, '');
-    const cleanMediaPath = mediaPath.replace(/^\/+/, '');
+  const cleanMediaPath = mediaPath.replace(/^\/+/, '');
+  const cleanPrefix = prefix.replace(/^\/+/, '').replace(/\/+$/, '');
 
-    return `${r2BaseUrl}/${cleanPrefix}/${cleanMediaPath}`;
+  // R2 MODE
+  if (r2BaseUrl) {
+    const parts = [r2BaseUrl];
+
+    if (cleanPrefix) parts.push(cleanPrefix);
+    parts.push(cleanMediaPath);
+
+    return parts.join('/');
   }
 
   // LOCAL MODE
-  const fullPath = prefix
-    ? `${prefix}/${mediaPath}`
-    : `/${mediaPath}`;
+  const localPath = cleanPrefix
+    ? `/${cleanPrefix}/${cleanMediaPath}`
+    : `/${cleanMediaPath}`;
 
-  return withBasePath(fullPath);
+  return withBasePath(localPath);
 }
 
 /**
