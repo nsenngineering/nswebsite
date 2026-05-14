@@ -76,16 +76,34 @@ export function withBasePath(path: string): string {
  * getMediaSrc('hydro-kaligandaki/images/photo.jpg', '/projects')
  * // => '/projects/hydro-kaligandaki/images/photo.jpg'
  */
-export function getMediaSrc(mediaPath: string | undefined, prefix: string = ''): string {
+export function getMediaSrc(
+  mediaPath: string | undefined,
+  prefix: string = ''
+): string {
   if (!mediaPath) return '';
 
-  // Check if it's already a full URL (R2 mode)
-  if (mediaPath.startsWith('http://') || mediaPath.startsWith('https://')) {
+  // Already full URL
+  if (
+    mediaPath.startsWith('http://') ||mediaPath.startsWith('https://')
+  ) {
     return mediaPath;
   }
 
-  // Local mode - construct relative path with prefix
-  const fullPath = prefix ? `${prefix}/${mediaPath}` : `/${mediaPath}`;
+  // R2 MODE
+  const r2BaseUrl = process.env.NEXT_PUBLIC_R2_BASE_URL;
+
+  if (r2BaseUrl) {
+    const cleanPrefix = prefix.replace(/^\/+/, '');
+    const cleanMediaPath = mediaPath.replace(/^\/+/, '');
+
+    return `${r2BaseUrl}/${cleanPrefix}/${cleanMediaPath}`;
+  }
+
+  // LOCAL MODE
+  const fullPath = prefix
+    ? `${prefix}/${mediaPath}`
+    : `/${mediaPath}`;
+
   return withBasePath(fullPath);
 }
 
