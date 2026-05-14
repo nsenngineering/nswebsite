@@ -21,18 +21,19 @@ export const projectCategories = [
 export const projects: Project[] = [
   // Pile Testing Projects
   {
-    id: 'ktft-fast-track',
-    title: 'KTFT Project (Fast Track)',
-    client: 'Kumar-Roshan-Sichuwan JV',
-    category: 'pile-testing',
-    year: 2024,
-    location: 'Kathmandu Valley',
-    scope: [
-      '50 nos PDA (Pile Driving Analyzer)',
-      '17 nos Lateral Load Test',
-      '16 nos Cross Hole Sonic Logging'
-    ]
-  },
+  id: 'ktft-fast-track',
+  title: 'KTFT Project (Fast Track)',
+  client: 'Kumar-Roshan-Sichuwan JV',
+  category: 'pile-testing',
+  year: 2024,
+  location: 'Kathmandu Valley',
+  imageUrl: `${process.env.NEXT_PUBLIC_R2_BASE_URL}/content/projects/ktft-fast-track.jpg`,
+  scope: [
+    '50 nos PDA (Pile Driving Analyzer)',
+    '17 nos Lateral Load Test',
+    '16 nos Cross Hole Sonic Logging'
+  ]
+},
   {
     id: 'mugling-pokhara',
     title: 'SAEC Mugling-Pokhara Highway Phase-I',

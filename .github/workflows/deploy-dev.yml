@@ -86,6 +86,10 @@ jobs:
             --log-level INFO \
             --stats 30s
           echo "✅ Asset sync completed successfully"
+      - name: Verify uploaded R2 files
+        run: |
+          echo "📦 Listing R2 bucket files..."
+          rclone ls r2:${R2_DEV_BUCKET_NAME} | head -50
           
   build:
     name: Build Next.js Site (Dev)
