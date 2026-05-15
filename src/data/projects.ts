@@ -32,7 +32,6 @@ export const projects: Project[] = [
       '17 nos Lateral Load Test',
       '16 nos Cross Hole Sonic Logging'
     ]
-
   },
   {
     id: 'mugling-pokhara',
