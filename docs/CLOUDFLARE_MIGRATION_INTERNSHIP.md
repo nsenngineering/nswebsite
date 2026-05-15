@@ -531,6 +531,38 @@ Verify: go to Settings → Environments in the GitHub UI and confirm all three e
 > Key concept: **Approval gates.** A deployment pipeline without approval gates is a liability. Requiring a human to review before promoting to production is not bureaucracy — it is the last line of defence against deploying a broken or unreviewed change to real users. The gate also creates an audit trail: you can always see who approved what and when.
 
 ---
+=> successfully completed the setup for the `dev` environment in the GitHub repository.
+
+### Completed Tasks
+
+1. Created the `dev` environment in GitHub Settings → Environments.
+
+2. Configured the environment with no protection rules so it auto-deploys on every push.
+
+3. Added the required environment secrets:
+   - CLOUDFLARE_ACCOUNT_I
+   - CLOUDFLARE_API_TOKEN
+   - CLOUDFLARE_PROJECT_NAME
+   - NEXT_PUBLIC_EMAIL_WORKER_URL
+   - NEXT_PUBLIC_R2_BASE_URL
+   - NEXT_PUBLIC_TURNSTILE_SITE_KEY
+   - R2_ACCESS_KEY_ID
+   - R2_ACCOUNT_ID
+   - R2_BUCKET_NAME
+   - R2_SECRET_ACCESS_KEY
+
+
+### Learning Reflection
+
+Through this task, I understood the importance of environment-scoped secrets in CI/CD pipelines. Instead of using one shared pool of repository secrets, GitHub Environments isolate credentials based on deployment stages (`dev`, `staging`, `production`).
+
+I learned about:
+
+* **Principle of Least Privilege** — deployment jobs should only access the secrets they actually need.
+* **Environment isolation** — a development workflow should not have access to production credentials.
+* **Approval gates** — production deployments require human verification to reduce the risk of deploying broken or unreviewed code.
+
+This setup improves both deployment security and operational safety.
 
 ## Goal 5: Set Up Cloudflare Pages Projects
 
@@ -554,6 +586,20 @@ For each project, note the `*.pages.dev` preview URL that Cloudflare assigns. Yo
 
 > Key concept: **Separation of concerns.** CI/CD (what to build, when to build it, where to deploy it) is a different concern from hosting (serving files to users). Keeping them separate makes each independently replaceable.
 
+=> successfully completed the setup for the nsengineering-dev Cloudflare Pages project.
+
+### Completed Tasks
+1. Created the Cloudflare Pages project:
+   - nsengineering-dev
+
+2. Configured the project to use Direct Upload deployment instead of the GitHub integration.
+
+3. Confirmed that GitHub Actions will be responsible for CI/CD and deployments.
+
+4. Verified that Cloudflare Pages is being used only as the hosting target.
+
+5. Configured the development domain:
+   - dev.nsengineering.com.np
 ---
 
 ## Goal 6: Migrate the GitHub Actions Workflow
@@ -585,6 +631,34 @@ Test the workflow by pushing to the branch. The `dev` environment should deploy 
 > Key concept: **Idempotent deployments.** Deploying the same artifact twice should produce the same result. Running `wrangler pages deploy` on the same `out/` directory ten times in a row should be safe and predictable. Design your pipelines assuming they will be re-run.
 
 ---
+=> successfully migrated the deployment workflow in .github/workflows/deploy-dev.yml for the development environment deployment pipeline.
+
+### Completed Tasks
+1. Kept sync-assets job unchanged.
+
+2. Modified the build job:
+   - Removed GitHub Pages artifact publishing.
+   - Configured actions/upload-artifact@v4 to upload the generated out/ directory as a standard       workflow artifact.
+ 
+3. Replaced the old deployment job with environment-specific deployment jobs.
+
+4. Configured deploy-dev job to:
+   - download the build artifact
+   - deploy using wrangler pages deploy out/ --project-name nsengineering-dev
+   - use the dev GitHub Environment
+   - deploy automatically on push
+
+5. Removed unnecessary GitHub Pages permissions:
+   - pages: write
+   - id-token: write
+
+6. Integrated cloudflare/wrangler-action@v3 into the deployment workflow.
+
+7. Tested the workflow by pushing changes to the branch.
+
+8. Verified that:
+   - the dev deployment runs successfully
+   - the deployment artifact is reused correctly
 
 ## Goal 7: Set Up Per-Environment Cloudflare Email Workers
 
