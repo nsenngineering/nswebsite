@@ -211,8 +211,12 @@ jobs:
           git add content/**/*.csv
 
           # Only commit if there are changes
-          git diff --quiet && git diff --staged --quiet || \
-            (git commit -m "Update content from Google Sheets [skip ci]" && git push)
-
+            # Commit only if staged CSV files changed
+          if git diff --staged --quiet; then
+            echo "No CSV changes to commit"
+          else
+            git commit -m "Update content from Google Sheets [skip ci]"
+            git push
+          fi
           echo "✅ CSV version control updated"
 
