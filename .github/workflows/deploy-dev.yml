@@ -137,7 +137,7 @@ jobs:
           name: site-build
           path: ./out
 
-  deploy:
+  deploy-dev:
     name: Deploy to Cloudflare Pages (Dev via Wrangler)
     runs-on: ubuntu-latest
     environment: dev
@@ -170,3 +170,28 @@ jobs:
 
       - name: Deployment complete
         run: echo "🚀 Dev deployment successful via Wrangler"
+
+  deploy-stage:
+    needs: 
+      - deploy-dev
+      - sync-assets
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site-build
+          path: out/
+
+      - name: Deploy to Cloudflare Pages (Stage)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          wrangler pages deploy ./out \
+            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+
+      - name: Deployment complete
+        run: echo "🚀 stage deployment successful via Wrangler"
