@@ -157,16 +157,15 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare Pages (Dev)
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          wrangler pages deploy ./out \
-            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+          # Use npx to avoid relying on a global npm bin in PATH
+          npx --yes wrangler@3 pages deploy ./out \
+            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} \
+            --branch=dev
 
       - name: Deployment complete
         run: echo "🚀 Dev deployment successful via Wrangler"
@@ -200,7 +199,13 @@ jobs:
           set -euo pipefail
           mkdir -p ~/.config/rclone
           cat > ~/.config/rclone/rclone.conf <<EOF
-          
+
+      - name: Configure DEV and STAGING R2 remotes
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.config/rclone
+          cat > ~/.config/rclone/rclone.conf <<EOF
+
           [r2-dev]
           type = s3
           provider = Cloudflare
@@ -208,36 +213,37 @@ jobs:
           secret_access_key = $DEV_R2_SECRET_ACCESS_KEY
           endpoint = https://$DEV_R2_ACCOUNT_ID.r2.cloudflarestorage.com
           acl = public-read
-          
+
           [r2-stage]
           type = s3
           provider = Cloudflare
           access_key_id = $STAGE_R2_ACCESS_KEY_ID
           secret_access_key = $STAGE_R2_SECRET_ACCESS_KEY
           endpoint = https://$STAGE_R2_ACCOUNT_ID.r2.cloudflarestorage.com
-          acl = public-read EOF
-          
-          - name: Promote DEV assets to STAGING R2
-          run: |
+          acl = public-read
+          EOF
+
+      - name: Promote DEV assets to STAGING R2
+        run: |
           set -euo pipefail
           echo "🚀 Promoting DEV assets to STAGING R2..."
-          rclone sync \ r2-dev:${DEV_R2_BUCKET_NAME} \
-          r2-stage:${STAGE_R2_BUCKET_NAME} \
-          --progress \
-          --checksum \
-          --log-level INFO \
-          --stats 30s
+          rclone sync r2-dev:${DEV_R2_BUCKET_NAME} \
+            r2-stage:${STAGE_R2_BUCKET_NAME} \
+            --progress \
+            --checksum \
+            --log-level INFO \
+            --stats 30s
           echo "✅ Asset promotion completed"
-          
-          - name: Verify STAGING R2 files
-          run: |
+
+      - name: Verify STAGING R2 files
+        run: |
           echo "📦 Listing STAGING R2 bucket files..."
           rclone ls r2-stage:${STAGE_R2_BUCKET_NAME} | head -50
 
   deploy-stage:
     needs:
       - deploy-dev
-      - sync-assets
+      - sync-assets-stage
     runs-on: ubuntu-latest
     environment:
       name: staging
@@ -248,13 +254,20 @@ jobs:
           name: site-build
           path: out/
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: Deploy to Cloudflare Pages (Stage)
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          wrangler pages deploy ./out \
-            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+          # Use npx to ensure wrangler is available without global install
+          npx --yes wrangler@3 pages deploy ./out \
+            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} \
+            --branch=stage
 
       - name: Deployment complete
         run: echo "🚀 stage deployment successful via Wrangler"
