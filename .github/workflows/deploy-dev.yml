@@ -157,15 +157,16 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Deploy to Cloudflare Pages (Dev)
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Use npx to avoid relying on a global npm bin in PATH
-          npx --yes wrangler@3 pages deploy ./out \
-            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} \
-            --branch=dev
+          wrangler pages deploy ./out \
+            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }}
 
       - name: Deployment complete
         run: echo "🚀 Dev deployment successful via Wrangler"
