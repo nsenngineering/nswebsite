@@ -166,7 +166,8 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           wrangler pages deploy ./out \
-            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+          --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} \
+          --branch=dev
 
       - name: Deployment complete
         run: echo "🚀 Dev deployment successful via Wrangler"
