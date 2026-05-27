@@ -70,354 +70,208 @@ export default function ContactClient() {
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null);
   const turnstileWidgetId = useRef<string | null>(null);
   const { toasts, removeToast, success, error } = useToast();
-// Add preconnect link for Turnstile performance optimization
-useEffect(() => {
-  // Check if preconnect link already exists
-  const existingLink = document.querySelector(
-    'link[href="https://challenges.cloudflare.com"]'
-  );
 
-  if (!existingLink) {
-    const link = document.createElement('link');
-    link.rel = 'preconnect';
-    link.href = 'https://challenges.cloudflare.com';
+  // Add preconnect link for Turnstile performance optimization
+  useEffect(() => {
+    // Check if preconnect link already exists
+    const existingLink = document.querySelector('link[href="https://challenges.cloudflare.com"]');
+    if (!existingLink) {
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = 'https://challenges.cloudflare.com';
+      document.head.appendChild(link);
+      console.log('✅ Added Turnstile preconnect link');
+    }
 
-    document.head.appendChild(link);
+    // Check if Turnstile is already loaded (e.g. from previous navigation)
+    if ((window as any).turnstile) {
+      console.log('✅ Turnstile globally available on mount');
+      setTurnstileLoaded(true);
+    }
+  }, []);
 
-    console.log('✅ Added Turnstile preconnect link');
-  }
+  // Render Turnstile widget when container is mounted and script is loaded
+  useEffect(() => {
+    // Only proceed if we have both the container and the script
+    if (containerNode && turnstileLoaded) {
+      // Check if widget already exists to prevent duplicates
+      if (turnstileWidgetId.current !== null) {
+        return;
+      }
 
-  // Check if Turnstile is already loaded
-  if ((window as any).turnstile) {
-    console.log('✅ Turnstile globally available on mount');
-    setTurnstileLoaded(true);
-  }
-}, []);
+      console.log('🔄 Initializing Turnstile widget in container:', containerNode);
 
-// Render Turnstile widget
-useEffect(() => {
-  // Only render if container + script exist
-  if (!containerNode || !turnstileLoaded) {
-    return;
-  }
+      // Verify Turnstile API is available
+      if ((window as any).turnstile) {
+        // Double-check widget doesn't exist (race condition)
+        if (turnstileWidgetId.current !== null) {
+          return;
+        }
 
-  // Prevent duplicate renders
-  if (turnstileWidgetId.current !== null) {
-    return;
-  }
+        try {
+          // Get the site key
+          const sitekey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
-  console.log('🔄 Initializing Turnstile widget');
+          // Strict check for valid site key
+          if (!sitekey || sitekey.includes('YOUR_SITE_KEY') || sitekey === '') {
+            console.error('❌ NEXT_PUBLIC_TURNSTILE_SITE_KEY is invalid or missing');
+            error('Configuration Error: Turnstile Site Key is missing. Please check .env.local');
+            return;
+          }
 
-  // Ensure Turnstile exists
-  if (!(window as any).turnstile) {
-    return;
-  }
+          console.log('🎨 Rendering Turnstile widget...');
 
-  try {
-    const sitekey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+          // Render and store widget ID with all callbacks
+          const widgetId = (window as any).turnstile.render(containerNode, {
+            sitekey: sitekey,
+            callback: (token: string) => {
+              console.log('✅ Turnstile verified successfully');
+              setTurnstileToken(token);
+            },
+            'error-callback': () => {
+              console.error('❌ Turnstile verification failed');
+              error('Security verification failed. Please try again.');
+              setTurnstileToken(undefined);
+            },
+            'expired-callback': () => {
+              console.warn('⏰ Turnstile token expired (5 minutes)');
+              setTurnstileToken(undefined);
+              error('Security verification expired. Please verify again.');
+            },
+            'timeout-callback': () => {
+              console.error('⏱️ Turnstile verification timed out');
+              setTurnstileToken(undefined);
+              error('Security verification timed out. Please try again.');
+            },
+            theme: 'light',
+            appearance: 'always',
+            size: 'normal',
+          });
 
-    // Validate site key
-    if (
-      !sitekey ||
-      sitekey.includes('YOUR_SITE_KEY') ||
-      sitekey.trim() === ''
-    ) {
-      console.error(
-        '❌ NEXT_PUBLIC_TURNSTILE_SITE_KEY is invalid or missing'
-      );
+          turnstileWidgetId.current = widgetId;
+          console.log('✅ Turnstile widget rendered with ID:', widgetId);
+        } catch (e) {
+          console.error('❌ Turnstile render error:', e);
+          error('Failed to load security verification. Please refresh the page.');
+        }
+      }
+    }
 
-      error(
-        'Configuration Error: Turnstile Site Key is missing.'
-      );
+    // Cleanup function - removes widget when component unmounts or container changes
+    return () => {
+      if (turnstileWidgetId.current !== null && (window as any).turnstile) {
+        try {
+          console.log('🧹 Removing Turnstile widget');
+          (window as any).turnstile.remove(turnstileWidgetId.current);
+          turnstileWidgetId.current = null;
+          setTurnstileToken(undefined);
+        } catch (e) {
+          console.log('Turnstile cleanup skipped:', e);
+        }
+      }
+    };
+  }, [containerNode, turnstileLoaded, error]);
 
+  const updateFormData = (field: keyof FormData, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const toggleService = (serviceId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      serviceType: prev.serviceType.includes(serviceId)
+        ? prev.serviceType.filter((id) => id !== serviceId)
+        : [...prev.serviceType, serviceId],
+    }));
+  };
+
+  const canProceed = (step: number) => {
+    switch (step) {
+      case 1:
+        return formData.serviceType.length > 0;
+      case 2:
+        return formData.projectName && formData.location && formData.timeline;
+      case 3:
+        return formData.fullName && formData.email && formData.phone;
+      default:
+        return false;
+    }
+  };
+
+  const handleSubmit = async () => {
+    // Validate form data
+    const validation = validateQuotationForm(formData);
+    if (!validation.isValid) {
+      validation.errors.forEach((err) => error(err));
       return;
     }
 
-    console.log('🎨 Rendering Turnstile widget...');
+    // Check Turnstile token in state
+    if (!turnstileToken) {
+      error('Please complete the security verification');
+      return;
+    }
 
-    // Render widget
-    const widgetId = (window as any).turnstile.render(
-      containerNode,
-      {
-        sitekey,
-
-        callback: (token: string) => {
-          console.log('✅ Fresh Turnstile token received');
-
-          // Always overwrite old token
-          setTurnstileToken(token);
-        },
-
-        'error-callback': () => {
-          console.error('❌ Turnstile verification failed');
-
-          setTurnstileToken(undefined);
-
-          error(
-            'Security verification failed. Please try again.'
-          );
-        },
-
-        'expired-callback': () => {
-          console.warn('⏰ Turnstile token expired');
-
-          setTurnstileToken(undefined);
-
-          error(
-            'Security verification expired. Please verify again.'
-          );
-
-          // Auto reset expired widget
-          try {
-            (window as any).turnstile.reset(widgetId);
-          } catch (e) {
-            console.error('Turnstile reset error:', e);
-          }
-        },
-
-        'timeout-callback': () => {
-          console.error('⏱️ Turnstile verification timed out');
-
-          setTurnstileToken(undefined);
-
-          error(
-            'Security verification timed out. Please try again.'
-          );
-
-          try {
-            (window as any).turnstile.reset(widgetId);
-          } catch (e) {
-            console.error('Turnstile reset error:', e);
-          }
-        },
-
-        theme: 'light',
-        appearance: 'always',
-        size: 'normal',
+    // Double-check with Turnstile API (extra validation)
+    if (turnstileWidgetId.current !== null && (window as any).turnstile) {
+      // Check if token is expired
+      if ((window as any).turnstile.isExpired(turnstileWidgetId.current)) {
+        console.error('❌ Turnstile token is expired');
+        error('Security verification expired. Please verify again.');
+        setTurnstileToken(undefined);
+        return;
       }
-    );
 
-    turnstileWidgetId.current = widgetId;
+      // Get current token from widget (should match state)
+      const currentToken = (window as any).turnstile.getResponse(turnstileWidgetId.current);
+      if (!currentToken) {
+        console.error('❌ No Turnstile token available');
+        error('Please complete the security verification');
+        setTurnstileToken(undefined);
+        return;
+      }
 
-    console.log(
-      '✅ Turnstile widget rendered with ID:',
-      widgetId
-    );
+      console.log('✅ Turnstile token validated before submission');
+    }
 
-  } catch (e) {
-    console.error('❌ Turnstile render error:', e);
-
-    error(
-      'Failed to load security verification. Please refresh the page.'
-    );
-  }
-
-  // IMPORTANT:
-  // Do NOT remove widget in cleanup
-  // React Strict Mode causes duplicate mount/unmount in dev
-  return () => {};
-}, [containerNode, turnstileLoaded]);
-
-const updateFormData = (
-  field: keyof FormData,
-  value: any
-) => {
-  setFormData((prev) => ({
-    ...prev,
-    [field]: value,
-  }));
-};
-
-const toggleService = (serviceId: string) => {
-  setFormData((prev) => ({
-    ...prev,
-
-    serviceType: prev.serviceType.includes(serviceId)
-      ? prev.serviceType.filter((id) => id !== serviceId)
-      : [...prev.serviceType, serviceId],
-  }));
-};
-
-const canProceed = (step: number) => {
-  switch (step) {
-    case 1:
-      return formData.serviceType.length > 0;
-
-    case 2:
-      return (
-        formData.projectName &&
-        formData.location &&
-        formData.timeline
-      );
-
-    case 3:
-      return (
-        formData.fullName &&
-        formData.email &&
-        formData.phone
-      );
-
-    default:
-      return false;
-  }
-};
-
-const handleSubmit = async () => {
-  // Prevent duplicate submissions
-  if (isSubmitting) {
-    return;
-  }
-
-  // Validate form
-  const validation = validateQuotationForm(formData);
-
-  if (!validation.isValid) {
-    validation.errors.forEach((err) => error(err));
-    return;
-  }
-
-  // Ensure Turnstile exists
-  if (
-    turnstileWidgetId.current === null ||
-    !(window as any).turnstile
-  ) {
-    error(
-      'Security verification is not ready yet. Please wait a moment.'
-    );
-
-    return;
-  }
-
-  // Check expiration
-  const expired = (window as any).turnstile.isExpired(
-    turnstileWidgetId.current
-  );
-
-  if (expired) {
-    console.error('❌ Turnstile token expired');
-
-    setTurnstileToken(undefined);
-
-    error(
-      'Security verification expired. Please verify again.'
-    );
+    setIsSubmitting(true);
 
     try {
-      (window as any).turnstile.reset(
-        turnstileWidgetId.current
-      );
-    } catch {}
-
-    return;
-  }
-
-  // Always get fresh token directly from widget
-  const currentToken = (window as any).turnstile.getResponse(
-    turnstileWidgetId.current
-  );
-
-  if (!currentToken) {
-    console.error('❌ No Turnstile token available');
-
-    error('Please complete the security verification');
-
-    return;
-  }
-
-  console.log(
-    '🚀 Submitting with fresh Turnstile token'
-  );
-
-  setIsSubmitting(true);
-
-  try {
-    // Send request
-    const response = await sendQuotationRequest(
-      formData,
-      currentToken
-    );
-
-    console.log('📨 Worker response:', response);
-
-    if (response.success) {
-      success(
-        'Quotation request sent successfully!'
+      // Send email via Cloudflare Worker with Turnstile token
+      const response = await sendQuotationRequest(
+        formData,
+        turnstileToken
       );
 
-      setIsSubmitted(true);
-
-    } else {
-      error(
-        response.error ||
-          'Failed to send quotation request.'
-      );
-    }
-
-  } catch (err) {
-    console.error('❌ Submission error:', err);
-
-    error(
-      'An unexpected error occurred. Please try again.'
-    );
-
-  } finally {
-    setIsSubmitting(false);
-
-    // IMPORTANT:
-    // Always invalidate old token
-    setTurnstileToken(undefined);
-
-    // Reset widget after EVERY submission
-    if (
-      turnstileWidgetId.current !== null &&
-      (window as any).turnstile
-    ) {
-      try {
-        console.log('🔄 Resetting Turnstile widget');
-
-        (window as any).turnstile.reset(
-          turnstileWidgetId.current
-        );
-
-      } catch (e) {
-        console.error(
-          '❌ Turnstile reset failed:',
-          e
-        );
+      if (response.success) {
+        success('Quotation request sent successfully!');
+        setIsSubmitted(true);
+      } else {
+        error(response.error || 'Failed to send quotation request. Please try again.');
       }
+    } catch (err) {
+      console.error('Submission error:', err);
+      error('An unexpected error occurred. Please try again or contact us directly.');
+    } finally {
+      setIsSubmitting(false);
     }
-  }
-};
+  };
 
-const nextStep = () => {
-  if (
-    canProceed(currentStep) &&
-    currentStep < 3
-  ) {
-    setCurrentStep(currentStep + 1);
-  }
-};
-
-const prevStep = () => {
-  if (currentStep > 1) {
-    // Reset token when leaving step 3
-    if (
-      currentStep === 3 &&
-      turnstileWidgetId.current !== null &&
-      (window as any).turnstile
-    ) {
-      try {
-        (window as any).turnstile.reset(
-          turnstileWidgetId.current
-        );
-      } catch {}
-
-      setTurnstileToken(undefined);
+  const nextStep = () => {
+    if (canProceed(currentStep) && currentStep < 3) {
+      setCurrentStep(currentStep + 1);
     }
+  };
 
-    setCurrentStep(currentStep - 1);
-  }
-};
+  const prevStep = () => {
+    if (currentStep > 1) {
+      // Reset Turnstile token if navigating back from Step 3
+      if (currentStep === 3 && turnstileToken) {
+        setTurnstileToken(undefined);
+      }
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
   if (isSubmitted) {
     return (
