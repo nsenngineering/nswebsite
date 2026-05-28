@@ -543,7 +543,7 @@ Verify: go to Settings → Environments in the GitHub UI and confirm all three e
    - CLOUDFLARE_ACCOUNT_I
    - CLOUDFLARE_API_TOKEN
    - CLOUDFLARE_PROJECT_NAME
-   - NEXT_PUBLIC_EMAIL_WORKER_URL
+   - NEXT_PUBLIC_EMAIL_WORKER_URL_DEV
    - NEXT_PUBLIC_R2_BASE_URL
    - NEXT_PUBLIC_TURNSTILE_SITE_KEY
    - R2_ACCESS_KEY_ID
@@ -551,6 +551,36 @@ Verify: go to Settings → Environments in the GitHub UI and confirm all three e
    - R2_BUCKET_NAME
    - R2_SECRET_ACCESS_KEY
 
+=> successfully completed the setup for the `staging` environment in the GitHub repository.
+
+### Completed Tasks
+
+1. Created the `staging` environment in GitHub Settings -> Environments.
+
+2. Configured the environment with the following protection rules:
+    - Required reviewer: approval before deployment.
+
+3. Added the required environment secrets:
+
+   - CLOUDFLARE_ACCOUNT_ID
+   - CLOUDFLARE_API_TOKEN
+   - CLOUDFLARE_PROJECT_NAME
+   - DEV_R2_ACCESS_KEY_ID
+   - DEV_R2_ACCOUNT_ID
+   - DEV_R2_BUCKET_NAME
+   - DEV_R2_SECRET_ACCESS_KEY
+   - NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE
+   - NEXT_PUBLIC_R2_BASE_URL
+   - R2_ACCESS_KEY_ID
+   - R2_ACCOUNT_ID
+   - R2_BUCKET_NAME
+   - R2_SECRET_ACCESS_KEY
+
+4. Verified the environment configuration in GitHub Settings → Environments and confirmed:
+
+   - The staging environment exists successfully.
+   - Reviewer protection is enabled.
+   - All required environment secrets are properly configured.
 
 ### Learning Reflection
 
@@ -600,6 +630,22 @@ For each project, note the `*.pages.dev` preview URL that Cloudflare assigns. Yo
 
 5. Configured the development domain:
    - dev.nsengineering.com.np
+
+=> Successfully Completed the Setup for the nsengineering-stage Cloudflare Pages Project
+
+### Completed Tasks
+1. Created the Cloudflare Pages project:
+    - nsengineering-stage
+
+2. Configured the project to use Direct Upload deployment instead of the GitHub integration.
+
+3. Confirmed that GitHub Actions will handle all CI/CD workflows and deployments.
+
+4. Verified that Cloudflare Pages is being used only as the hosting platform and not as the CI system.
+
+5. Configured the staging domain:
+    - stage.nsengineering.com.np
+
 ---
 
 ## Goal 6: Migrate the GitHub Actions Workflow
@@ -660,6 +706,56 @@ Test the workflow by pushing to the branch. The `dev` environment should deploy 
    - the dev deployment runs successfully
    - the deployment artifact is reused correctly
 
+=> Successfully Migrated the Deployment Workflow for the `staging` Environment
+
+### Completed Tasks
+
+1. Kept the `sync-assets` job unchanged while configuring asset promotion from the R2 development bucket to the R2 staging bucket.
+
+2. Implemented the **Build Once, Promote Artifact** deployment strategy:
+
+   - the application is built only once during the `build` job
+   - the generated `out/` directory is uploaded as a reusable workflow artifact
+   - the same validated artifact is promoted and reused for staging deployment without rebuilding the application.
+
+3. Configured the `deploy-staging` job to:
+
+   - Download the previously generated build artifact.
+   - Deploy using:
+
+     ```bash
+     wrangler pages deploy out/ --project-name nsengineering-stage
+     ```
+   - Use the `staging` GitHub Environment.
+   - Trigger the required approval gate before deployment.
+
+4. Verified workflow dependencies using `needs:` to ensure correct deployment sequencing.
+
+5. Tested the workflow by pushing changes to the branch.
+
+6. Verified that:
+
+   - the same build artifact is reused successfully for staging deployment
+   - R2 development assets are promoted correctly to the staging bucket
+   - the staging approval gate appears correctly in GitHub Actions
+   - the deployment pipeline functions successfully with environment protections enabled
+
+### Learning Reflection
+
+Through implementing the staging deployment workflow, I learned how the **Build Once, Promote Artifact** strategy improves deployment consistency and reliability.
+
+Key learnings include:
+
+* **Build Once, Promote Artifact** — the application is built a single time and the exact same artifact is promoted across environments, eliminating inconsistencies caused by rebuilding separately for staging or production.
+* **Artifact Promotion** — validated assets and build outputs from the development environment can be safely promoted to higher environments.
+* **Pipeline as Code** — deployment workflows are fully version-controlled, auditable, and reproducible using GitHub Actions.
+* **Directed Acyclic Graphs (DAGs)** — workflow dependencies are managed using `needs:` for controlled execution order.
+* **Idempotent Deployments** — redeploying the same artifact produces stable and predictable deployment results.
+* **Environment Protection Rules** — staging deployments require manual approval, improving operational safety and deployment governance.
+
+This migration established a scalable and production-ready CI/CD pipeline using GitHub Actions, Cloudflare Pages, and Cloudflare R2 with a reliable artifact promotion workflow.
+
+
 ## Goal 7: Set Up Per-Environment Cloudflare Email Workers
 
 ### Completion Goal
@@ -697,6 +793,63 @@ This goal can be worked on in parallel with Goal 6.
 
 > Key concept: **Microservice isolation.** Each environment's Worker is a separate, independently deployable unit. A crash or misconfiguration in `ns-email-worker-dev` has zero impact on `ns-email-worker-prod`. This is why you separate them even though the code is identical.
 
+=> Successfully Configured the dev and staging Cloudflare Email Worker Environments.
+
+### Completed Tasks
+
+1. Updated the wrangler.toml configuration to support environment-specific Worker deployments:
+
+- [name]
+
+  ns-email-worker
+
+- [env.dev]
+
+  name = "email-worker-dev"
+
+- [env.staging]
+
+  name = "email-worker-stage"
+
+=> Development Environment (dev)
+### Completed Tasks
+=> Configured the development Worker environment:
+#### Worker name:
+    email-worker-dev
+#### Registered a dedicated Cloudflare Turnstile application for:
+    dev.nsengineering.com.np
+#### Configured the development Worker secret:
+    wrangler secret put TURNSTILE_SECRET_KEY --env dev
+#### Configured the development Worker to route emails to a test inbox instead of the real company inbox.
+#### Updated the GitHub dev Environment secrets:
+  - NEXT_PUBLIC_EMAIL_WORKER_URL_DEV
+  - NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  - NEXT_PUBLIC_TURNSTILE_SECRET_KEY
+#### Verified that:
+  - The development Worker deploys successfully.
+
+  - Turnstile validation works correctly for the development domain.
+
+  - environment-specific secrets are configured correctly.
+
+=> Staging Environment (staging)
+### Completed Tasks
+=> Configured the staging Worker environment:
+#### Worker name:
+    email-worker-stage
+#### Registered a dedicated Cloudflare Turnstile application for:
+    stage.nsengineering.com.np
+#### Configured the staging Worker secret:
+
+    wrangler secret put TURNSTILE_SECRET_KEY --env staging
+#### Updated the GitHub staging Environment secrets:
+  - NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE
+  - NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  - NEXT_PUBLIC_TURNSTILE_SECRET_KEY
+#### Verified that:
+  - the staging Worker deploys successfully.
+  - Turnstile validation works correctly for the staging domain
+  - environment-specific secrets are configured properly
 ---
 
 ## Goal 8: DNS Cutover
