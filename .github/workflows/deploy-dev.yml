@@ -14,9 +14,17 @@ concurrency:
 
 env:
   CONTENT_SOURCE_MODE: sheets
+
+  # ==========================================================================
+  # Public Runtime Variables (Available to Next.js Build)
+  # ==========================================================================
+
   NEXT_PUBLIC_R2_BASE_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
   GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+
+  # Production Worker URL
   NEXT_PUBLIC_EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
 
 jobs:
@@ -24,7 +32,6 @@ jobs:
     name: Sync Google Drive → R2
     runs-on: ubuntu-latest
 
-    # Enables ENVIRONMENT secrets
     environment: dev
 
     env:
@@ -85,17 +92,18 @@ jobs:
             --checksum \
             --log-level INFO \
             --stats 30s
+
           echo "✅ Asset sync completed successfully"
+
       - name: Verify uploaded R2 files
         run: |
           echo "📦 Listing R2 bucket files..."
           rclone ls r2:${R2_BUCKET_NAME} | head -50
-          
+
   build:
     name: Build Next.js Site (Dev)
     runs-on: ubuntu-latest
-    
-    # Enables ENVIRONMENT secrets
+
     environment: dev
 
     needs: sync-assets
@@ -105,10 +113,18 @@ jobs:
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+
       NEXT_PUBLIC_R2_BASE_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
 
-      # Repository secrets
       GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+
+      # ======================================================================
+      # IMPORTANT: Expose Worker URLs to Next.js Build
+      # ======================================================================
+
+      NEXT_PUBLIC_EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
+      NEXT_PUBLIC_EMAIL_WORKER_URL_DEV: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL_DEV }}
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
 
     steps:
       - name: Checkout code
@@ -140,7 +156,9 @@ jobs:
   deploy-dev:
     name: Deploy to Cloudflare Pages (Dev via Wrangler)
     runs-on: ubuntu-latest
+
     environment: dev
+
     needs:
       - build
       - sync-assets
@@ -164,10 +182,11 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NEXT_PUBLIC_EMAIL_WORKER_URL_DEV: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL_DEV }}
         run: |
           wrangler pages deploy ./out \
-          --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} \
-          --branch=dev
+            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} \
+            --branch=dev
 
       - name: Deployment complete
         run: echo "🚀 Dev deployment successful via Wrangler"
@@ -268,6 +287,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE }}
         run: |
           # Use npx to ensure wrangler is available without global install
           npx --yes wrangler@3 pages deploy ./out \
