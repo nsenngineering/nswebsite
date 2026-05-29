@@ -66,6 +66,13 @@ const getWorkerUrl = (): string => {
     );
   }
 
+  if (hostname === 'nsengineering.com.np') {
+    return (
+      process.env.NEXT_PUBLIC_EMAIL_WORKER_URL_PROD ||
+      'https://email-worker-prod.emailapi-nsengineering.workers.dev'
+    );
+  }
+  
   const url = process.env.NEXT_PUBLIC_EMAIL_WORKER_URL;
 
   if (!url) {

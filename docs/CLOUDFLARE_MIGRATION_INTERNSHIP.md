@@ -561,7 +561,6 @@ Verify: go to Settings → Environments in the GitHub UI and confirm all three e
     - Required reviewer: approval before deployment.
 
 3. Added the required environment secrets:
-
    - CLOUDFLARE_ACCOUNT_ID
    - CLOUDFLARE_API_TOKEN
    - CLOUDFLARE_PROJECT_NAME
@@ -577,8 +576,37 @@ Verify: go to Settings → Environments in the GitHub UI and confirm all three e
    - R2_SECRET_ACCESS_KEY
 
 4. Verified the environment configuration in GitHub Settings → Environments and confirmed:
-
    - The staging environment exists successfully.
+   - Reviewer protection is enabled.
+   - All required environment secrets are properly configured.
+
+=> successfully completed the setup for the `production` environment in the GitHub repository.
+
+### Completed Tasks
+
+1. Created the `production` environment in GitHub Settings -> Environments.
+
+2. Configured the environment with the following protection rules:
+    - Required reviewer: approval before deployment.
+    - Required approval time: minimum 10 min.
+
+3. Added the required environment secrets:
+   - CLOUDFLARE_ACCOUNT_ID
+   - CLOUDFLARE_API_TOKEN
+   - CLOUDFLARE_PROJECT_NAME
+   - STAGE_R2_ACCESS_KEY_ID
+   - STAGE_R2_ACCOUNT_ID
+   - STAGE_R2_BUCKET_NAME
+   - STAGE_R2_SECRET_ACCESS_KEY
+   - NEXT_PUBLIC_EMAIL_WORKER_URL_PROD
+   - NEXT_PUBLIC_R2_BASE_URL
+   - R2_ACCESS_KEY_ID
+   - R2_ACCOUNT_ID
+   - R2_BUCKET_NAME
+   - R2_SECRET_ACCESS_KEY
+
+4. Verified the environment configuration in GitHub Settings → Environments and confirmed:
+   - The production environment exists successfully.
    - Reviewer protection is enabled.
    - All required environment secrets are properly configured.
 
