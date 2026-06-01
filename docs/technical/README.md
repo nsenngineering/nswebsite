@@ -8,7 +8,7 @@ This folder contains developer-focused technical documentation for the NS Engine
 - **[Cloudflare R2 Migration](./CLOUDFLARE_R2_MIGRATION.md)** - Complete R2 migration guide
 - **[Evolution Timeline Technical](./evolution-timeline-technical-guide.md)** - Homepage timeline implementation
 - **[Hero Timeline](./hero-timeline-guide.md)** - Hero carousel technical guide
-- **[SEO Folder Workflow](./SEO_FOLDER_WORKFLOW.md)** - SEO utility workflow and improvement guide
+- **[SEO Folder Workflow](../seo-folder-workflow.md)** - SEO utility workflow and improvement guide
 - **[Scripts Architecture](./scripts-architecture.md)** - Build and parser script architecture
 
 ## SEO Folder Workflow

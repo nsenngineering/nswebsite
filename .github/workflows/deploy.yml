@@ -164,6 +164,8 @@ jobs:
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE }}
+          NEXT_PUBLIC_EMAIL_WORKER_URL_PROD: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL_PROD }}
         run: |
           set -euo pipefail
           echo "🔨 Building Next.js site (includes content fetch from Sheets)..."

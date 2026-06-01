@@ -17,7 +17,7 @@
 export type EmailType = 'quotation' | 'job-application' | 'contact-inquiry' | 'technical-support';
 
 export interface EmailResponse {
-  details: {};
+  details: Record<string, unknown>;
   success: boolean;
   message?: string;
   error?: string;
@@ -66,7 +66,7 @@ const getWorkerUrl = (): string => {
     );
   }
 
-  if (hostname === 'nsengineering.com.np') {
+  if (hostname === 'nsengineering.com.np' || hostname === 'www.nsengineering.com.np') {
     return (
       process.env.NEXT_PUBLIC_EMAIL_WORKER_URL_PROD ||
       'https://email-worker-prod.emailapi-nsengineering.workers.dev'
