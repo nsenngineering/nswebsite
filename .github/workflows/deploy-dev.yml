@@ -334,11 +334,11 @@ jobs:
           : "${STAGE_R2_BUCKET_NAME:?Missing STAGE_R2_BUCKET_NAME}"
           : "${STAGE_R2_ACCESS_KEY_ID:?Missing STAGE_R2_ACCESS_KEY_ID}"
           : "${STAGE_R2_SECRET_ACCESS_KEY:?Missing STAGE_R2_SECRET_ACCESS_KEY}"
-          : "${STAGE_R2_ACCOUNT_ID:?Missing STAGE_R2_ACCOUNT_ID}
-          : "${PROD_R2_BUCKET_NAME:?Missing PROD_R2_BUCKET_NAME}
-          : "${PROD_R2_ACCESS_KEY_ID:?Missing PROD_R2_ACCESS_KEY_ID}
-          : "${PROD_R2_SECRET_ACCESS_KEY:?Missing PROD_R2_SECRET_ACCESS_KEY}
-          : "${PROD_R2_ACCOUNT_ID:?Missing PROD_R2_ACCOUNT_ID}
+          : "${STAGE_R2_ACCOUNT_ID:?Missing STAGE_R2_ACCOUNT_ID}"
+          : "${PROD_R2_BUCKET_NAME:?Missing PROD_R2_BUCKET_NAME}"
+          : "${PROD_R2_ACCESS_KEY_ID:?Missing PROD_R2_ACCESS_KEY_ID}"
+          : "${PROD_R2_SECRET_ACCESS_KEY:?Missing PROD_R2_SECRET_ACCESS_KEY}"
+          : "${PROD_R2_ACCOUNT_ID:?Missing PROD_R2_ACCOUNT_ID}"
           mkdir -p ~/.config/rclone
           cat > ~/.config/rclone/rclone.conf <<EOF
 
