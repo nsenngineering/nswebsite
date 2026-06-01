@@ -263,6 +263,7 @@ jobs:
           rclone ls r2-stage:${STAGE_R2_BUCKET_NAME} | head -50
 
   deploy-stage:
+    name: Deploy to Cloudflare Pages (STAGE via Wrangler)
     needs:
       - deploy-dev
       - sync-assets-stage
