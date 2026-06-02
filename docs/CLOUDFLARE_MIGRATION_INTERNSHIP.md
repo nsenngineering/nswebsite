@@ -674,6 +674,22 @@ For each project, note the `*.pages.dev` preview URL that Cloudflare assigns. Yo
 5. Configured the staging domain:
     - stage.nsengineering.com.np
 
+=> successfully completed the setup for the nsengineering-prod Cloudflare Pages project.
+
+### Completed Tasks
+1. Created the Cloudflare Pages project:
+    - nsengineering-prod
+
+2. Configured the project to use Direct Upload deployment instead of the GitHub integration.
+
+3. Confirmed that GitHub Actions will handle all CI/CD workflows and deployments.
+
+4. Verified that Cloudflare Pages is being used only as the hosting platform and not as the CI system.
+
+5. Configured the production domain:
+    - nsengineering.com.np
+
+6. Recorded the Cloudflare Pages preview URL (*.pages.dev) for deployment verification before DNS cutover.
 ---
 
 ## Goal 6: Migrate the GitHub Actions Workflow
@@ -708,7 +724,7 @@ Test the workflow by pushing to the branch. The `dev` environment should deploy 
 => successfully migrated the deployment workflow in .github/workflows/deploy-dev.yml for the development environment deployment pipeline.
 
 ### Completed Tasks
-1. Kept sync-assets job unchanged.
+1. Kept `sync-assets` job unchanged.
 
 2. Modified the build job:
    - Removed GitHub Pages artifact publishing.
@@ -716,9 +732,13 @@ Test the workflow by pushing to the branch. The `dev` environment should deploy 
  
 3. Replaced the old deployment job with environment-specific deployment jobs.
 
-4. Configured deploy-dev job to:
+4. Configured `deploy-dev` job to:
    - download the build artifact
-   - deploy using wrangler pages deploy out/ --project-name nsengineering-dev
+   - Deploy using:
+
+     ```bash
+     wrangler pages deploy out/ --project-name nsengineering-dev
+     ```
    - use the dev GitHub Environment
    - deploy automatically on push
 
@@ -740,7 +760,7 @@ Test the workflow by pushing to the branch. The `dev` environment should deploy 
 
 1. Kept the `sync-assets` job unchanged while configuring asset promotion from the R2 development bucket to the R2 staging bucket.
 
-2. Implemented the **Build Once, Promote Artifact** deployment strategy:
+2. Implemented the `Build Once, Promote Artifact` deployment strategy:
 
    - the application is built only once during the `build` job
    - the generated `out/` directory is uploaded as a reusable workflow artifact
@@ -767,6 +787,40 @@ Test the workflow by pushing to the branch. The `dev` environment should deploy 
    - R2 development assets are promoted correctly to the staging bucket
    - the staging approval gate appears correctly in GitHub Actions
    - the deployment pipeline functions successfully with environment protections enabled
+
+=> Successfully Migrated the Deployment Workflow for the `production` Environment
+
+### Completed Tasks
+
+1. Kept the `sync-assets` job unchanged while preserving the existing asset synchronization process.
+
+2. Continued using the `Build Once, Promote Artifact` deployment strategy:
+    - the application is built only once during the build job
+    - the generated out/ directory is uploaded as a reusable workflow artifact
+    - the same validated artifact is promoted through the deployment pipeline without rebuilding.
+
+3. Configured the `deploy-prod` job to:
+    - Download the previously generated build artifact.
+    - Deploy using:
+
+       ```bash
+       wrangler pages deploy out/ --project-name nsengineering-prod
+       ```
+    - Use the production GitHub Environment.
+    - Require successful completion of deploy-staging before deployment.
+    - Enforce the production approval gate through GitHub Environment protection rules.
+
+4. Verified workflow dependencies using `needs:` to ensure production deployment can only occur after a successful staging deployment.
+
+5. Confirmed that the deployment workflow follows the artifact promotion model, ensuring the exact same tested artifact is deployed across all environments.
+
+6. Tested the workflow by pushing changes to the branch.
+
+7. Verified that:
+    - the same build artifact is reused successfully for production deployment
+    - deployment sequencing (dev → staging → production) functions correctly
+    - the production approval gate appears correctly in GitHub Actions
+    - environment protection rules are enforced before production deployment
 
 ### Learning Reflection
 
