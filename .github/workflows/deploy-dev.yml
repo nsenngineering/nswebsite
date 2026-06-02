@@ -1,8 +1,6 @@
 name: Deploy to Cloudflare Pages (Dev)
 
 on:
-  push:
-    branches: [feature/ritika/Goal3]
   workflow_dispatch:
 
 permissions:
@@ -14,17 +12,21 @@ concurrency:
 
 env:
   CONTENT_SOURCE_MODE: sheets
+
+  # ==========================================================================
+  # Public Runtime Variables (Available to Next.js Build)
+  # ==========================================================================
+
   NEXT_PUBLIC_R2_BASE_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
   GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
-  NEXT_PUBLIC_EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
 
 jobs:
   sync-assets:
     name: Sync Google Drive → R2
     runs-on: ubuntu-latest
 
-    # Enables ENVIRONMENT secrets
     environment: dev
 
     env:
@@ -85,17 +87,18 @@ jobs:
             --checksum \
             --log-level INFO \
             --stats 30s
+
           echo "✅ Asset sync completed successfully"
+
       - name: Verify uploaded R2 files
         run: |
           echo "📦 Listing R2 bucket files..."
           rclone ls r2:${R2_BUCKET_NAME} | head -50
-          
+
   build:
     name: Build Next.js Site (Dev)
     runs-on: ubuntu-latest
-    
-    # Enables ENVIRONMENT secrets
+
     environment: dev
 
     needs: sync-assets
@@ -105,10 +108,20 @@ jobs:
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+
       NEXT_PUBLIC_R2_BASE_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
 
-      # Repository secrets
       GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+
+      # ======================================================================
+      # IMPORTANT: Expose Worker URLs to Next.js Build
+      # ======================================================================
+
+      NEXT_PUBLIC_EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
+      NEXT_PUBLIC_EMAIL_WORKER_URL_DEV: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL_DEV }}
+      NEXT_PUBLIC_EMAIL_WORKER_URL_PROD: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL_PROD }}
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+      NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE }}
 
     steps:
       - name: Checkout code
@@ -137,10 +150,12 @@ jobs:
           name: site-build
           path: ./out
 
-  deploy:
+  deploy-dev:
     name: Deploy to Cloudflare Pages (Dev via Wrangler)
     runs-on: ubuntu-latest
+
     environment: dev
+
     needs:
       - build
       - sync-assets
@@ -166,7 +181,234 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           wrangler pages deploy ./out \
-            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} \
+            --branch=dev
 
       - name: Deployment complete
         run: echo "🚀 Dev deployment successful via Wrangler"
+
+  sync-assets-stage:
+    name: Promote DEV R2 Assets → STAGING R2
+    runs-on: ubuntu-latest
+    environment: staging
+    needs:
+      - deploy-dev
+    env:
+      # DEV R2 (exported with DEV_ prefix to match script variables)
+      DEV_R2_BUCKET_NAME: ${{ secrets.DEV_R2_BUCKET_NAME }}
+      DEV_R2_ACCESS_KEY_ID: ${{ secrets.DEV_R2_ACCESS_KEY_ID }}
+      DEV_R2_SECRET_ACCESS_KEY: ${{ secrets.DEV_R2_SECRET_ACCESS_KEY }}
+      DEV_R2_ACCOUNT_ID: ${{ secrets.DEV_R2_ACCOUNT_ID }}
+      # STAGE R2
+      STAGE_R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+      STAGE_R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      STAGE_R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      STAGE_R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+    steps:
+      - name: Install rclone
+        run: |
+          set -euo pipefail
+          curl https://rclone.org/install.sh | sudo bash
+          rclone version
+
+      - name: Configure DEV and STAGING R2 remotes
+        run: |
+          set -euo pipefail
+          # Fail fast with clear message if required secrets are missing
+          : "${DEV_R2_BUCKET_NAME:?Missing DEV_R2_BUCKET_NAME}"
+          : "${DEV_R2_ACCESS_KEY_ID:?Missing DEV_R2_ACCESS_KEY_ID}"
+          : "${DEV_R2_SECRET_ACCESS_KEY:?Missing DEV_R2_SECRET_ACCESS_KEY}"
+          : "${DEV_R2_ACCOUNT_ID:?Missing DEV_R2_ACCOUNT_ID}"
+          : "${STAGE_R2_BUCKET_NAME:?Missing STAGE_R2_BUCKET_NAME}"
+          : "${STAGE_R2_ACCESS_KEY_ID:?Missing STAGE_R2_ACCESS_KEY_ID}"
+          : "${STAGE_R2_SECRET_ACCESS_KEY:?Missing STAGE_R2_SECRET_ACCESS_KEY}"
+          : "${STAGE_R2_ACCOUNT_ID:?Missing STAGE_R2_ACCOUNT_ID}"
+          mkdir -p ~/.config/rclone
+          cat > ~/.config/rclone/rclone.conf <<EOF
+
+          [r2-dev]
+          type = s3
+          provider = Cloudflare
+          access_key_id = $DEV_R2_ACCESS_KEY_ID
+          secret_access_key = $DEV_R2_SECRET_ACCESS_KEY
+          endpoint = https://$DEV_R2_ACCOUNT_ID.r2.cloudflarestorage.com
+          acl = public-read
+
+          [r2-stage]
+          type = s3
+          provider = Cloudflare
+          access_key_id = $STAGE_R2_ACCESS_KEY_ID
+          secret_access_key = $STAGE_R2_SECRET_ACCESS_KEY
+          endpoint = https://$STAGE_R2_ACCOUNT_ID.r2.cloudflarestorage.com
+          acl = public-read
+          EOF
+
+      - name: Promote DEV assets to STAGING R2
+        run: |
+          set -euo pipefail
+          echo "🚀 Promoting DEV assets to STAGING R2..."
+          rclone sync r2-dev:${DEV_R2_BUCKET_NAME} \
+            r2-stage:${STAGE_R2_BUCKET_NAME} \
+            --progress \
+            --checksum \
+            --log-level INFO \
+            --stats 30s
+          echo "✅ Asset promotion completed"
+
+      - name: Verify STAGING R2 files
+        run: |
+          echo "📦 Listing STAGING R2 bucket files..."
+          rclone ls r2-stage:${STAGE_R2_BUCKET_NAME} | head -50
+
+  deploy-stage:
+    name: Deploy to Cloudflare Pages (STAGE via Wrangler)
+    needs:
+      - deploy-dev
+      - sync-assets-stage
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site-build
+          path: out/
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Deploy to Cloudflare Pages (Stage)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Use npx to ensure wrangler is available without global install
+          npx --yes wrangler@3 pages deploy ./out \
+            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} \
+            --branch=stage
+
+      - name: Deployment complete
+        run: echo "🚀 stage deployment successful via Wrangler"
+
+# =============================================================================
+# PRODUCTION PIPELINE
+# =============================================================================
+
+  sync-assets-prod:
+    name: Promote STAGE R2 → PROD R2
+    runs-on: ubuntu-latest
+
+    environment: production
+
+    needs:
+      - deploy-stage
+
+    env:
+      # STAGE R2
+      STAGE_R2_BUCKET_NAME: ${{ secrets.STAGE_R2_BUCKET_NAME }}
+      STAGE_R2_ACCESS_KEY_ID: ${{ secrets.STAGE_R2_ACCESS_KEY_ID }}
+      STAGE_R2_SECRET_ACCESS_KEY: ${{ secrets.STAGE_R2_SECRET_ACCESS_KEY }}
+      STAGE_R2_ACCOUNT_ID: ${{ secrets.STAGE_R2_ACCOUNT_ID }}
+
+      # PROD R2
+      PROD_R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+      PROD_R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      PROD_R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      PROD_R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+
+    steps:
+      - name: Install rclone
+        run: |
+          set -euo pipefail
+          curl https://rclone.org/install.sh | sudo bash
+
+      - name: Configure STAGE and PROD R2 remotes
+        run: |
+          set -euo pipefail
+          # Fail fast with clear message if required secrets are missing
+          : "${STAGE_R2_BUCKET_NAME:?Missing STAGE_R2_BUCKET_NAME}"
+          : "${STAGE_R2_ACCESS_KEY_ID:?Missing STAGE_R2_ACCESS_KEY_ID}"
+          : "${STAGE_R2_SECRET_ACCESS_KEY:?Missing STAGE_R2_SECRET_ACCESS_KEY}"
+          : "${STAGE_R2_ACCOUNT_ID:?Missing STAGE_R2_ACCOUNT_ID}"
+          : "${PROD_R2_BUCKET_NAME:?Missing PROD_R2_BUCKET_NAME}"
+          : "${PROD_R2_ACCESS_KEY_ID:?Missing PROD_R2_ACCESS_KEY_ID}"
+          : "${PROD_R2_SECRET_ACCESS_KEY:?Missing PROD_R2_SECRET_ACCESS_KEY}"
+          : "${PROD_R2_ACCOUNT_ID:?Missing PROD_R2_ACCOUNT_ID}"
+          mkdir -p ~/.config/rclone
+          cat > ~/.config/rclone/rclone.conf <<EOF
+
+          [r2-stage]
+          type = s3
+          provider = Cloudflare
+          access_key_id = $STAGE_R2_ACCESS_KEY_ID
+          secret_access_key = $STAGE_R2_SECRET_ACCESS_KEY
+          endpoint = https://$STAGE_R2_ACCOUNT_ID.r2.cloudflarestorage.com
+          acl = public-read
+
+          [r2-prod]
+          type = s3
+          provider = Cloudflare
+          access_key_id = $PROD_R2_ACCESS_KEY_ID
+          secret_access_key = $PROD_R2_SECRET_ACCESS_KEY
+          endpoint = https://$PROD_R2_ACCOUNT_ID.r2.cloudflarestorage.com
+          acl = public-read
+
+          EOF
+
+      - name: Promote STAGE assets to PROD
+        run: |
+          set -euo pipefail
+
+          echo "🚀 Promoting STAGE assets to PROD..."
+
+          rclone sync \
+            r2-stage:${STAGE_R2_BUCKET_NAME} \
+            r2-prod:${PROD_R2_BUCKET_NAME} \
+            --progress \
+            --checksum \
+            --log-level INFO \
+            --stats 30s
+
+          echo "✅ Production asset promotion completed"
+
+      - name: Verify PROD R2 files
+        run: |
+          echo "📦 Listing PROD R2 bucket files..."
+          rclone ls r2-prod:${PROD_R2_BUCKET_NAME} | head -50
+
+  deploy-prod:
+    name: Deploy PRODUCTION
+    runs-on: ubuntu-latest
+
+    environment: production
+
+    needs:
+      - deploy-stage
+      - sync-assets-prod
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site-build
+          path: ./out
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Deploy to Cloudflare Pages (PRODUCTION)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@3 pages deploy ./out \
+            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} \
+            --branch=main
+
+      - name: Deployment complete
+        run: echo "🚀 Production deployment successful"

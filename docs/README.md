@@ -44,6 +44,7 @@ In-depth technical documentation for developers.
 - **[Cloudflare R2 Migration](./technical/CLOUDFLARE_R2_MIGRATION.md)** - Complete R2 migration guide
 - **[Evolution Timeline Technical](./technical/evolution-timeline-technical-guide.md)** - Homepage timeline implementation
 - **[Hero Timeline](./technical/hero-timeline-guide.md)** - Hero carousel technical guide
+- **[SEO Folder Workflow](../docs/seo-folder-workflow.md)** - SEO utility workflow and improvement guide
 
 ### Archive
 
