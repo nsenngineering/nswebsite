@@ -1,8 +1,6 @@
 name: Deploy to Cloudflare Pages (Dev)
 
 on:
-  push:
-    branches: [feature/ritika/Goal3]
   workflow_dispatch:
 
 permissions:
