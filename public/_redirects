@@ -1,0 +1,12 @@
+# Cloudflare Pages redirects
+# https://developers.cloudflare.com/pages/configuration/redirects/
+#
+# /logo/* is NOT a static file in this repo — images live in Cloudflare R2.
+# This redirect makes https://nsengineering.com.np/logo/ns-logo.jpg resolve
+# for OG images, schema.org markup, and any direct links.
+#
+# NSENGINEERING_R2_URL is a placeholder substituted at deploy time by the
+# "Inject <env> R2 URL" step in deploy-dev.yml — each environment uses its
+# own R2 bucket URL.
+
+/logo/*  https://NSENGINEERING_R2_URL/logo/:splat  301

@@ -1,0 +1,17 @@
+# Cloudflare Pages custom headers
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+# Long-lived immutable cache for Next.js hashed static assets
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Short cache for favicon (changes rarely but isn't hashed)
+/favicon.ico
+  Cache-Control: public, max-age=86400
+
+# Security headers for all pages
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
