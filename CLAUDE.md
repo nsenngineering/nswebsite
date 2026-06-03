@@ -1,8 +1,8 @@
 # Claude AI Assistant - Project Context
 
 **Project**: NS Engineering & Geotechnical Services Website
-**Status**: Production Ready (v1.2.0) - AI SEO Optimized
-**Last Updated**: 2026-01-11
+**Status**: Cloudflare Pages Migration In Progress (v1.3.0) — DNS cutover pending
+**Last Updated**: 2026-06-03
 
 ---
 
@@ -22,7 +22,7 @@ Professional website for **NS Engineering & Geotechnical Services Pvt. Ltd. (NSE
 
 ---
 
-## Current State (v1.2.0)
+## Current State (v1.3.0)
 
 ### ✅ Completed Features
 
@@ -241,17 +241,30 @@ npx serve@latest out
 
 ### Deployment
 
+The site deploys to **Cloudflare Pages** (three environments: dev / stage / prod).
+
 ```bash
-git push origin cloudflare
-# GitHub Actions auto-deploys to GitHub Pages
+# Trigger via GitHub Actions UI:
+# Actions → "Deploy to Cloudflare Pages (Dev)" → Run workflow
 ```
 
-**What Happens Automatically**:
-1. Syncs media from Google Drive → Cloudflare R2 (via rclone)
-2. Exports Google Sheets → CSV files
-3. Builds website with R2 CDN URLs
-4. Deploys to GitHub Pages
-5. Commits CSV updates to Git
+**What the pipeline does (deploy-dev.yml)**:
+1. Syncs media from Google Drive → `nswebsite-dev` R2 (rclone)
+2. Exports Google Sheets → CSV, builds Next.js static export (one artifact)
+3. Deploys artifact to `nsengineering-dev` Pages, injecting dev R2 URL + Turnstile key
+4. Promotes `nswebsite-dev` R2 → `nswebsite-stage` R2
+5. Deploys same artifact to `nsengineering-stage` Pages, injecting stage R2 URL + Turnstile key
+6. Promotes `nswebsite-stage` R2 → `nswebsite-prod` R2
+7. Deploys same artifact to `nsengineering-prod` Pages, injecting prod R2 URL + Turnstile key
+
+**Environment URLs**:
+- Dev: `dev.nsengineering.com.np`
+- Stage: `stage.nsengineering.com.np`
+- Prod: `nsengineering.com.np` (post-DNS-cutover)
+
+**R2 + Turnstile injection**: The artifact is built with placeholder strings (`https://NSENGINEERING_R2_URL`, `NSENGINEERING_TURNSTILE_KEY`). Each deploy job substitutes the correct values from per-environment GitHub secrets via `find+sed` before uploading to Cloudflare Pages.
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for full pipeline details, secrets reference, and DNS cutover steps.
 
 **Media Workflow** (rclone):
 - Team uploads media to Google Drive `content/` folder
