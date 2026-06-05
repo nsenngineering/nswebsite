@@ -331,50 +331,34 @@ Successfully built a complete professional website for NS Engineering & Geotechn
 
 ---
 
-## 🚀 Production Deployment Status
+## 🚀 Production Deployment Status (v1.3.0 — Cloudflare Pages)
 
-### Build System: ✅ Ready
-- [x] Local build working (`npm run build:local`)
-- [x] Cloud build working (`npm run build:cloud`)
-- [x] Content validation passing
-- [x] Type checking passing
-- [x] No build errors
+### Infrastructure: ✅ Ready
+- [x] Three Cloudflare Pages projects provisioned (dev / stage / prod)
+- [x] Custom domains configured: `dev.nsengineering.com.np`, `stage.nsengineering.com.np`
+- [x] All three R2 buckets created with public `r2.dev` URLs (nswebsite-dev/stage/prod)
+- [x] All three email workers deployed (email-worker-dev/stage/prod)
+- [x] Domain on Cloudflare nameservers (instant DNS cutover possible)
 
-### Content Management: ✅ Ready
-- [x] Google Sheets connected (9/9)
-- [x] CSV export functional
-- [x] Version control via Git
-- [x] Fallback system tested
-- [x] Documentation complete
+### CI/CD Pipeline: ✅ Ready
+- [x] `deploy-dev.yml` pipeline: GDrive → R2 → build → dev → stage → prod
+- [x] Per-environment R2 URL injection at deploy time (`prodAuditChanges`)
+- [x] Per-environment Turnstile key injection at deploy time (`prodAuditChanges`)
+- [x] Environment-gated approvals for stage and prod
+- [x] R2 asset promotion: dev → stage → prod
 
-### Security: ✅ Ready
-- [x] All secrets gitignored
-- [x] Environment templates documented
-- [x] No hardcoded credentials
-- [x] Service account configured
-- [x] Credentials file excluded
-
-### Documentation: ✅ Ready
-- [x] User guides complete (6 files)
-- [x] Setup guides complete (4 files)
-- [x] Technical docs complete (4 files)
-- [x] Deployment procedures documented
-- [x] Troubleshooting guides included
-
-### Testing: ⏳ Pending
-- [ ] Deploy to staging environment
-- [ ] Test all pages load correctly
-- [ ] Verify images display
-- [ ] Test forms and validation
-- [ ] Check mobile responsiveness
-- [ ] Lighthouse performance audit
+### Pre-Cutover Blockers: ⏳ Pending
+- [ ] CF Dashboard: set `nsengineering-dev` production branch → `dev`
+- [ ] CF Dashboard: set `nsengineering-stage` production branch → `stage`
+- [ ] CF Dashboard: add `nsengineering.com.np` + `www` to `nsengineering-prod`
+- [ ] Rotate exposed Turnstile secret key and update all three workers
+- [ ] Add `NEXT_PUBLIC_TURNSTILE_SITE_KEY` to `staging` GitHub environment
+- [ ] Merge `prodAuditChanges` into delivery branch and run full pipeline
 
 ### Launch: ⏳ Pending
-- [ ] Share Google Sheet with team
-- [ ] Train team on content editing
-- [ ] Configure custom domain
-- [ ] Set up analytics (optional)
-- [ ] Deploy to production
+- [ ] Verify all environments after pipeline run (favicon, images, forms)
+- [ ] Execute DNS cutover
+- [ ] Disable `deploy.yml` GitHub Pages workflow
 - [ ] Announce launch
 
 ---
@@ -433,6 +417,40 @@ ns-engineering-website/
 ├── PROJECT_ORGANIZATION.md       # Organization summary
 └── package.json                  # Dependencies & scripts
 ```
+
+---
+
+---
+
+### Phase 10: Cloudflare Pages Multi-Environment Migration (2026-06)
+**Status**: 🚀 In Progress — DNS cutover pending
+
+**Infrastructure provisioned:**
+- Three Cloudflare Pages projects: `nsengineering-dev`, `nsengineering-stage`, `nsengineering-prod`
+- Three Cloudflare R2 buckets: `nswebsite-dev`, `nswebsite-stage`, `nswebsite-prod`
+- Three environment-specific email workers deployed and tested
+- Custom domains live: `dev.nsengineering.com.np`, `stage.nsengineering.com.np`
+
+**Pipeline implemented (`deploy-dev.yml`):**
+- Single build → artifact promoted through dev → stage → prod
+- GDrive → R2 sync, then R2 promotion (dev→stage→prod) for asset management
+- `find+sed` placeholder substitution at each deploy step so each environment uses its own R2 bucket URL and Turnstile site key (implemented in `prodAuditChanges` branch)
+
+**Audit completed (`docs/DEPLOYMENT_AUDIT_2026-06-03.md`):**
+- Full live inspection of CF Pages, R2, Workers, DNS, and GitHub secrets
+- Root cause of favicon/stale content on stage identified and documented (production branch mismatch)
+- All blockers documented with exact fix instructions
+
+**Remaining steps before launch:**
+- Fix CF Pages production branch config for dev/stage projects (dashboard change)
+- Add `nsengineering.com.np` custom domain to prod project
+- Rotate exposed Turnstile secret key
+- DNS cutover (instant — domain already on Cloudflare)
+
+**Key Files:**
+- `.github/workflows/deploy-dev.yml` — multi-env Cloudflare Pages pipeline
+- `docs/DEPLOYMENT_AUDIT_2026-06-03.md` — full infrastructure audit
+- `DEPLOYMENT.md` — updated deployment guide
 
 ---
 
@@ -578,6 +596,6 @@ git push origin cloudflare        # Deploy
 
 ---
 
-**Status**: ✅ Production Ready - AI SEO Optimized
-**Version**: 1.2.0
-**Last Updated**: 2026-01-11
+**Status**: 🚀 Cloudflare Pages Migration In Progress
+**Version**: 1.3.0
+**Last Updated**: 2026-06-03

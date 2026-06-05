@@ -16,11 +16,20 @@ env:
   # ==========================================================================
   # Public Runtime Variables (Available to Next.js Build)
   # ==========================================================================
+  #
+  # R2 URL and Turnstile key are intentionally set to placeholders here.
+  # The actual per-environment values are substituted at deploy time by each
+  # deploy job (deploy-dev / deploy-stage / deploy-prod), which runs inside
+  # its own GitHub environment and therefore has access to the correct secret.
+  # This lets us build once and promote the same artifact through all envs
+  # while still having each env load assets from its own R2 bucket and use
+  # its own Turnstile site key.
+  # ==========================================================================
 
-  NEXT_PUBLIC_R2_BASE_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
+  NEXT_PUBLIC_R2_BASE_URL: "https://NSENGINEERING_R2_URL"
   GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
 
-  NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: "NSENGINEERING_TURNSTILE_KEY"
 
 jobs:
   sync-assets:
@@ -83,6 +92,7 @@ jobs:
             --filter "+ *.png" \
             --filter "+ *.webp" \
             --filter "+ *.pdf" \
+            --filter "- *" \
             --progress \
             --checksum \
             --log-level INFO \
@@ -109,18 +119,22 @@ jobs:
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
 
-      NEXT_PUBLIC_R2_BASE_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
+      # Placeholder — substituted with the correct per-env URL at deploy time
+      NEXT_PUBLIC_R2_BASE_URL: "https://NSENGINEERING_R2_URL"
 
       GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
 
       # ======================================================================
       # IMPORTANT: Expose Worker URLs to Next.js Build
+      # Worker URLs are all baked in; emailService.ts picks the right one at
+      # runtime based on window.location.hostname.
       # ======================================================================
 
       NEXT_PUBLIC_EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
       NEXT_PUBLIC_EMAIL_WORKER_URL_DEV: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL_DEV }}
       NEXT_PUBLIC_EMAIL_WORKER_URL_PROD: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL_PROD }}
-      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+      # Placeholder — substituted with the correct per-env key at deploy time
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: "NSENGINEERING_TURNSTILE_KEY"
       NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE }}
 
     steps:
@@ -150,6 +164,45 @@ jobs:
           name: site-build
           path: ./out
 
+  commit-csv:
+    name: Commit CSV Updates
+    runs-on: ubuntu-latest
+
+    environment: dev
+
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create Google credentials file
+        run: echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > google-credentials.json
+
+      - name: Fetch and export content to CSV
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ./google-credentials.json
+        run: npm run build:content:cloud
+
+      - name: Commit CSV updates to repository
+        run: |
+          set -euo pipefail
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add content/**/*.csv
+          git diff --quiet && git diff --staged --quiet || \
+            (git commit -m "Content sync from Google Sheets [skip ci]" && git push)
+          echo "✅ CSV version control updated"
+
   deploy-dev:
     name: Deploy to Cloudflare Pages (Dev via Wrangler)
     runs-on: ubuntu-latest
@@ -167,20 +220,32 @@ jobs:
           name: site-build
           path: ./out
 
+      - name: Inject dev R2 URL and Turnstile key
+        env:
+          R2_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
+          TURNSTILE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+        run: |
+          set -euo pipefail
+          : "${R2_URL:?NEXT_PUBLIC_R2_BASE_URL is not set in the dev GitHub environment}"
+          : "${TURNSTILE_KEY:?NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set in the dev GitHub environment}"
+          echo "Substituting R2 URL and Turnstile key for dev environment..."
+          find ./out -type f \( -name "*.html" -o -name "*.js" -o -name "_redirects" \) \
+            -exec sed -i "s|https://NSENGINEERING_R2_URL|${R2_URL}|g" {} \;
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
+            -exec sed -i "s|NSENGINEERING_TURNSTILE_KEY|${TURNSTILE_KEY}|g" {} \;
+          echo "✅ Dev environment values injected"
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-
-      - name: Install Wrangler
-        run: npm install -g wrangler
 
       - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          wrangler pages deploy ./out \
+          npx --yes wrangler@4 pages deploy ./out \
             --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} \
             --branch=dev
 
@@ -273,7 +338,22 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: site-build
-          path: out/
+          path: ./out
+
+      - name: Inject stage R2 URL and Turnstile key
+        env:
+          R2_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
+          TURNSTILE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+        run: |
+          set -euo pipefail
+          : "${R2_URL:?NEXT_PUBLIC_R2_BASE_URL is not set in the staging GitHub environment}"
+          : "${TURNSTILE_KEY:?NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set in the staging GitHub environment - add it to the staging environment secrets}"
+          echo "Substituting R2 URL and Turnstile key for staging environment..."
+          find ./out -type f \( -name "*.html" -o -name "*.js" -o -name "_redirects" \) \
+            -exec sed -i "s|https://NSENGINEERING_R2_URL|${R2_URL}|g" {} \;
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
+            -exec sed -i "s|NSENGINEERING_TURNSTILE_KEY|${TURNSTILE_KEY}|g" {} \;
+          echo "✅ Staging environment values injected"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -285,8 +365,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Use npx to ensure wrangler is available without global install
-          npx --yes wrangler@3 pages deploy ./out \
+          npx --yes wrangler@4 pages deploy ./out \
             --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} \
             --branch=stage
 
@@ -396,6 +475,21 @@ jobs:
           name: site-build
           path: ./out
 
+      - name: Inject prod R2 URL and Turnstile key
+        env:
+          R2_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
+          TURNSTILE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+        run: |
+          set -euo pipefail
+          : "${R2_URL:?NEXT_PUBLIC_R2_BASE_URL is not set in the production GitHub environment}"
+          : "${TURNSTILE_KEY:?NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set in the production GitHub environment}"
+          echo "Substituting R2 URL and Turnstile key for production environment..."
+          find ./out -type f \( -name "*.html" -o -name "*.js" -o -name "_redirects" \) \
+            -exec sed -i "s|https://NSENGINEERING_R2_URL|${R2_URL}|g" {} \;
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
+            -exec sed -i "s|NSENGINEERING_TURNSTILE_KEY|${TURNSTILE_KEY}|g" {} \;
+          echo "✅ Production environment values injected"
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -406,7 +500,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          npx --yes wrangler@3 pages deploy ./out \
+          npx --yes wrangler@4 pages deploy ./out \
             --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} \
             --branch=main
 

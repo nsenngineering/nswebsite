@@ -21,11 +21,14 @@
 #
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-name: Deploy to Production
+name: Deploy to GitHub Pages (Legacy — disabled)
+# ⚠️  This workflow previously auto-deployed to GitHub Pages on every push
+# to the 'cloudflare' branch. It is now DISABLED (push trigger removed) to
+# prevent GitHub Pages from receiving updates after DNS cutover to Cloudflare
+# Pages. Keep this workflow for emergency rollback only — trigger manually
+# if you need to revert to GitHub Pages.
 
 on:
-  push:
-    branches: [cloudflare]
   workflow_dispatch:
 
 permissions:
