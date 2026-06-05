@@ -228,9 +228,6 @@ jobs:
           find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_TURNSTILE_KEY|${TURNSTILE_KEY}|g" {} \;
           find ./out -type f \( -name "*.html" -o -name "*.js" \) \
-            -exec sed -i "s|https://NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \
-          ;
-          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \
           ;
           echo "✅ Dev environment values injected"
@@ -355,8 +352,6 @@ jobs:
             -exec sed -i "s|https://NSENGINEERING_R2_URL|${R2_URL}|g" {} \;
           find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_TURNSTILE_KEY|${TURNSTILE_KEY}|g" {} \;
-          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
-            -exec sed -i "s|https://NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \;
           find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \;
           echo "✅ Staging environment values injected"
@@ -496,8 +491,6 @@ jobs:
             -exec sed -i "s|https://NSENGINEERING_R2_URL|${R2_URL}|g" {} \;
           find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_TURNSTILE_KEY|${TURNSTILE_KEY}|g" {} \;
-          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
-            -exec sed -i "s|https://NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \;
           find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \;
           echo "✅ Production environment values injected"
