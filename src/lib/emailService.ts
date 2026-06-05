@@ -50,28 +50,6 @@ export interface QuotationFormData {
 // ============================================================================
 
 const getWorkerUrl = (): string => {
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : undefined;
-
-  if (hostname === 'stage.nsengineering.com.np') {
-    return (
-      process.env.NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE ||
-      'https://email-worker-stage.emailapi-nsengineering.workers.dev'
-    );
-  }
-
-  if (hostname === 'dev.nsengineering.com.np') {
-    return (
-      process.env.NEXT_PUBLIC_EMAIL_WORKER_URL_DEV ||
-      'https://email-worker-dev.emailapi-nsengineering.workers.dev'
-    );
-  }
-
-  if (hostname === 'nsengineering.com.np' || hostname === 'www.nsengineering.com.np') {
-    return (
-      process.env.NEXT_PUBLIC_EMAIL_WORKER_URL_PROD ||
-      'https://email-worker-prod.emailapi-nsengineering.workers.dev'
-    );
-  }
   
   const url = process.env.NEXT_PUBLIC_EMAIL_WORKER_URL;
 
