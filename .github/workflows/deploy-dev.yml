@@ -30,6 +30,7 @@ env:
   GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
 
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: "NSENGINEERING_TURNSTILE_KEY"
+  NEXT_PUBLIC_EMAIL_WORKER_URL: "NSENGINEERING_EMAIL_WORKER_URL"
 
 jobs:
   sync-assets:
@@ -124,19 +125,10 @@ jobs:
 
       GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
 
-      # ======================================================================
-      # IMPORTANT: Expose Worker URLs to Next.js Build
-      # Worker URLs are all baked in; emailService.ts picks the right one at
-      # runtime based on window.location.hostname.
-      # ======================================================================
-
-      NEXT_PUBLIC_EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
-      NEXT_PUBLIC_EMAIL_WORKER_URL_DEV: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL_DEV }}
-      NEXT_PUBLIC_EMAIL_WORKER_URL_PROD: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL_PROD }}
       # Placeholder — substituted with the correct per-env key at deploy time
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: "NSENGINEERING_TURNSTILE_KEY"
-      NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE }}
-
+      NEXT_PUBLIC_EMAIL_WORKER_URL: "NSENGINEERING_EMAIL_WORKER_URL"
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -220,19 +212,27 @@ jobs:
           name: site-build
           path: ./out
 
-      - name: Inject dev R2 URL and Turnstile key
+      - name: Inject dev R2 URL, Turnstile key, and Email Worker URL
         env:
           R2_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
           TURNSTILE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+          EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
         run: |
           set -euo pipefail
           : "${R2_URL:?NEXT_PUBLIC_R2_BASE_URL is not set in the dev GitHub environment}"
           : "${TURNSTILE_KEY:?NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set in the dev GitHub environment}"
-          echo "Substituting R2 URL and Turnstile key for dev environment..."
+          : "${EMAIL_WORKER_URL:?NEXT_PUBLIC_EMAIL_WORKER_URL is not set in the dev GitHub environment}"
+          echo "Substituting R2 URL, Turnstile key, and Email Worker URL for dev environment..."
           find ./out -type f \( -name "*.html" -o -name "*.js" -o -name "_redirects" \) \
             -exec sed -i "s|https://NSENGINEERING_R2_URL|${R2_URL}|g" {} \;
           find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_TURNSTILE_KEY|${TURNSTILE_KEY}|g" {} \;
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
+            -exec sed -i "s|https://NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \
+          ;
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
+            -exec sed -i "s|NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \
+          ;
           echo "✅ Dev environment values injected"
 
       - name: Setup Node.js
@@ -340,19 +340,25 @@ jobs:
           name: site-build
           path: ./out
 
-      - name: Inject stage R2 URL and Turnstile key
+      - name: Inject stage R2 URL, Turnstile key, and Email Worker URL
         env:
           R2_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
           TURNSTILE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+          EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
         run: |
           set -euo pipefail
           : "${R2_URL:?NEXT_PUBLIC_R2_BASE_URL is not set in the staging GitHub environment}"
           : "${TURNSTILE_KEY:?NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set in the staging GitHub environment - add it to the staging environment secrets}"
-          echo "Substituting R2 URL and Turnstile key for staging environment..."
+          : "${EMAIL_WORKER_URL:?NEXT_PUBLIC_EMAIL_WORKER_URL is not set in the staging GitHub environment}"
+          echo "Substituting R2 URL, Turnstile key, and Email Worker URL for staging environment..."
           find ./out -type f \( -name "*.html" -o -name "*.js" -o -name "_redirects" \) \
             -exec sed -i "s|https://NSENGINEERING_R2_URL|${R2_URL}|g" {} \;
           find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_TURNSTILE_KEY|${TURNSTILE_KEY}|g" {} \;
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
+            -exec sed -i "s|https://NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \;
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
+            -exec sed -i "s|NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \;
           echo "✅ Staging environment values injected"
 
       - name: Setup Node.js
@@ -475,19 +481,25 @@ jobs:
           name: site-build
           path: ./out
 
-      - name: Inject prod R2 URL and Turnstile key
+      - name: Inject prod R2 URL, Turnstile key, and Email Worker URL
         env:
           R2_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
           TURNSTILE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+          EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
         run: |
           set -euo pipefail
           : "${R2_URL:?NEXT_PUBLIC_R2_BASE_URL is not set in the production GitHub environment}"
           : "${TURNSTILE_KEY:?NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set in the production GitHub environment}"
-          echo "Substituting R2 URL and Turnstile key for production environment..."
+          : "${EMAIL_WORKER_URL:?NEXT_PUBLIC_EMAIL_WORKER_URL is not set in the production GitHub environment}"
+          echo "Substituting R2 URL, Turnstile key, and Email Worker URL for production environment..."
           find ./out -type f \( -name "*.html" -o -name "*.js" -o -name "_redirects" \) \
             -exec sed -i "s|https://NSENGINEERING_R2_URL|${R2_URL}|g" {} \;
           find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_TURNSTILE_KEY|${TURNSTILE_KEY}|g" {} \;
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
+            -exec sed -i "s|https://NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \;
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
+            -exec sed -i "s|NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \;
           echo "✅ Production environment values injected"
 
       - name: Setup Node.js
