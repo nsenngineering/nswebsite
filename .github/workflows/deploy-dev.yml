@@ -228,8 +228,7 @@ jobs:
           find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_TURNSTILE_KEY|${TURNSTILE_KEY}|g" {} \;
           find ./out -type f \( -name "*.html" -o -name "*.js" \) \
-            -exec sed -i "s|NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \
-          ;
+            -exec sed -i "s|NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \;
           echo "✅ Dev environment values injected"
 
       - name: Setup Node.js
