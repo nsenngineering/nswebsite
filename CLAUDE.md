@@ -241,38 +241,62 @@ npx serve@latest out
 
 ### Deployment
 
-The site deploys to **Cloudflare Pages** (three environments: dev / stage / prod).
+The site deploys to **Cloudflare Pages** using a multi-environment pipeline with automatic dev deployment and approval gates for staging and production.
 
+**Trigger the pipeline**:
 ```bash
-# Trigger via GitHub Actions UI:
-# Actions → "Deploy to Cloudflare Pages (Dev)" → Run workflow
+# Via GitHub Actions UI:
+# 1. Go to Actions tab
+# 2. Select "Deploy to Cloudflare Pages (Dev)" workflow
+# 3. Click "Run workflow" → select branch → "Run workflow"
 ```
 
-**What the pipeline does (deploy-dev.yml)**:
-1. Syncs media from Google Drive → `nswebsite-dev` R2 (rclone)
-2. Exports Google Sheets → CSV, builds Next.js static export (one artifact)
-3. Deploys artifact to `nsengineering-dev` Pages, injecting dev R2 URL + Turnstile key
-4. Promotes `nswebsite-dev` R2 → `nswebsite-stage` R2
-5. Deploys same artifact to `nsengineering-stage` Pages, injecting stage R2 URL + Turnstile key
-6. Promotes `nswebsite-stage` R2 → `nswebsite-prod` R2
-7. Deploys same artifact to `nsengineering-prod` Pages, injecting prod R2 URL + Turnstile key
+**Pipeline flow (deploy-dev.yml)**:
+```
+Push to main/branch
+    ↓
+sync-assets (Google Drive → Dev R2 via rclone)
+    ↓
+build (Single Next.js artifact with placeholders)
+    ↓
+commit-csv (Sheets → CSV for version control)
+    ↓
+deploy-dev (Auto-deploy to dev, inject dev secrets)
+    ↓ (requires approval)
+sync-assets-stage (promote Dev R2 → Stage R2)
+    ↓
+deploy-stage (Deploy to stage, inject stage secrets)
+    ↓ (requires approval)
+sync-assets-prod (promote Stage R2 → Prod R2)
+    ↓
+deploy-prod (Deploy to prod, inject prod secrets)
+```
 
-**Environment URLs**:
-- Dev: `dev.nsengineering.com.np`
-- Stage: `stage.nsengineering.com.np`
-- Prod: `nsengineering.com.np` (post-DNS-cutover)
+**Environments**:
+| Environment | URL | Custom Domain | Deployment | Approval |
+|---|---|---|---|---|
+| **Dev** | `dev.nsengineering.com.np` | Yes | Auto (immediate) | None |
+| **Staging** | `stage.nsengineering.com.np` | Yes | Manual | Required |
+| **Production** | `nsengineering.com.np` | Yes | Manual | Required |
 
-**R2 + Turnstile injection**: The artifact is built with placeholder strings (`https://NSENGINEERING_R2_URL`, `NSENGINEERING_TURNSTILE_KEY`). Each deploy job substitutes the correct values from per-environment GitHub secrets via `find+sed` before uploading to Cloudflare Pages.
+**How environment-specific values are injected**:
+- Build happens once (placeholders: `https://NSENGINEERING_R2_URL`, `NSENGINEERING_TURNSTILE_KEY`)
+- Each deploy job loads environment secrets from its GitHub environment
+- Artifact is modified in-place via `find+sed` to inject correct R2 URL and Turnstile key
+- Then deployed to Cloudflare Pages
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for full pipeline details, secrets reference, and DNS cutover steps.
-
-**Media Workflow** (rclone):
-- Team uploads media to Google Drive `content/` folder
-- GitHub Actions syncs to Cloudflare R2 on every push
+**Media workflow** (rclone):
+- Team uploads to Google Drive `/content` folder
+- GitHub Actions syncs assets → Cloudflare R2 (one bucket per environment)
 - Website loads images from R2 CDN
-- CSV files remain in Git for version control
+- Assets auto-promote through environments (dev → stage → prod)
 
-See [rclone Sync Documentation](./docs/technical/RCLONE_SYNC.md) for setup details.
+**R2 Buckets**:
+- `nswebsite-dev` (synced from Google Drive, auto-promoted to stage)
+- `nswebsite-stage` (promoted from dev, auto-promoted to prod)
+- `nswebsite-prod` (promoted from stage, serves production site)
+
+For quick commands and troubleshooting, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ---
 

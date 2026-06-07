@@ -893,7 +893,7 @@ This goal can be worked on in parallel with Goal 6.
 
   name = "email-worker-stage"
 
-=> Development Environment (dev)
+### Development Environment (dev)
 ### Completed Tasks
 => Configured the development Worker environment:
 #### Worker name:
@@ -914,7 +914,7 @@ This goal can be worked on in parallel with Goal 6.
 
   - environment-specific secrets are configured correctly.
 
-=> Staging Environment (staging)
+### Staging Environment (staging)
 ### Completed Tasks
 => Configured the staging Worker environment:
 #### Worker name:
@@ -922,7 +922,6 @@ This goal can be worked on in parallel with Goal 6.
 #### Registered a dedicated Cloudflare Turnstile application for:
     stage.nsengineering.com.np
 #### Configured the staging Worker secret:
-
     wrangler secret put TURNSTILE_SECRET_KEY --env staging
 #### Updated the GitHub staging Environment secrets:
   - NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE
@@ -932,6 +931,30 @@ This goal can be worked on in parallel with Goal 6.
   - the staging Worker deploys successfully.
   - Turnstile validation works correctly for the staging domain
   - environment-specific secrets are configured properly
+
+### Production Environment (production)
+### Completed Tasks
+=> Configured the production Worker environment:
+#### Worker name:
+    email-worker-prod
+#### Registered a dedicated Cloudflare Turnstile application for:
+    nsengineering.com.np
+#### Configured the production Worker secret:
+    wrangler secret put TURNSTILE_SECRET_KEY --env production
+#### Configured the production Worker to route emails to the real company inbox.
+#### Updated the GitHub production Environment secrets:
+  - NEXT_PUBLIC_EMAIL_WORKER_URL_PROD
+  - NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  - NEXT_PUBLIC_TURNSTILE_SECRET_KEY
+
+#### Verified that:
+
+  - the production Worker deploys successfully.
+  - Turnstile validation works correctly for the production domain.
+  - environment-specific secrets are configured properly.
+  - contact form submissions are delivered successfully to the production company inbox.
+  - production configuration is isolated from development and staging environments.
+
 ---
 
 ## Goal 8: DNS Cutover
@@ -940,12 +963,64 @@ This goal can be worked on in parallel with Goal 6.
 
 This is the highest-risk step. Follow this sequence exactly:
 
-1. **Before touching DNS**: Verify the production Cloudflare Pages project (`nsengineering-prod`) is fully working using its `*.pages.dev` URL. Test the contact form end-to-end.
-2. **Reduce TTL**: Lower the DNS TTL for `nsengineering.com.np` to 60 seconds at least 24 hours before the cutover. This means DNS changes propagate globally within 1 minute instead of up to 24 hours.
-3. **Cutover**: In Cloudflare DNS, remove the CNAME pointing to GitHub Pages. Add the custom domain for `nsengineering-prod` inside the Cloudflare Pages dashboard (it auto-creates the DNS record).
-4. **Verify**: Run `curl -I https://nsengineering.com.np` and confirm the response headers show Cloudflare Pages. Test all major pages and the contact form.
-5. **Do not decommission GitHub Pages immediately.** Leave it running for 48 hours as a fallback. If something is wrong, the rollback is to repoint DNS back to the old CNAME.
-6. After 48 hours of stable production: disable GitHub Pages in the repository settings.
+### 1. **Before touching DNS**: Verify the production Cloudflare Pages project (`nsengineering-prod`) is fully working using its `*.pages.dev` URL. Test the contact form end-to-end.
+=> 
+### Pre-Cutover Verification
+i. Verified that the production Cloudflare Pages project (nsengineering-prod) was fully functional using the *.pages.dev URL.
+
+ii. Performed end-to-end testing of the contact form.
+
+iii. Confirmed successful communication between the website, Cloudflare Email Worker, and Turnstile validation service.
+
+### 2. **Reduce TTL**: Lower the DNS TTL for `nsengineering.com.np` to 60 seconds at least 24 hours before the cutover. This means DNS changes propagate globally within 1 minute instead of up to 24 hours.
+=>
+### DNS Preparation
+i. Reduced the DNS TTL for nsengineering.com.np to 60 seconds more than 24 hours before the cutover.
+
+ii. Verified that the lower TTL had propagated successfully prior to making DNS changes.
+
+### 3. **Cutover**: In Cloudflare DNS, remove the CNAME pointing to GitHub Pages. Add the custom domain for `nsengineering-prod` inside the Cloudflare Pages dashboard (it auto-creates the DNS record).
+=>
+### DNS Cutover
+i. Removed the existing CNAME record pointing to GitHub Pages.
+
+ii. Added the custom domain nsengineering.com.np to the Cloudflare Pages production project (nsengineering-prod).
+
+iii. Allowed Cloudflare Pages to automatically create and manage the required DNS records.
+
+### 4. **Verify**: Run `curl -I https://nsengineering.com.np` and confirm the response headers show Cloudflare Pages. Test all major pages and the contact form.
+=>
+### Post-Cutover Verification
+ `curl -I https://nsengineering.com.np`
+
+i. Confirmed response headers were returned from Cloudflare Pages infrastructure.
+
+ii. Tested all major website pages and navigation paths.
+
+iii. Verified successful contact form submission and email delivery.
+
+iv. Confirmed Turnstile validation operated correctly in production.
+
+### 5. **Do not decommission GitHub Pages immediately.** Leave it running for 48 hours as a fallback. If something is wrong, the rollback is to repoint DNS back to the old CNAME.
+=>
+### GitHub Pages Fallback
+
+i. Kept the GitHub Pages deployment active for 48 hours after the DNS cutover.
+
+ii. Maintained GitHub Pages as a rollback option in case any production issues occurred.
+
+iii. Documented the rollback procedure by restoring the previous GitHub Pages DNS configuration if required.
+
+### 6. After 48 hours of stable production: disable GitHub Pages in the repository settings.
+=>
+### GitHub Pages Decommissioning
+i. Monitored the production environment for 48 hours after the cutover.
+
+ii. Confirmed stable website operation with no issues.
+
+iii. Disabled GitHub Pages in the repository settings after the stabilization period.
+
+iv. Verified that Cloudflare Pages became the sole production hosting platform.
 
 ### Learning Goal
 
@@ -963,11 +1038,36 @@ This is the highest-risk step. Follow this sequence exactly:
 
 Once production has been stable on Cloudflare Pages for 48 hours:
 
-- Delete the `CNAME` file from the repository root.
-- Remove the `pages: write` and `id-token: write` permissions from `deploy.yml` if not already done in Goal 6.
-- Disable GitHub Pages in the repository settings (Settings → Pages → Source → None).
-- Remove the `upload-pages-artifact` and `deploy-pages` action references if any remain.
-- Open a Pull Request from `feature/cloudflareMigration` into `main` with a clean description of what changed and why.
+### 1. Delete the `CNAME` file from the repository root.
+
+### 2. Remove the `pages: write` and `id-token: write` permissions from `deploy.yml` if not already done in Goal 6.
+=>
+
+i. Removed the pages: write permission from the deployment workflow.
+
+ii. Removed the id-token: write permission from the deployment workflow.
+
+iii. Verified that the workflow now contains only the permissions required for the Cloudflare Pages deployment process.
+
+### 3. Disable GitHub Pages in the repository settings (Settings → Pages → Source → None).
+=> 
+
+i. Disabled GitHub Pages in the repository settings.
+
+ii. Confirmed that GitHub Pages is no longer configured as a deployment target.
+
+iii. Verified that Cloudflare Pages is the sole production hosting platform.
+
+### 4. Remove the `upload-pages-artifact` and `deploy-pages` action references if any remain.
+=>
+
+i. Removed all remaining upload-pages-artifact action references.
+
+ii. Removed all remaining deploy-pages action references.
+
+iii. Confirmed that the deployment pipeline no longer contains any GitHub Pages dependencies.
+
+### 5. Open a Pull Request from `feature/cloudflareMigration` into `main` with a clean description of what changed and why.
 
 ### Learning Goal
 
@@ -983,35 +1083,111 @@ Once production has been stable on Cloudflare Pages for 48 hours:
 
 Update the following files to reflect the new world:
 
-1. **`CLAUDE.md`** — update the deployment section and the quick commands reference.
-2. **`DEPLOYMENT.md`** — rewrite the deployment steps to describe the new pipeline (push to main → approve dev → approve staging → approve prod). Add a Rollback section specific to Cloudflare Pages (how to roll back to a previous deployment using `wrangler pages deployment list` and `wrangler pages deployment rollback`).
-3. **Create `docs/technical/ENVIRONMENT_STRATEGY.md`** — a short document describing the three environments, their domains, their purpose, and the promotion flow. Include the architecture diagram.
+=> Successfully updated the project documentation to reflect the Cloudflare Pages deployment architecture and environment strategy.
 
-The architecture diagram should look something like this (ASCII is fine):
+### 1. **`CLAUDE.md`** — update the deployment section and the quick commands reference.
+### Completed Tasks
+=>
+
+i. Updated the deployment section to describe the Cloudflare Pages deployment workflow.
+
+ii. Removed references to GitHub Pages deployment processes.
+
+iii. Updated the quick commands reference with Cloudflare Pages and Wrangler commands.
+
+iv. Added environment-specific deployment and troubleshooting commands.
+
+### 2. **`DEPLOYMENT.md`** — rewrite the deployment steps to describe the new pipeline (push to main → approve dev → approve staging → approve prod). Add a Rollback section specific to Cloudflare Pages (how to roll back to a previous deployment using `wrangler pages deployment list` and `wrangler pages deployment rollback`).
+=>
+
+i. Rewrote the deployment guide to reflect the new deployment pipeline:
+
+```text
+Push to main
+    ↓
+Deploy Dev (automatic)
+    ↓
+Approve Staging
+    ↓
+Deploy Staging
+    ↓
+Approve Production
+    ↓
+Deploy Production
+```
+
+ii. Updated deployment procedures for Cloudflare Pages.
+
+iii. Removed obsolete GitHub Pages deployment instructions.
+
+iv. Added deployment validation and verification steps for each environment.
+
+### 3. **Create `docs/technical/ENVIRONMENT_STRATEGY.md`** — a short document describing the three environments, their domains, their purpose, and the promotion flow. Include the architecture diagram.
+=>
+Created docs/technical/ENVIRONMENT_STRATEGY.md.
+
+### The document includes:
+
+i. Environment overview
+
+ii. Domain mapping
+
+iii. Environment responsibilities
+
+iv. Promotion workflow
+
+v. Deployment approvals
+
+vi. Email Worker isolation strategy
+
+vii. Turnstile isolation strategy
+
+viii. Rollback strategy
+
+ix. Environment Mapping
+
+
+| Environment | Domain                     | Purpose                                          |
+| ----------- | -------------------------- | ------------------------------------------------ |
+| Development | dev.nsengineering.com.np   | testing and validation                 |
+| Staging     | stage.nsengineering.com.np | Pre-production validation and stakeholder review |
+| Production  | nsengineering.com.np       | Live customer-facing environment                 |
+
+x. Architecture Diagram
+
+```text
+                     main branch push
+                            │
+                            ▼
+
+     ┌─────────────────────────────────────────┐
+     │           GitHub Actions                │
+     │                                         │
+     │  ┌──────────┐   ┌────────────────────┐  │
+     │  │ sync-    │   │ build (once)       │  │
+     │  │ assets   │   │ artifact: out/     │  │
+     │  └──────────┘   └─────────┬──────────┘  │
+     │                           │             │
+     │           ┌───────────────┼───────────┐ │
+     │           ▼               ▼           ▼ │
+     │  ┌────────────┐ ┌────────────┐ ┌────────────┐
+     │  │ deploy-dev │ │deploy-stage│ │deploy-prod│
+     │  │ (auto)     │ │(approval✓) │ │(approval✓)│
+     │  └─────┬──────┘ └─────┬──────┘ └─────┬──────┘
+     └────────┼──────────────┼──────────────┼────────
+
+              ▼              ▼              ▼
+
+   dev.nsengineering   stage.nsengineering   nsengineering.com.np
+        .com.np             .com.np
+
+              │              │              │
+              ▼              ▼              ▼
+
+    email-worker-dev  email-worker-stage  email-worker-prod
+```
 
 ```
- main branch push
-       │
-       ▼
- ┌─────────────────────────────────────────┐
- │  GitHub Actions                         │
- │  ┌──────────┐  ┌──────────────────────┐ │
- │  │sync-     │  │ build (once)         │ │
- │  │assets    │  │ → artifact: out/     │ │
- │  └──────────┘  └──────────┬───────────┘ │
- │                           │             │
- │          ┌────────────────┼──────────┐  │
- │          ▼                ▼          ▼  │
- │  ┌────────────┐  ┌──────────────┐  ┌─────────────┐  │
- │  │deploy-dev  │  │deploy-staging│  │deploy-prod  │  │
- │  │(auto)      │  │(approval ✓)  │  │(approval ✓) │  │
- │  └─────┬──────┘  └──────┬───────┘  └──────┬──────┘  │
- └────────┼───────────────┼──────────────────┼──────────┘
-          ▼               ▼                  ▼
-    dev.nsengineering  stage.nsengineering  nsengineering.com.np
-    + dev Worker       + stage Worker       + prod Worker
-```
-
 ### Learning Goal
 
 **Documentation is part of the deliverable, not an afterthought.** A system that works but is not documented depends on the person who built it. That person will leave eventually. Good documentation means the next engineer — or your future self — can understand, operate, and extend the system without asking you.
