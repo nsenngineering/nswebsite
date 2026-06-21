@@ -12,7 +12,7 @@
 
 This document outlines a comprehensive 5-phase SEO optimization and audit strategy for the NS Engineering website. It combines your audit documentation with the current project state to provide a detailed implementation plan.
 
-**Current Status**: 
+**Current Status**:
 - ✅ **Phase 4 (Structured Data)**: 90% Complete
 - ⏳ **Phase 1 (Technical SEO)**: 50% Complete
 - ⏳ **Phase 2 (Performance)**: 20% Complete
@@ -124,7 +124,7 @@ Identify technical issues preventing search engixnes from properly crawling and 
 ### Detailed Checklist
 
 #### 1.1 Google Search Console Setup
-**Priority**: 🔴 Critical  
+**Priority**: 🔴 Critical
 **Effort**: 2-3 hours
 
 **Tasks**:
@@ -199,7 +199,7 @@ cat public/robots.txt
 - Dead carousel images
 
 #### 1.4 Redirect Chains Analysis
-**Priority**: 🟠 High  
+**Priority**: 🟠 High
 **Effort**: 2-3 hours
 
 **Current State**:
@@ -222,7 +222,7 @@ npm run generate:redirects
 ```
 
 #### 1.5 Meta Tags & Title Optimization
-**Priority**: 🟠 High  
+**Priority**: 🟠 High
 **Effort**: 4-6 hours
 
 **Current State**:
@@ -255,7 +255,7 @@ npm run generate:redirects
 ```
 
 #### 1.6 Schema Validation
-**Priority**: 🟡 Medium  
+**Priority**: 🟡 Medium
 **Effort**: 2-3 hours
 
 **Current State**:
@@ -284,7 +284,7 @@ npm run generate:redirects
 4. Document fixes needed
 
 #### 1.7 Canonical Tags Verification
-**Priority**: 🟡 Medium  
+**Priority**: 🟡 Medium
 **Effort**: 1-2 hours
 
 **Checks**:
@@ -297,7 +297,7 @@ npm run generate:redirects
 Next.js handles this automatically via `next/head` and structured metadata.
 
 #### 1.8 SSL Certificate & Security Headers
-**Priority**: 🔴 Critical  
+**Priority**: 🔴 Critical
 **Effort**: 1 hour (verification)
 
 **Current State**:
@@ -360,7 +360,7 @@ Improve loading speed and Core Web Vitals (LCP, INP, CLS).
 ### Critical Metrics
 
 #### 2.1 Core Web Vitals Analysis
-**Priority**: 🔴 Critical  
+**Priority**: 🔴 Critical
 **Effort**: 4-6 hours
 
 **Key Metrics**:
@@ -392,7 +392,7 @@ Improve loading speed and Core Web Vitals (LCP, INP, CLS).
 - Unoptimized third-party scripts
 
 #### 2.2 Image Optimization
-**Priority**: 🔴 Critical  
+**Priority**: 🔴 Critical
 **Effort**: 8-10 hours
 
 **Current State**:
@@ -462,7 +462,7 @@ npm run build  # Check output size
 - Tree-shake unused utility functions
 
 #### 2.4 Caching Strategy
-**Priority**: 🟡 Medium  
+**Priority**: 🟡 Medium
 **Effort**: 2-3 hours
 
 **Current State**:
@@ -493,7 +493,7 @@ npm run build  # Check output size
 ```
 
 #### 2.5 Third-Party Scripts Audit
-**Priority**: 🟡 Medium  
+**Priority**: 🟡 Medium
 **Effort**: 2-3 hours
 
 **Current State**:
@@ -514,7 +514,7 @@ npm run build  # Check output size
 - Heat mapping tool (optional)
 
 #### 2.6 Lighthouse Score Targets
-**Priority**: 🟡 Medium  
+**Priority**: 🟡 Medium
 **Effort**: Ongoing
 
 **Target Scores** (out of 100):
@@ -595,7 +595,7 @@ Improve ranking potential through keyword research, content optimization, and se
 ### Detailed Content Optimization
 
 #### 3.1 Keyword Research
-**Priority**: 🔴 Critical  
+**Priority**: 🔴 Critical
 **Effort**: 8-10 hours
 
 **Research Strategy**:
@@ -647,7 +647,7 @@ Keyword, Search Volume, Difficulty, Target Page, Current Ranking
 **Expected Output**: 40-50 target keywords mapped to pages
 
 #### 3.2 Competitor Analysis
-**Priority**: 🟠 High  
+**Priority**: 🟠 High
 **Effort**: 5-6 hours
 
 **Competitors to Analyze**:
@@ -676,7 +676,7 @@ Keyword, Search Volume, Difficulty, Target Page, Current Ranking
 **Deliverable**: Competitor Analysis Matrix (save to `docs/research/COMPETITOR_ANALYSIS.md`)
 
 #### 3.3 Content Gap Analysis
-**Priority**: 🟠 High  
+**Priority**: 🟠 High
 **Effort**: 4-5 hours
 
 **Current Content Audit** (by page):
@@ -697,7 +697,7 @@ Keyword, Search Volume, Difficulty, Target Page, Current Ranking
 - [ ] Add client testimonials
 
 #### 3.4 Page Metadata Optimization
-**Priority**: 🟠 High  
+**Priority**: 🟠 High
 **Effort**: 6-8 hours
 
 **Pages to Optimize** (Priority Order):
@@ -740,7 +740,7 @@ Optimization needed:
 ```
 
 #### 3.5 Internal Linking Strategy
-**Priority**: 🟡 Medium  
+**Priority**: 🟡 Medium
 **Effort**: 4-5 hours
 
 **Current State**:
@@ -773,7 +773,7 @@ Optimization needed:
 - Related services linked from each service
 
 #### 3.6 FAQ Schema Optimization
-**Priority**: 🟡 Medium  
+**Priority**: 🟡 Medium
 **Effort**: 3-4 hours
 
 **Current FAQ Page**:
@@ -802,7 +802,7 @@ Answer should:
 ```
 
 #### 3.7 URL & Navigation Optimization
-**Priority**: 🟡 Medium  
+**Priority**: 🟡 Medium
 **Effort**: 2-3 hours
 
 **Current URLs**: Already optimized (keyword-rich, descriptive)
@@ -1089,7 +1089,7 @@ const handleFormSubmit = async (data: FormData) => {
 ```
 
 #### 5.1.3 Setup Event Tracking
-**Priority**: 🟠 High  
+**Priority**: 🟠 High
 **Effort**: 4-5 hours
 
 **Events to Track**:
@@ -1154,7 +1154,7 @@ export function useAnalytics() {
 ---
 
 ### 5.2 User Behavior Analysis
-**Priority**: 🟠 High  
+**Priority**: 🟠 High
 **Effort**: 2-3 hours (setup) + ongoing
 
 **Key Metrics to Monitor**:
@@ -1207,7 +1207,7 @@ export function useAnalytics() {
 ---
 
 ### 5.3 Setup Error Tracking
-**Priority**: 🟠 High  
+**Priority**: 🟠 High
 **Effort**: 2-3 hours
 
 **Option 1: Sentry (Recommended)**
@@ -1265,7 +1265,7 @@ export async function logError(error: Error, context: string) {
 ---
 
 ### 5.4 Setup Real User Monitoring (RUM)
-**Priority**: 🟡 Medium  
+**Priority**: 🟡 Medium
 **Effort**: 2-3 hours
 
 **Option 1: Cloudflare Web Analytics** (Automatic)
@@ -1315,7 +1315,7 @@ if (typeof window !== 'undefined') {
 ---
 
 ### 5.5 GDPR & Privacy Compliance
-**Priority**: 🔴 Critical  
+**Priority**: 🔴 Critical
 **Effort**: 3-4 hours
 
 #### 5.5.1 Cookie Consent Banner
