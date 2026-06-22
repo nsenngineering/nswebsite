@@ -149,7 +149,7 @@ cat public/robots.txt
 ```
 
 #### 1.2 Robots.txt & Crawl Budget Optimization
-**Priority**: 🔴 Critical  
+**Priority**: 🔴 Critical
 **Effort**: 1-2 hours
 
 **Current State** (`public/robots.txt`):
@@ -170,7 +170,7 @@ cat public/robots.txt
 ```
 
 #### 1.3 Broken Links Audit
-**Priority**: 🟠 High  
+**Priority**: 🟠 High
 **Effort**: 3-4 hours
 
 **Tools**:
