@@ -106,7 +106,7 @@ const categoryThemes: Record<string, CategoryTheme> = {
     badgeBg: 'bg-violet-50',
     badgeText: 'text-violet-800',
   },
-  'Aggregates': {
+  Aggregates: {
     icon: Boxes,
     iconBg: 'bg-lime-50',
     iconText: 'text-lime-700',
@@ -123,39 +123,47 @@ const fallbackTheme: CategoryTheme = {
   badgeText: 'text-gray-700',
 };
 
-function getCategoryGroups(items: StandardCode[]) {
+function getCategoryGroups(items: StandardCode[]): CategoryGroup[] {
   const groups = new Map<string, StandardCode[]>();
 
-  items.forEach((item) => {
-    const category = item.category || 'Misc materials';
-    groups.set(category, [...(groups.get(category) || []), item]);
-  });
+  for (const item of items) {
+    const category = item.category?.trim() || 'Misc Materials';
+    const existing = groups.get(category);
+    if (existing) {
+      existing.push(item);
+    } else {
+      groups.set(category, [item]);
+    }
+  }
 
   return Array.from(groups.entries())
     .map(([name, groupItems]) => ({
       name,
       items: groupItems,
-      theme: categoryThemes[name] || fallbackTheme,
+      theme: categoryThemes[name] ?? fallbackTheme,
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-function getStandardLabel(url: string, index: number) {
-  const search = url.match(/[?&]search=([^&#]+)/i)?.[1];
-  if (search) return `Code ${decodeURIComponent(search)}`;
+/** Derive a short human-readable label from a standard URL */
+function getStandardLabel(url: string, index: number): string {
+  // BIS search query  → e.g. "IS 1786"
+  const bisSearch = url.match(/[?&]search=([^&#]+)/i)?.[1];
+  if (bisSearch) return `IS ${decodeURIComponent(bisSearch)}`;
 
+  // ISO standard
   const iso = url.match(/iso:std:iso:([^:#]+)/i)?.[1];
   if (iso) return `ISO ${iso}`;
 
-  const astm = url.match(/astm\.org\/([a-z]\d+)/i)?.[1];
+  // ASTM page slug  → e.g. "ASTM A370"
+  const astm = url.match(/astm\.org\/([a-z]\d+[a-z0-9]*)/i)?.[1];
   if (astm) return `ASTM ${astm.toUpperCase()}`;
 
-  return `Reference ${index + 1}`;
+  return `Ref ${index + 1}`;
 }
 
 function CategoryIcon({ group }: { group: CategoryGroup }) {
   const Icon = group.theme.icon;
-
   return (
     <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${group.theme.iconBg}`}>
       <Icon className={`h-5 w-5 ${group.theme.iconText}`} aria-hidden="true" />
@@ -171,9 +179,10 @@ export default function StandardCodesCategoryView({
 }: StandardCodesCategoryViewProps) {
   const groups = getCategoryGroups(items);
   const selectedGroup = selectedCategory
-    ? groups.find((group) => group.name === selectedCategory)
+    ? groups.find((g) => g.name === selectedCategory) ?? null
     : null;
 
+  /* ── Empty state ── */
   if (items.length === 0) {
     return (
       <div className="flex min-h-[360px] flex-col items-center justify-center rounded-lg border border-gray-200 bg-white p-8 text-center">
@@ -186,9 +195,11 @@ export default function StandardCodesCategoryView({
     );
   }
 
+  /* ── Detail view: one category ── */
   if (selectedGroup) {
     return (
       <section className="space-y-5">
+        {/* Breadcrumb */}
         <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
           <FileText className="h-4 w-4" aria-hidden="true" />
           <span>Standard codes</span>
@@ -196,6 +207,7 @@ export default function StandardCodesCategoryView({
           <span className="font-medium text-gray-900">{selectedGroup.name}</span>
         </div>
 
+        {/* Back + heading */}
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -209,14 +221,19 @@ export default function StandardCodesCategoryView({
           <div>
             <h2 className="text-lg font-semibold text-gray-900">{selectedGroup.name}</h2>
             <p className="text-sm text-gray-500">
-              {selectedGroup.items.length} test {selectedGroup.items.length === 1 ? 'protocol' : 'protocols'}
+              {selectedGroup.items.length}{' '}
+              {selectedGroup.items.length === 1 ? 'test protocol' : 'test protocols'}
             </p>
           </div>
         </div>
 
+        {/* Cards */}
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {selectedGroup.items.map((item) => (
-            <article key={item.id} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+            <article
+              key={item.id}
+              className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+            >
               <span
                 className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${selectedGroup.theme.badgeBg} ${selectedGroup.theme.badgeText}`}
               >
@@ -226,7 +243,7 @@ export default function StandardCodesCategoryView({
               <div className="mt-3 flex flex-wrap gap-2">
                 {item.standards.map((standard, index) => (
                   <a
-                    key={`${item.id}-${standard.url}-${index}`}
+                    key={`${item.id}-${index}`}
                     href={standard.url}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -245,10 +262,13 @@ export default function StandardCodesCategoryView({
     );
   }
 
+  /* ── Grid view: all categories ── */
   return (
     <section>
       <div className="mb-4 flex items-center justify-between gap-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">All Categories</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+          All Categories
+        </p>
         <p className="text-sm text-gray-500">{items.length} matching protocols</p>
       </div>
 
@@ -265,7 +285,10 @@ export default function StandardCodesCategoryView({
             <p className="mt-1 text-sm text-gray-500">
               {group.items.length} {group.items.length === 1 ? 'test' : 'tests'}
             </p>
-            <ArrowRight className="absolute right-4 top-4 h-4 w-4 text-gray-300 opacity-0 transition group-hover:opacity-100" aria-hidden="true" />
+            <ArrowRight
+              className="absolute right-4 top-4 h-4 w-4 text-gray-300 opacity-0 transition group-hover:opacity-100"
+              aria-hidden="true"
+            />
           </button>
         ))}
       </div>
