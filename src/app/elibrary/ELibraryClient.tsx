@@ -18,6 +18,16 @@ import elibraryData from '@/data/generated/elibrary.json';
 
 const data = elibraryData as ELibraryConfig;
 
+/** Derive counts directly from the data arrays so they're always accurate,
+ *  regardless of what the generated `sections` map contains. */
+const sectionCounts: Record<ELibrarySection, number> = {
+  'standard-codes': data.standardCodes?.length ?? 0,
+  publications:     data.publications?.length ?? 0,
+  'curated-papers': data.curatedPapers?.length ?? 0,
+  downloads:        data.downloads?.length ?? 0,
+  newsletters:      data.newsletters?.length ?? 0,
+};
+
 const sectionIcons: Record<ELibrarySection, ElementType> = {
   'standard-codes': FileText,
   publications: BookOpen,
@@ -130,7 +140,7 @@ export default function ELibraryClient() {
                 NS Engineering eLibrary
               </p>
               <h1 className="mt-2 text-4xl font-bold md:text-5xl">
-                {activeSectionInfo?.label || 'Engineering Library'}
+                Engineering Library
               </h1>
               <p className="mt-5 text-lg leading-8 text-purple-100">
                 {activeSection === 'standard-codes'
@@ -180,7 +190,7 @@ export default function ELibraryClient() {
                         isActive ? 'bg-purple-100 text-purple-700' : 'bg-white/20'
                       }`}
                     >
-                      {data.sections[section.id]}
+                      {sectionCounts[section.id as ELibrarySection] ?? 0}
                     </span>
                   </button>
                 );
@@ -190,7 +200,7 @@ export default function ELibraryClient() {
           {/* Statistics */}
           <div className="mt-10 flex flex-wrap gap-10 border-t border-white/20 pt-8">
             <div>
-              <p className="text-3xl font-bold">{data.sections[activeSection]}</p>
+              <p className="text-3xl font-bold">{sectionCounts[activeSection]}</p>
               <p className="text-sm text-purple-100">Library Items</p>
             </div>
             <div>
