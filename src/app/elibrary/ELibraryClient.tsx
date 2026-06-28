@@ -115,8 +115,6 @@ export default function ELibraryClient() {
     });
   }, [activeSection, searchQuery]);
 
-  const activeSectionInfo = data.sectionInfo.find((section) => section.id === activeSection);
-
   const handleSectionChange = (section: ELibrarySection) => {
     setActiveSection(section);
     setSelectedItem(null);
@@ -127,31 +125,64 @@ export default function ELibraryClient() {
     setSelectedItem(null);
   };
 
+  const totalItems = sectionCounts[activeSection];
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* ── Header ── */}
-      <header className="bg-gradient-to-br from-purple-700 via-purple-600 to-blue-600 text-white">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
 
-          {/* Title + Search */}
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-3xl">
-              <p className="text-sm font-semibold uppercase tracking-wider text-purple-100">
-                NS Engineering eLibrary
-              </p>
-              <h1 className="mt-2 text-4xl font-bold md:text-5xl">
-                Engineering Library
-              </h1>
-              <p className="mt-5 text-lg leading-8 text-purple-100">
-                {activeSection === 'standard-codes'
-                  ? 'Industry standards and testing protocols for geotechnical engineering, materials, water, electrical, and construction testing.'
-                  : activeSectionInfo?.description}
-              </p>
+      {/* ── Hero Banner (matches Projects page style) ── */}
+      <header className="bg-gradient-to-br from-purple-700 via-purple-600 to-blue-600 text-white">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-5xl font-bold md:text-6xl">
+            Engineering Library
+          </h1>
+          <p className="mt-5 text-lg leading-8 text-purple-100">
+            <span className="font-semibold text-yellow-300">{totalItems}+ resources</span>{' '}
+            across standards, publications, research papers, downloads, and newsletters
+          </p>
+        </div>
+      </header>
+
+      {/* ── Tabs + Search bar (below hero, white section) ── */}
+      <div className="border-b border-gray-200 bg-white shadow-sm">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
+
+            {/* Section Tabs */}
+            <div className="flex flex-wrap gap-2">
+              {data.sectionInfo
+                .slice()
+                .sort((a, b) => a.order - b.order)
+                .map((section) => {
+                  const Icon = sectionIcons[section.id as ELibrarySection] || FileText;
+                  const isActive = section.id === activeSection;
+                  return (
+                    <button
+                      key={section.id}
+                      onClick={() => handleSectionChange(section.id as ELibrarySection)}
+                      className={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${
+                        isActive
+                          ? 'bg-purple-600 text-white shadow'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{section.label}</span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                          isActive ? 'bg-white/20 text-white' : 'bg-white text-gray-600'
+                        }`}
+                      >
+                        {sectionCounts[section.id as ELibrarySection] ?? 0}
+                      </span>
+                    </button>
+                  );
+                })}
             </div>
 
             {/* Search */}
-            <div className="relative w-full lg:w-96">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+            <div className="relative w-full sm:w-72 lg:w-80 shrink-0">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
                 type="search"
                 value={searchQuery}
@@ -160,70 +191,26 @@ export default function ELibraryClient() {
                   setSelectedStandardCategory(null);
                 }}
                 placeholder="Search standards, publications..."
-                className="w-full rounded-xl bg-white py-3 pl-12 pr-4 text-gray-900 shadow-lg outline-none ring-2 ring-transparent transition focus:ring-white"
+                className="w-full rounded-full border border-gray-300 bg-gray-50 py-2 pl-9 pr-4 text-sm text-gray-900 outline-none ring-2 ring-transparent transition focus:border-purple-400 focus:ring-purple-100"
               />
             </div>
           </div>
-
-          {/* Tabs */}
-          <div className="mt-10 flex gap-3 overflow-x-auto scrollbar-hide">
-            {data.sectionInfo
-              .slice()
-              .sort((a, b) => a.order - b.order)
-              .map((section) => {
-                const Icon = sectionIcons[section.id] || FileText;
-                const isActive = section.id === activeSection;
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => handleSectionChange(section.id)}
-                    className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-4 py-3 font-medium transition ${
-                      isActive
-                        ? 'bg-white text-purple-700 shadow-lg'
-                        : 'bg-white/10 text-white hover:bg-white/20'
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{section.label}</span>
-                    <span
-                      className={`rounded-full px-2 py-1 text-xs ${
-                        isActive ? 'bg-purple-100 text-purple-700' : 'bg-white/20'
-                      }`}
-                    >
-                      {sectionCounts[section.id as ELibrarySection] ?? 0}
-                    </span>
-                  </button>
-                );
-              })}
-          </div>
-
-          {/* Statistics */}
-          <div className="mt-10 flex flex-wrap gap-10 border-t border-white/20 pt-8">
-            <div>
-              <p className="text-3xl font-bold">{sectionCounts[activeSection]}</p>
-              <p className="text-sm text-purple-100">Library Items</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold">{filteredItems.length}</p>
-              <p className="text-sm text-purple-100">
-                {searchQuery.trim() ? 'Search Results' : 'Total Items'}
-              </p>
-            </div>
-            {activeSection === 'standard-codes' && (
-              <div>
-                <p className="text-3xl font-bold">3+</p>
-                <p className="text-sm text-purple-100">Standard Bodies</p>
-              </div>
-            )}
-          </div>
-
         </div>
-      </header>
+      </div>
 
       {/* ── Main content ── */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className={selectedItem ? 'lg:mr-96' : ''}>
 
+        {/* Result count */}
+        <p className="mb-6 text-sm text-gray-500">
+          Showing{' '}
+          <span className="font-semibold text-gray-800">{filteredItems.length}</span>{' '}
+          {searchQuery.trim()
+            ? `result${filteredItems.length === 1 ? '' : 's'} for "${searchQuery}"`
+            : `item${filteredItems.length === 1 ? '' : 's'}`}
+        </p>
+
+        <div className={selectedItem ? 'lg:mr-96' : ''}>
           {/* Standard Codes → category view */}
           {activeSection === 'standard-codes' ? (
             <StandardCodesCategoryView
@@ -233,18 +220,11 @@ export default function ELibraryClient() {
               onBack={() => setSelectedStandardCategory(null)}
             />
           ) : (
-            /* All other sections → document grid */
-            <>
-              <div className="mb-6 text-sm text-gray-600">
-                Showing {filteredItems.length}{' '}
-                {filteredItems.length === 1 ? 'item' : 'items'}
-              </div>
-              <DocumentGrid
-                items={filteredItems}
-                onItemClick={setSelectedItem}
-                selectedItemId={selectedItem?.id}
-              />
-            </>
+            <DocumentGrid
+              items={filteredItems}
+              onItemClick={setSelectedItem}
+              selectedItemId={selectedItem?.id}
+            />
           )}
         </div>
       </div>
