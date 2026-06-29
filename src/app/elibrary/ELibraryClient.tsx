@@ -79,7 +79,7 @@ export default function ELibraryClient() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* ── Hero — left-aligned, icon + title (matches FAQ page style) ── */}
+      {/* ── Hero — left-aligned, icon + title*/}
       <header className="bg-gradient-to-br from-purple-700 via-purple-600 to-blue-600 text-white">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold md:text-5xl">Engineering Library</h1>
@@ -91,11 +91,11 @@ export default function ELibraryClient() {
         </div>
       </header>
 
-      {/* ── Below-hero white panel: Search then Tabs (matches FAQ layout) ── */}
+      {/* ── Below-hero white panel*/}
       <div className="bg-gray-50">
         <div className="mx-auto max-w-4xl px-4 pt-8 pb-2 sm:px-6 lg:px-8">
 
-          {/* Full-width search — same style as FAQ */}
+          {/* Full-width search */}
           <div className="relative">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <input
@@ -150,7 +150,7 @@ export default function ELibraryClient() {
       {/* ── Main content ── */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
-        {/* Result count — matches FAQ "Showing 23 questions" */}
+        {/* Result count */}
         <p className="mb-6 text-sm text-gray-600">
           Showing{' '}
           <span className="font-semibold text-gray-900">{filteredItems.length}</span>{' '}
