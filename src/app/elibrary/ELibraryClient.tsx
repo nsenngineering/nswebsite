@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import type { ElementType } from 'react';
-import { BookOpen, Download, FileText, Lightbulb, Newspaper, Search, Library } from 'lucide-react';
+import { BookOpen, Download, FileText, Lightbulb, Newspaper, Search } from 'lucide-react';
 import DocumentGrid from '@/components/elibrary/DocumentGrid';
 import ReadingPanel from '@/components/elibrary/ReadingPanel';
 import StandardCodesCategoryView from '@/components/elibrary/StandardCodesCategoryView';
@@ -78,24 +78,24 @@ export default function ELibraryClient() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Page Header */}
-      <header className="bg-gradient-to-br from-purple-700 via-purple-600 to-blue-600 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Engineering Library
-          </h1>
-          <p className="text-xl text-purple-100 max-w-3xl">
-            Access our comprehensive collection of standards, technical publications, research papers, and resources.
-            Stay informed with the latest in geotechnical engineering and testing practices.
+
+      {/* ── Hero — left-aligned, icon + title (matches FAQ page style) ── */}
+      <header className="bg-gradient-to-br from-purple-700 via-purple-600 to-blue-600 text-white">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+          <h1 className="text-4xl font-bold md:text-5xl">Engineering Library</h1>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-purple-100">
+            Access our comprehensive collection of standards, technical publications,
+            research papers, and resources. Stay informed with the latest in geotechnical
+            engineering and testing practices.
           </p>
         </div>
       </header>
 
-      {/* ── Below-hero white panel */}
+      {/* ── Below-hero white panel: Search then Tabs (matches FAQ layout) ── */}
       <div className="bg-gray-50">
         <div className="mx-auto max-w-4xl px-4 pt-8 pb-2 sm:px-6 lg:px-8">
 
-          {/* Full-width search */}
+          {/* Full-width search — same style as FAQ */}
           <div className="relative">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <input
