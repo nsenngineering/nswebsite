@@ -79,11 +79,11 @@ export default function ELibraryClient() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* ── Hero — left-aligned, icon + title*/}
-      <header className="bg-gradient-to-br from-purple-700 via-purple-600 to-blue-600 text-white">
-        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold md:text-5xl">Engineering Library</h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-purple-100">
+      {/* ── Hero — left-aligned ── */}
+      <header className="bg-gradient-to-r from-purple-700 via-purple-500 to-blue-500 text-white">
+        <div className="mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-12">
+          <h1 className="text-5xl font-bold leading-tight md:text-6xl">Engineering Library</h1>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-purple-100">
             Access our comprehensive collection of standards, technical publications,
             research papers, and resources. Stay informed with the latest in geotechnical
             engineering and testing practices.
