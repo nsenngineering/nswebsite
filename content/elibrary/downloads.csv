@@ -1,1 +1,2 @@
-id,title,fileUrl,description,category,fileType,fileSize,dateAdded
+"id","title","fileUrl","description","category","fileType","fileSize","featured","dateAdded"
+"nsegs-2025-browser","NSEGS 2025 Browser","NSEGS_2025_Browser.pdf","Company brochure providing an overview of the organization's services, capabilities, projects, and technical expertise.","Downloads","PDF","37.2 MB","TRUE","2026-01-11"
