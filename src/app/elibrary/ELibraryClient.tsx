@@ -18,15 +18,6 @@ import elibraryData from '@/data/generated/elibrary.json';
 
 const data = elibraryData as ELibraryConfig;
 
-/** Derive counts directly from the data arrays so they're always accurate */
-const sectionCounts: Record<ELibrarySection, number> = {
-  'standard-codes': data.standardCodes?.length ?? 0,
-  publications:     data.publications?.length ?? 0,
-  'curated-papers': data.curatedPapers?.length ?? 0,
-  downloads:        data.downloads?.length ?? 0,
-  newsletters:      data.newsletters?.length ?? 0,
-};
-
 const sectionIcons: Record<ELibrarySection, ElementType> = {
   'standard-codes': FileText,
   publications:     BookOpen,
@@ -42,6 +33,14 @@ export default function ELibraryClient() {
   const [selectedStandardCategory, setSelectedStandardCategory] = useState<string | null>(null);
   const [newsletterItems, setNewsletterItems] = useState<ELibraryItem[]>(data.newsletters ?? []);
   const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
+
+  const sectionCounts = useMemo<Record<ELibrarySection, number>>(() => ({
+    'standard-codes': data.standardCodes?.length ?? 0,
+    publications: data.publications?.length ?? 0,
+    'curated-papers': data.curatedPapers?.length ?? 0,
+    downloads: data.downloads?.length ?? 0,
+    newsletters: newsletterItems.length || data.newsletters?.length || 0,
+  }), [newsletterItems]);
 
   useEffect(() => {
     if (activeSection !== 'newsletters') return;
