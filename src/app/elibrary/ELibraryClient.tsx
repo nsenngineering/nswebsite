@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ElementType } from 'react';
 import { BookOpen, Download, FileText, Lightbulb, Newspaper, Search } from 'lucide-react';
 import DocumentGrid from '@/components/elibrary/DocumentGrid';
 import ReadingPanel from '@/components/elibrary/ReadingPanel';
 import StandardCodesCategoryView from '@/components/elibrary/StandardCodesCategoryView';
-import type { ELibrarySection, ELibraryConfig, ELibraryItem, StandardCode } from '@/types/elibrary';
+import type { ELibrarySection, ELibraryConfig, ELibraryItem, Newsletter, StandardCode } from '@/types/elibrary';
 import {
   isStandardCode,
   isPublication,
@@ -40,6 +40,45 @@ export default function ELibraryClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<ELibraryItem | null>(null);
   const [selectedStandardCategory, setSelectedStandardCategory] = useState<string | null>(null);
+  const [newsletterItems, setNewsletterItems] = useState<ELibraryItem[]>(data.newsletters ?? []);
+  const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeSection !== 'newsletters') return;
+
+    let isCancelled = false;
+
+    const loadNewsletters = async () => {
+      try {
+        setIsNewsletterLoading(true);
+        const response = await fetch('/api/newsletters.json', { cache: 'no-store' });
+
+        if (!response.ok) {
+          throw new Error(`Failed to load newsletter data: ${response.status}`);
+        }
+
+        const payload = (await response.json()) as Newsletter[];
+        if (!isCancelled) {
+          setNewsletterItems(Array.isArray(payload) ? payload : (data.newsletters ?? []));
+        }
+      } catch (error) {
+        console.error('Failed to load newsletter data', error);
+        if (!isCancelled) {
+          setNewsletterItems(data.newsletters ?? []);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsNewsletterLoading(false);
+        }
+      }
+    };
+
+    void loadNewsletters();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeSection]);
 
   const filteredItems = useMemo(() => {
     let items: ELibraryItem[] = [];
@@ -49,7 +88,7 @@ export default function ELibraryClient() {
       case 'publications':    items = data.publications ?? [];   break;
       case 'curated-papers':  items = data.curatedPapers ?? [];  break;
       case 'downloads':       items = data.downloads ?? [];      break;
-      case 'newsletters':     items = data.newsletters ?? [];    break;
+      case 'newsletters':     items = newsletterItems;            break;
     }
 
     if (searchQuery.trim() === '') return items;
@@ -68,7 +107,7 @@ export default function ELibraryClient() {
       if (isNewsletter(item))    return base || item.description?.toLowerCase().includes(q) || item.quarter?.toLowerCase().includes(q);
       return base;
     });
-  }, [activeSection, searchQuery]);
+  }, [activeSection, newsletterItems, searchQuery]);
 
   const handleSectionChange = (section: ELibrarySection) => {
     setActiveSection(section);
@@ -156,6 +195,7 @@ export default function ELibraryClient() {
           <span className="font-semibold text-gray-900">{filteredItems.length}</span>{' '}
           {activeSection === 'standard-codes' ? 'standard' : ''}{filteredItems.length === 1 ? ' item' : ' items'}
           {searchQuery.trim() ? ` for "${searchQuery}"` : ''}
+          {activeSection === 'newsletters' && isNewsletterLoading ? ' • loading latest newsletters' : ''}
         </p>
 
         <div className={selectedItem ? 'lg:mr-96' : ''}>

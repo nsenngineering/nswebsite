@@ -163,10 +163,14 @@ export default function DocumentGrid({ items, onItemClick, selectedItemId }: Doc
                         })}
                       </span>
                     </div>
-                    {/* Quarter Badge */}
                     {item.quarter && (
                       <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">
                         {item.quarter}
+                      </span>
+                    )}
+                    {item.issueNumber && (
+                      <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs">
+                        {item.issueNumber}
                       </span>
                     )}
                   </>
@@ -197,10 +201,29 @@ export default function DocumentGrid({ items, onItemClick, selectedItemId }: Doc
                 </p>
               )}
 
-              {isNewsletter(item) && item.description && (
-                <p className="text-sm text-gray-700 line-clamp-3">
-                  {item.description}
-                </p>
+              {isNewsletter(item) && (
+                <div className="space-y-2">
+                  {item.description && (
+                    <p className="text-sm text-gray-700 line-clamp-3">
+                      {item.description}
+                    </p>
+                  )}
+                  {item.summary && (
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {item.summary}
+                    </p>
+                  )}
+                  {item.highlights && item.highlights.length > 0 && (
+                    <ul className="space-y-1 text-sm text-gray-600">
+                      {item.highlights.slice(0, 2).map((highlight) => (
+                        <li key={highlight} className="flex gap-2">
+                          <span className="mt-1 h-1.5 w-1.5 rounded-full bg-purple-500" />
+                          <span className="line-clamp-1">{highlight}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               )}
 
               {isStandardCode(item) && (
@@ -326,15 +349,17 @@ export default function DocumentGrid({ items, onItemClick, selectedItemId }: Doc
               )}
 
               {isNewsletter(item) && (
-                <a
-                  href={item.fileUrl}
-                  download
-                  onClick={(e) => e.stopPropagation()}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onItemClick(item);
+                  }}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  <Download className="w-4 h-4" />
-                  Download
-                </a>
+                  <FileText className="w-4 h-4" />
+                  View details
+                </button>
               )}
             </div>
           </div>

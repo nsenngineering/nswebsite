@@ -69,10 +69,14 @@ export interface Download extends ELibraryItemBase {
 // Newsletter (internal PDF - company newsletters)
 export interface Newsletter extends ELibraryItemBase {
   section: 'newsletters';
-  fileUrl: string;
+  fileUrl?: string;
   description?: string;
   publishDate: string;
   quarter?: string;
+  issueNumber?: string;
+  summary?: string;
+  readingTime?: string;
+  highlights?: string[];
 }
 
 // Union type for all document types

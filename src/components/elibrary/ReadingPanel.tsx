@@ -168,6 +168,16 @@ export default function ReadingPanel({ item, onClose }: ReadingPanelProps) {
                     {item.quarter}
                   </span>
                 )}
+                {item.issueNumber && (
+                  <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs">
+                    {item.issueNumber}
+                  </span>
+                )}
+                {item.readingTime && (
+                  <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+                    {item.readingTime}
+                  </span>
+                )}
               </>
             )}
           </div>
@@ -188,10 +198,33 @@ export default function ReadingPanel({ item, onClose }: ReadingPanelProps) {
               </div>
             )}
 
-            {isNewsletter(item) && item.description && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">Description</h3>
-                <p className="text-gray-700 leading-relaxed">{item.description}</p>
+            {isNewsletter(item) && (
+              <div className="space-y-4">
+                {item.description && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Description</h3>
+                    <p className="text-gray-700 leading-relaxed">{item.description}</p>
+                  </div>
+                )}
+                {item.summary && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Summary</h3>
+                    <p className="text-gray-700 leading-relaxed">{item.summary}</p>
+                  </div>
+                )}
+                {item.highlights && item.highlights.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Highlights</h3>
+                    <ul className="space-y-2 text-gray-700">
+                      {item.highlights.map((highlight) => (
+                        <li key={highlight} className="flex gap-2">
+                          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-purple-500" />
+                          <span>{highlight}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
 
@@ -321,14 +354,9 @@ export default function ReadingPanel({ item, onClose }: ReadingPanelProps) {
             )}
 
             {isNewsletter(item) && (
-              <a
-                href={item.fileUrl}
-                download
-                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm w-full justify-center"
-              >
-                <Download className="w-5 h-5" />
-                <span>Download Newsletter</span>
-              </a>
+              <div className="rounded-lg border border-purple-200 bg-purple-50 p-4 text-sm text-purple-800">
+                Newsletter highlights and summary are available above. This preview is now sourced from the dedicated JSON newsletter feed.
+              </div>
             )}
           </div>
         </article>
