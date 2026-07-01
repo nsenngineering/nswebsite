@@ -50,7 +50,7 @@ export default function ELibraryClient() {
     const loadNewsletters = async () => {
       try {
         setIsNewsletterLoading(true);
-        const response = await fetch('/api/newsletters.json', { cache: 'no-store' });
+        const response = await fetch('http://localhost:5002/newsletters', { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error(`Failed to load newsletter data: ${response.status}`);

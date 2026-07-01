@@ -15,7 +15,8 @@
     "build:cloud": "npm run build:content:cloud && dotenv -e .env.cloud -- cross-env CONTENT_SOURCE_MODE=sheets next build",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "json:server": "npx json-server --watch db.json --port 5002"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.956.0",
@@ -28,6 +29,7 @@
     "framer-motion": "^12.40.0",
     "google-auth-library": "^10.5.0",
     "google-spreadsheet": "^5.0.2",
+    "json-server": "^1.0.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.555.0",
     "next": "^16.1.1",
