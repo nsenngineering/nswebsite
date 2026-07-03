@@ -16,7 +16,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "json:server": "npx json-server --watch db.json --port 5002"
+    "json:server": "npx json-server --watch db.json --port 5002 --host 0.0.0.0"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.956.0",
