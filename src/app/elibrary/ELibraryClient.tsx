@@ -34,6 +34,12 @@ export default function ELibraryClient() {
   const [newsletterItems, setNewsletterItems] = useState<ELibraryItem[]>(data.newsletters ?? []);
   const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
 
+  const JSON_SERVER_URL = process.env.NEXT_PUBLIC_JSON_SERVER_URL
+    ? process.env.NEXT_PUBLIC_JSON_SERVER_URL
+    : typeof window !== 'undefined'
+      ? `http://${window.location.hostname}:5002`
+      : 'http://localhost:5002';
+
   const sectionCounts = useMemo<Record<ELibrarySection, number>>(() => ({
     'standard-codes': data.standardCodes?.length ?? 0,
     publications: data.publications?.length ?? 0,
@@ -50,7 +56,7 @@ export default function ELibraryClient() {
     const loadNewsletters = async () => {
       try {
         setIsNewsletterLoading(true);
-        const response = await fetch('http://localhost:5002/newsletters', { cache: 'no-store' });
+        const response = await fetch(`${JSON_SERVER_URL}/newsletters`, { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error(`Failed to load newsletter data: ${response.status}`);

@@ -15,7 +15,7 @@ Professional website for **NS Engineering & Geotechnical Services Pvt. Ltd. (NSE
 **Certification**: ISO 9001:2015
 
 ### Key Documentation
-- **[README.md](./README.md)** - Main project documentation
+- **[README.md](./README.md)** - Main project documentationf
 - **[docs/README.md](./docs/README.md)** - Complete documentation index
 - **[PROJECT_PROGRESS.md](./PROJECT_PROGRESS.md)** - Feature completion status
 - **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Deployment procedures
