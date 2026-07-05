@@ -5,7 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.json-server
+    restart: unless-stopped
     ports:
-      - '5002:5002'
+      - "5002:5002"
     volumes:
       - ./db.json:/app/db.json:ro
