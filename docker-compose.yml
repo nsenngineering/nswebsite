@@ -13,7 +13,7 @@ services:
       - traefik-public
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nsengineering-frontend.rule=Host(`nsengineering.com.np`)"
+      - "traefik.http.routers.nsengineering-frontend.rule=Host(`dev-nswebsiteapi.nsengineering.com.np`)"
       - "traefik.http.routers.nsengineering-frontend.entrypoints=websecure"
       - "traefik.http.routers.nsengineering-frontend.tls.certresolver=myresolver"
       - "traefik.http.services.nsengineering-frontend.loadbalancer.server.port=80"
