@@ -36,8 +36,8 @@ export default function ELibraryClient() {
 
   const getApiUrl = (): string => {
   
-  const url = process.env.API_URL;
-    console.log('ELibraryClient: env.API_URL =', process.env.API_URL);
+  const url = process.env.NEXT_PUBLIC_API_URL;
+    console.log('ELibraryClient: env.NEXT_PUBLIC_API_URL =', process.env.NEXT_PUBLIC_API_URL);
   if (!url) {
     throw new Error('API_URL is not configured');
   }
