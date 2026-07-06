@@ -34,8 +34,8 @@ export default function ELibraryClient() {
   const [newsletterItems, setNewsletterItems] = useState<ELibraryItem[]>(data.newsletters ?? []);
   const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
 
-  const JSON_SERVER_URL = process.env.NEXT_PUBLIC_JSON_SERVER_URL
-    ? process.env.NEXT_PUBLIC_JSON_SERVER_URL
+  const JSON_SERVER_URL = process.env.API_URL
+    ? process.env.API_URL
     : typeof window !== 'undefined'
       ? `http://${window.location.hostname}:5002`
       : 'http://localhost:5002';
