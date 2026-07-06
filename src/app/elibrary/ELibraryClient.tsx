@@ -34,16 +34,17 @@ export default function ELibraryClient() {
   const [newsletterItems, setNewsletterItems] = useState<ELibraryItem[]>(data.newsletters ?? []);
   const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
 
-  const JSON_SERVER_URL = (): string => {
+  const getApiUrl = (): string => {
   
   const url = process.env.API_URL;
-
+    console.log('ELibraryClient: env.API_URL =', process.env.API_URL);
   if (!url) {
     throw new Error('API_URL is not configured');
   }
 
   return url;
 };
+  const JSON_SERVER_URL = getApiUrl();
   console.log('ELibraryClient: JSON_SERVER_URL =', JSON_SERVER_URL);
   
   const sectionCounts = useMemo<Record<ELibrarySection, number>>(() => ({
