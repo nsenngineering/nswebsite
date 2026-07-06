@@ -13,10 +13,11 @@ services:
       - traefik-public
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
       - "traefik.http.routers.nsengineering-frontend.rule=Host(`dev-nswebsiteapi.nsengineering.com.np`)"
       - "traefik.http.routers.nsengineering-frontend.entrypoints=websecure"
       - "traefik.http.routers.nsengineering-frontend.tls.certresolver=myresolver"
-      - "traefik.http.services.nsengineering-frontend.loadbalancer.server.port=80"
+      - "traefik.http.services.nsengineering-frontend.loadbalancer.server.port=5002"
       - "traefik.http.routers.nsengineering-frontend.middlewares=security-headers@docker"
 networks:
   traefik-public:
