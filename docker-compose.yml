@@ -8,8 +8,6 @@ services:
       args:
         VITE_API_BASE_URL: /api/v1
     restart: unless-stopped
-    depends_on:
-      - json-server
     networks:
       - default
       - traefik-public
@@ -20,7 +18,6 @@ services:
       - "traefik.http.routers.nsengineering-frontend.tls.certresolver=myresolver"
       - "traefik.http.services.nsengineering-frontend.loadbalancer.server.port=80"
       - "traefik.http.routers.nsengineering-frontend.middlewares=security-headers@docker"
-
 networks:
   traefik-public:
     external: true
