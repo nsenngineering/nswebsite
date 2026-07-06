@@ -39,7 +39,8 @@ export default function ELibraryClient() {
     : typeof window !== 'undefined'
       ? `http://${window.location.hostname}:5002`
       : 'http://localhost:5002';
-
+  console.log('ELibraryClient: JSON_SERVER_URL =', JSON_SERVER_URL);
+  
   const sectionCounts = useMemo<Record<ELibrarySection, number>>(() => ({
     'standard-codes': data.standardCodes?.length ?? 0,
     publications: data.publications?.length ?? 0,

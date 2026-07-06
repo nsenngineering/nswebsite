@@ -225,7 +225,7 @@ jobs:
           : "${R2_URL:?NEXT_PUBLIC_R2_BASE_URL is not set in the dev GitHub environment}"
           : "${TURNSTILE_KEY:?NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set in the dev GitHub environment}"
           : "${EMAIL_WORKER_URL:?NEXT_PUBLIC_EMAIL_WORKER_URL is not set in the dev GitHub environment}"
-          : "${API_URL:?NEXT_PUBLIC_API_URL is not set in the dev GitHub environment}"
+          : "${API_URL:?API_URL is not set in the dev GitHub environment}"
           echo "Substituting R2 URL, Turnstile key, Email Worker URL and API URL for dev environment..."
           find ./out -type f \( -name "*.html" -o -name "*.js" -o -name "_redirects" \) \
             -exec sed -i "s|https://NSENGINEERING_R2_URL|${R2_URL}|g" {} \;
