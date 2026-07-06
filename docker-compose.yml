@@ -4,9 +4,24 @@ services:
   json-server:
     build:
       context: .
-      dockerfile: Dockerfile.json-server
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: /api/v1
     restart: unless-stopped
-    ports:
-      - "5002:5002"
-    volumes:
-      - ./db.json:/app/db.json:ro
+    depends_on:
+      - json-server
+    networks:
+      - default
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nsengineering-frontend.rule=Host(`nsengineering.com.np`)"
+      - "traefik.http.routers.nsengineering-frontend.entrypoints=websecure"
+      - "traefik.http.routers.nsengineering-frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.nsengineering-frontend.loadbalancer.server.port=80"
+      - "traefik.http.routers.nsengineering-frontend.middlewares=security-headers@docker"
+
+networks:
+  traefik-public:
+    external: true
+
