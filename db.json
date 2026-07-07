@@ -54,5 +54,1242 @@
         "Expanded participation in public infrastructure projects"
       ]
     }
+  ],
+  "standardCodes": [
+    {
+      "id": "mt-001",
+      "title": "Tensile Strength Test/Elongation Test",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=1786"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/a370.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.iso.org/obp/ui/#iso:std:iso:6892"
+        }
+      ],
+      "category": "Metal & Structural Materials",
+      "tags": [
+        "strength testing",
+        "metal & structural materials",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "mt-002",
+      "title": "Shear Test",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=1852"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d143.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Metal & Structural Materials",
+      "tags": [
+        "shear testing",
+        "metal & structural materials",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "rk-001",
+      "title": "Triaxial Test (C & Ãâ€ )",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=13047"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d7012.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.isrm.net/"
+        }
+      ],
+      "category": "Geotechnical Testing",
+      "tags": [
+        "shear testing",
+        "geotechnical testing",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "rk-002",
+      "title": "Modulus of Elasticity",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=10082"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d7012.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/"
+        }
+      ],
+      "category": "Geotechnical Testing",
+      "tags": [
+        "geotechnical testing",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "wt-001",
+      "title": "pH Value",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=3025"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d1293.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.iso.org/obp/ui/#iso:std:iso:10523"
+        }
+      ],
+      "category": "Water & Environmental",
+      "tags": [
+        "water & environmental",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "wt-002",
+      "title": "Chloride Content (ppm)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=3025"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d512.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.iso.org/obp/ui/#iso:std:iso:9297"
+        }
+      ],
+      "category": "Water & Environmental",
+      "tags": [
+        "water & environmental",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "cab-001",
+      "title": "Grain Size Analysis",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=2386"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/c136.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Concrete & Masonry",
+      "tags": [
+        "concrete & masonry",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "cab-002",
+      "title": "Organic Impurities",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=2386"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/c40.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Concrete & Masonry",
+      "tags": [
+        "concrete & masonry",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "agg-001",
+      "title": "Proctor Compaction (OMC/MDD)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=2720"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=2720"
+        },
+        {
+          "organization": "AASHTO",
+          "url": "https://www.astm.org/d698.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.transportation.org/home/aashto-standards/"
+        }
+      ],
+      "category": "Geotechnical Testing",
+      "tags": [
+        "geotechnical testing",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "agg-002",
+      "title": "California Bearing Ratio Test (CBR)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=2720"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d1883.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Geotechnical Testing",
+      "tags": [
+        "geotechnical testing",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "cl-001",
+      "title": "Initial Setting",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=4031"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/c191.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Concrete & Masonry",
+      "tags": [
+        "concrete & masonry",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "cl-002",
+      "title": "Final Setting",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=4031"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/c191.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Concrete & Masonry",
+      "tags": [
+        "concrete & masonry",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "fc-001",
+      "title": "Dimension",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=9537"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Pipes & Conduits",
+      "tags": [
+        "dimensional testing",
+        "pipes & conduits",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "fc-002",
+      "title": "Outer Diameter",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=9537"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.iec.ch/"
+        }
+      ],
+      "category": "Pipes & Conduits",
+      "tags": [
+        "dimensional testing",
+        "pipes & conduits",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "fxc-001",
+      "title": "Color Diameter",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=9537"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Pipes & Conduits",
+      "tags": [
+        "dimensional testing",
+        "pipes & conduits",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "fxc-002",
+      "title": "Thickness",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=9537"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/a513.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Pipes & Conduits",
+      "tags": [
+        "dimensional testing",
+        "pipes & conduits",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "sl-001",
+      "title": "Natural Moisture Content",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=2720"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d2216.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Geotechnical Testing",
+      "tags": [
+        "water testing",
+        "geotechnical testing",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "sl-002",
+      "title": "Liquid Limit",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=2720"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d4318.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Geotechnical Testing",
+      "tags": [
+        "geotechnical testing",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "fa-001",
+      "title": "Fineness (m2/kg) Blaine Air Permeability",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=1727"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/c204.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Geotechnical Testing",
+      "tags": [
+        "permeability",
+        "geotechnical testing",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "fa-002",
+      "title": "Retained residue on 45 micron IS Seive (Wet Sieve)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=1727"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/c430.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Geotechnical Testing",
+      "tags": [
+        "geotechnical testing",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "ch-001",
+      "title": "Silicon dioxide (SiO2)+aluminium oxide (Al2O3)+Fe2O3",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=3812"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/c618.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Water & Environmental",
+      "tags": [
+        "water & environmental",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "ch-002",
+      "title": "Silicon dioxide (SiO2) percent by mass",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=3812"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/c618.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Water & Environmental",
+      "tags": [
+        "water & environmental",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "wsp-001",
+      "title": "Tensile Strength",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=1239"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/a53.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Pipes & Conduits",
+      "tags": [
+        "strength testing",
+        "pipes & conduits",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "wsp-002",
+      "title": "Yield Strength",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=1239"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/a53.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Pipes & Conduits",
+      "tags": [
+        "strength testing",
+        "pipes & conduits",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "eva-001",
+      "title": "Thickness (mm)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=14268"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d5199.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "http://www.gb688.cn/bzgk/gb/"
+        }
+      ],
+      "category": "Waterproofing & Protection",
+      "tags": [
+        "dimensional testing",
+        "waterproofing & protection",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "eva-002",
+      "title": "Tensile Strength (Mpa)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=14268"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d5199.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "http://www.gb688.cn/bzgk/gb/"
+        }
+      ],
+      "category": "Waterproofing & Protection",
+      "tags": [
+        "strength testing",
+        "waterproofing & protection",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "nwg-001",
+      "title": "Mass per unit area (g/m2)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=13162"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d4595.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.iso.org/obp/ui/#iso:std:iso:10319"
+        }
+      ],
+      "category": "Waterproofing & Protection",
+      "tags": [
+        "waterproofing & protection",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "nwg-002",
+      "title": "Fracture strength (MD CD)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=13162"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d4595.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.iso.org/obp/ui/#iso:std:iso:10319"
+        }
+      ],
+      "category": "Waterproofing & Protection",
+      "tags": [
+        "strength testing",
+        "waterproofing & protection",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "rws-001",
+      "title": "Test Method for Shore Hardness (HA)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=3400"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d2240.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.iso.org/obp/ui/#iso:std:iso:48"
+        }
+      ],
+      "category": "Waterproofing & Protection",
+      "tags": [
+        "impact testing",
+        "waterproofing & protection",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "rws-002",
+      "title": "Tensile strength (Mpa)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=3400"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d412.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.iso.org/obp/ui/#iso:std:iso:37"
+        }
+      ],
+      "category": "Waterproofing & Protection",
+      "tags": [
+        "strength testing",
+        "waterproofing & protection",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "cvp-001",
+      "title": "Outer Diameter(mm)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=14735"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/f1483.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Pipes & Conduits",
+      "tags": [
+        "dimensional testing",
+        "pipes & conduits",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "cvp-002",
+      "title": "Wall Thickness(mm)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=14735"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/f1483.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Pipes & Conduits",
+      "tags": [
+        "dimensional testing",
+        "pipes & conduits",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "tpp-001",
+      "title": "Constituents of marking material",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=9417"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d2621.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Coatings & Electrical",
+      "tags": [
+        "coatings & electrical",
+        "material testing",
+        "standard"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "tpp-002",
+      "title": "Color Test",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=9417"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d3960.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Coatings & Electrical",
+      "tags": [
+        "coatings & electrical",
+        "material testing",
+        "standard"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "pcb-001",
+      "title": "Moisture Content (Oven of Use)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=1734"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d1037.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Waterproofing & Protection",
+      "tags": [
+        "water testing",
+        "waterproofing & protection",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "pcb-002",
+      "title": "Moisture Content (Normal)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=1734"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d1037.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Waterproofing & Protection",
+      "tags": [
+        "water testing",
+        "waterproofing & protection",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "tl-001",
+      "title": "Dimensional Stability",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=15622"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/c499.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.iso.org/obp/ui/#iso:std:iso:10545"
+        }
+      ],
+      "category": "Coatings & Electrical",
+      "tags": [
+        "dimensional testing",
+        "coatings & electrical",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "tl-002",
+      "title": "Water Absorption",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=15622"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/c373.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.iso.org/obp/ui/#iso:std:iso:10545"
+        }
+      ],
+      "category": "Coatings & Electrical",
+      "tags": [
+        "water testing",
+        "coatings & electrical",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "cfg-001",
+      "title": "Fiber Area weight (gm/m2)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=1964"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d3776.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.iso.org/obp/ui/#iso:std:iso:3374"
+        }
+      ],
+      "category": "Waterproofing & Protection",
+      "tags": [
+        "waterproofing & protection",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "clr-001",
+      "title": "GCV/ADB Basis",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=4031"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/c191.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Geotechnical Testing",
+      "tags": [
+        "geotechnical testing",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "sp-001",
+      "title": "Dimension (mm)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=2062"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/a36.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Metal & Structural Materials",
+      "tags": [
+        "dimensional testing",
+        "metal & structural materials",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "sw-001",
+      "title": "Diameter (mm)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=6003"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/a416.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Metal & Structural Materials",
+      "tags": [
+        "dimensional testing",
+        "metal & structural materials",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "sd-001",
+      "title": "Internal Diameter",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=14233"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d2122.html"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Pipes & Conduits",
+      "tags": [
+        "dimensional testing",
+        "pipes & conduits",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "ew-001",
+      "title": "Outer Diameter",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=694"
+        },
+        {
+          "organization": "British Standards Institution",
+          "url": "https://www.iec.ch/"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.bsigroup.com/en-GB/standards/"
+        }
+      ],
+      "category": "Coatings & Electrical",
+      "tags": [
+        "dimensional testing",
+        "coatings & electrical",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    },
+    {
+      "id": "hpp-001",
+      "title": "Outer Diameter(mm)",
+      "section": "standard-codes",
+      "standards": [
+        {
+          "organization": "BIS",
+          "url": "https://www.bis.gov.in/know-your-standard/?search=4984"
+        },
+        {
+          "organization": "ASTM International",
+          "url": "https://www.astm.org/d3350.html"
+        },
+        {
+          "organization": "BIS",
+          "url": "https://www.iso.org/obp/ui/#iso:std:iso:4427"
+        }
+      ],
+      "category": "Pipes & Conduits",
+      "tags": [
+        "dimensional testing",
+        "pipes & conduits",
+        "material testing",
+        "standards"
+      ],
+      "featured": false,
+      "dateAdded": "2026-01-11"
+    }
   ]
 }
+

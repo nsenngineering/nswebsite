@@ -31,6 +31,7 @@ export default function ELibraryClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<ELibraryItem | null>(null);
   const [selectedStandardCategory, setSelectedStandardCategory] = useState<string | null>(null);
+  const [standardCodeItems, setStandardCodeItems] = useState<ELibraryItem[]>(data.standardCodes ?? []);
   const [newsletterItems, setNewsletterItems] = useState<ELibraryItem[]>(data.newsletters ?? []);
   const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
 
@@ -46,14 +47,46 @@ export default function ELibraryClient() {
 };
   const JSON_SERVER_URL = getApiUrl();
   console.log('ELibraryClient: JSON_SERVER_URL =', JSON_SERVER_URL);
-  
+
   const sectionCounts = useMemo<Record<ELibrarySection, number>>(() => ({
-    'standard-codes': data.standardCodes?.length ?? 0,
+    'standard-codes': standardCodeItems.length || data.standardCodes?.length || 0,
     publications: data.publications?.length ?? 0,
     'curated-papers': data.curatedPapers?.length ?? 0,
     downloads: data.downloads?.length ?? 0,
     newsletters: newsletterItems.length || data.newsletters?.length || 0,
-  }), [newsletterItems]);
+  }), [newsletterItems, standardCodeItems]);
+
+  useEffect(() => {
+    if (activeSection !== 'standard-codes') return;
+
+    let isCancelled = false;
+
+    const loadStandardCodes = async () => {
+      try {
+        const response = await fetch(`${JSON_SERVER_URL}/standardCodes`, { cache: 'no-store' });
+
+        if (!response.ok) {
+          throw new Error(`Failed to load standard codes: ${response.status}`);
+        }
+
+        const payload = (await response.json()) as StandardCode[];
+        if (!isCancelled) {
+          setStandardCodeItems(Array.isArray(payload) ? payload : (data.standardCodes ?? []));
+        }
+      } catch (error) {
+        console.error('Failed to load standard codes data', error);
+        if (!isCancelled) {
+          setStandardCodeItems(data.standardCodes ?? []);
+        }
+      }
+    };
+
+    void loadStandardCodes();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeSection, JSON_SERVER_URL]);
 
   useEffect(() => {
     if (activeSection !== 'newsletters') return;
@@ -84,19 +117,18 @@ export default function ELibraryClient() {
         }
       }
     };
-
     void loadNewsletters();
 
     return () => {
       isCancelled = true;
     };
-  }, [activeSection]);
+  }, [activeSection, JSON_SERVER_URL]);
 
   const filteredItems = useMemo(() => {
     let items: ELibraryItem[] = [];
 
     switch (activeSection) {
-      case 'standard-codes':  items = data.standardCodes ?? []; break;
+      case 'standard-codes':  items = standardCodeItems; break;
       case 'publications':    items = data.publications ?? [];   break;
       case 'curated-papers':  items = data.curatedPapers ?? [];  break;
       case 'downloads':       items = data.downloads ?? [];      break;
@@ -119,7 +151,7 @@ export default function ELibraryClient() {
       if (isNewsletter(item))    return base || item.description?.toLowerCase().includes(q) || item.quarter?.toLowerCase().includes(q);
       return base;
     });
-  }, [activeSection, newsletterItems, searchQuery]);
+  }, [activeSection, newsletterItems, searchQuery, standardCodeItems]);
 
   const handleSectionChange = (section: ELibrarySection) => {
     setActiveSection(section);
