@@ -16,7 +16,9 @@ import {
 } from '@/types/elibrary';
 import elibraryData from '@/data/generated/elibrary.json';
 
-const data = elibraryData as ELibraryConfig;
+// Cast via unknown to avoid strict structural mismatch between generated JSON
+// and the ELibraryConfig TypeScript type (some optional fields may be missing).
+const data = elibraryData as unknown as ELibraryConfig;
 
 // Resolved once at module load. Falls back to '' so fetches fail gracefully
 // (and we drop back to the static JSON) instead of throwing during render.
