@@ -38,15 +38,14 @@ export default function ELibraryClient() {
   const [isPublicationLoading, setIsPublicationLoading] = useState(false);
 
   const getApiUrl = (): string => {
-  
-  const url = process.env.NEXT_PUBLIC_API_URL;
-    console.log('ELibraryClient: env.NEXT_PUBLIC_API_URL =', process.env.NEXT_PUBLIC_API_URL);
-  if (!url) {
-    throw new Error('API_URL is not configured');
-  }
+    const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+    if (configuredUrl) {
+      return configuredUrl.replace(/\/$/, '');
+    }
 
-  return url;
-};
+    return 'https://dev-nswebsiteapi.nsengineering.com.np';
+  };
+
   const JSON_SERVER_URL = getApiUrl();
   console.log('ELibraryClient: JSON_SERVER_URL =', JSON_SERVER_URL);
 
@@ -278,6 +277,7 @@ export default function ELibraryClient() {
           {activeSection === 'standard-codes' ? 'standard' : ''}{filteredItems.length === 1 ? ' item' : ' items'}
           {searchQuery.trim() ? ` for "${searchQuery}"` : ''}
           {activeSection === 'newsletters' && isNewsletterLoading ? ' • loading latest newsletters' : ''}
+a          {activeSection === 'publications' && isPublicationLoading ? ' • loading latest publications' : ''}
         </p>
 
         <div className={selectedItem ? 'lg:mr-96' : ''}>
