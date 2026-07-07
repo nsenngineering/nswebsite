@@ -6,7 +6,7 @@ import { BookOpen, Download, FileText, Lightbulb, Newspaper, Search } from 'luci
 import DocumentGrid from '@/components/elibrary/DocumentGrid';
 import ReadingPanel from '@/components/elibrary/ReadingPanel';
 import StandardCodesCategoryView from '@/components/elibrary/StandardCodesCategoryView';
-import type { ELibrarySection, ELibraryConfig, ELibraryItem, Newsletter, StandardCode, Publication } from '@/types/elibrary';
+import type { ELibrarySection, ELibraryConfig, ELibraryItem, Newsletter, StandardCode, Publication, CuratedPaper } from '@/types/elibrary';
 import {
   isStandardCode,
   isPublication,
@@ -17,6 +17,10 @@ import {
 import elibraryData from '@/data/generated/elibrary.json';
 
 const data = elibraryData as ELibraryConfig;
+
+// Resolved once at module load. Falls back to '' so fetches fail gracefully
+// (and we drop back to the static JSON) instead of throwing during render.
+const JSON_SERVER_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 const sectionIcons: Record<ELibrarySection, ElementType> = {
   'standard-codes': FileText,
@@ -31,34 +35,33 @@ export default function ELibraryClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<ELibraryItem | null>(null);
   const [selectedStandardCategory, setSelectedStandardCategory] = useState<string | null>(null);
+
   const [standardCodeItems, setStandardCodeItems] = useState<ELibraryItem[]>(data.standardCodes ?? []);
   const [publicationItems, setPublicationItems] = useState<ELibraryItem[]>(data.publications ?? []);
   const [newsletterItems, setNewsletterItems] = useState<ELibraryItem[]>(data.newsletters ?? []);
+  const [curatedPaperItems, setCuratedPaperItems] = useState<ELibraryItem[]>(data.curatedPapers ?? []);
+
   const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
   const [isPublicationLoading, setIsPublicationLoading] = useState(false);
+  const [isCuratedPaperLoading, setIsCuratedPaperLoading] = useState(false);
 
-  const getApiUrl = (): string => {
-    const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
-    if (configuredUrl) {
-      return configuredUrl.replace(/\/$/, '');
-    }
-
-    return 'https://dev-nswebsiteapi.nsengineering.com.np';
-  };
-
-  const JSON_SERVER_URL = getApiUrl();
-  console.log('ELibraryClient: JSON_SERVER_URL =', JSON_SERVER_URL);
+  if (!JSON_SERVER_URL && typeof window !== 'undefined') {
+    // Non-fatal: log once so it's obvious in the console why data isn't live.
+    console.warn('ELibraryClient: NEXT_PUBLIC_API_URL is not configured, falling back to static JSON.');
+  }
 
   const sectionCounts = useMemo<Record<ELibrarySection, number>>(() => ({
     'standard-codes': standardCodeItems.length || data.standardCodes?.length || 0,
     publications: publicationItems.length || data.publications?.length || 0,
-    'curated-papers': data.curatedPapers?.length ?? 0,
+    'curated-papers': curatedPaperItems.length || data.curatedPapers?.length || 0,
     downloads: data.downloads?.length ?? 0,
     newsletters: newsletterItems.length || data.newsletters?.length || 0,
-  }), [newsletterItems, standardCodeItems, publicationItems]);
+  }), [newsletterItems, standardCodeItems, publicationItems, curatedPaperItems]);
 
+  // ── Standard Codes ──
   useEffect(() => {
     if (activeSection !== 'standard-codes') return;
+    if (!JSON_SERVER_URL) return;
 
     let isCancelled = false;
 
@@ -87,10 +90,12 @@ export default function ELibraryClient() {
     return () => {
       isCancelled = true;
     };
-  }, [activeSection, JSON_SERVER_URL]);
+  }, [activeSection]);
 
+  // ── Newsletters ──
   useEffect(() => {
     if (activeSection !== 'newsletters') return;
+    if (!JSON_SERVER_URL) return;
 
     let isCancelled = false;
 
@@ -118,15 +123,18 @@ export default function ELibraryClient() {
         }
       }
     };
+
     void loadNewsletters();
 
     return () => {
       isCancelled = true;
     };
-  }, [activeSection, JSON_SERVER_URL]);
+  }, [activeSection]);
 
+  // ── Publications ──
   useEffect(() => {
     if (activeSection !== 'publications') return;
+    if (!JSON_SERVER_URL) return;
 
     let isCancelled = false;
 
@@ -154,12 +162,52 @@ export default function ELibraryClient() {
         }
       }
     };
+
     void loadPublications();
 
     return () => {
       isCancelled = true;
     };
-  }, [activeSection, JSON_SERVER_URL]);
+  }, [activeSection]);
+
+  // ── Curated Papers ──
+  useEffect(() => {
+    if (activeSection !== 'curated-papers') return;
+    if (!JSON_SERVER_URL) return;
+
+    let isCancelled = false;
+
+    const loadCuratedPapers = async () => {
+      try {
+        setIsCuratedPaperLoading(true);
+        const response = await fetch(`${JSON_SERVER_URL}/curatedPapers`, { cache: 'no-store' });
+
+        if (!response.ok) {
+          throw new Error(`Failed to load curated papers data: ${response.status}`);
+        }
+
+        const payload = (await response.json()) as CuratedPaper[];
+        if (!isCancelled) {
+          setCuratedPaperItems(Array.isArray(payload) ? payload : (data.curatedPapers ?? []));
+        }
+      } catch (error) {
+        console.error('Failed to load curated papers data', error);
+        if (!isCancelled) {
+          setCuratedPaperItems(data.curatedPapers ?? []);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsCuratedPaperLoading(false);
+        }
+      }
+    };
+
+    void loadCuratedPapers();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeSection]);
 
   const filteredItems = useMemo(() => {
     let items: ELibraryItem[] = [];
@@ -167,9 +215,9 @@ export default function ELibraryClient() {
     switch (activeSection) {
       case 'standard-codes':  items = standardCodeItems; break;
       case 'publications':    items = publicationItems; break;
-      case 'curated-papers':  items = data.curatedPapers ?? [];  break;
-      case 'downloads':       items = data.downloads ?? [];      break;
-      case 'newsletters':     items = newsletterItems;            break;
+      case 'curated-papers':  items = curatedPaperItems; break;
+      case 'downloads':       items = data.downloads ?? []; break;
+      case 'newsletters':     items = newsletterItems; break;
     }
 
     if (searchQuery.trim() === '') return items;
@@ -188,7 +236,7 @@ export default function ELibraryClient() {
       if (isNewsletter(item))    return base || item.description?.toLowerCase().includes(q) || item.quarter?.toLowerCase().includes(q);
       return base;
     });
-  }, [activeSection, newsletterItems, searchQuery, standardCodeItems, publicationItems]);
+  }, [activeSection, newsletterItems, searchQuery, standardCodeItems, publicationItems, curatedPaperItems]);
 
   const handleSectionChange = (section: ELibrarySection) => {
     setActiveSection(section);
@@ -277,7 +325,8 @@ export default function ELibraryClient() {
           {activeSection === 'standard-codes' ? 'standard' : ''}{filteredItems.length === 1 ? ' item' : ' items'}
           {searchQuery.trim() ? ` for "${searchQuery}"` : ''}
           {activeSection === 'newsletters' && isNewsletterLoading ? ' • loading latest newsletters' : ''}
-a          {activeSection === 'publications' && isPublicationLoading ? ' • loading latest publications' : ''}
+          {activeSection === 'publications' && isPublicationLoading ? ' • loading latest publications' : ''}
+          {activeSection === 'curated-papers' && isCuratedPaperLoading ? ' • loading latest curated papers' : ''}
         </p>
 
         <div className={selectedItem ? 'lg:mr-96' : ''}>
