@@ -42,8 +42,11 @@ const sectionIcons: Record<ELibrarySection, ElementType> = {
   newsletters:      Newspaper,
 };
 
-// Generic endpoint map so each section's effect stays a one-liner call
-// into a shared loader instead of five near-identical copy/paste blocks.
+// Endpoint map so each section's effect stays a one-liner call into a
+// shared shape instead of five hand-typed path strings that can drift.
+// These MUST exactly match the top-level keys in your db.json — json-server
+// serves /curatedPapers from a db.json key literally named "curatedPapers"
+// (case-sensitive), not "curated_papers", "CuratedPapers", etc.
 const SECTION_ENDPOINTS: Record<ELibrarySection, string> = {
   'standard-codes': 'standardCodes',
   publications:     'publications',
@@ -225,6 +228,21 @@ export default function ELibraryClient() {
         }
 
         const payload = (await response.json()) as unknown;
+
+        // NOTE: this is the section that was breaking. Log raw payload +
+        // per-item guard failures once during dev so we can see exactly
+        // which field is missing/mismatched in db.json. Safe to remove
+        // once confirmed working.
+        if (Array.isArray(payload)) {
+          (payload as CuratedPaper[]).forEach((item, i) => {
+            if (!isCuratedPaper(item)) {
+              console.warn(`curated-papers[${i}] failed isCuratedPaper guard:`, item);
+            }
+          });
+        } else {
+          console.warn('curated-papers payload was not an array:', payload);
+        }
+
         const items = Array.isArray(payload) ? (payload as CuratedPaper[]).filter(isCuratedPaper) : null;
 
         if (!isCancelled) {
