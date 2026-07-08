@@ -42,47 +42,6 @@ const sectionIcons: Record<ELibrarySection, ElementType> = {
   newsletters:      Newspaper,
 };
 
-function buildApiUrl(endpoint: string) {
-  const baseUrl = JSON_SERVER_URL.trim().replace(/\/+$/, '');
-  const normalizedEndpoint = endpoint.replace(/^\/+/, '');
-
-  if (!baseUrl) return '';
-  if (!normalizedEndpoint) return baseUrl;
-
-  return `${baseUrl}/${normalizedEndpoint}`;
-}
-
-function normalizeFetchedItems<T extends ELibraryItem>(
-  payload: unknown,
-  fallback: T[],
-  targetSection: ELibrarySection,
-  guard: (item: ELibraryItem) => item is T,
-): T[] {
-  const rawItems = Array.isArray(payload)
-    ? payload
-    : (typeof payload === 'object' && payload !== null && Array.isArray((payload as Record<string, unknown>).items)
-      ? ((payload as Record<string, unknown>).items as unknown[])
-      : []);
-
-  const normalizedItems = rawItems
-    .filter((item): item is Record<string, unknown> => !!item && typeof item === 'object')
-    .map((item) => {
-      const record = item as Record<string, unknown>;
-      const sectionValue = typeof record.section === 'string' ? record.section : targetSection;
-      const correctedSection = targetSection === 'curated-papers' && sectionValue === 'publications'
-        ? 'curated-papers'
-        : sectionValue;
-
-      return {
-        ...record,
-        section: correctedSection,
-      } as T;
-    })
-    .filter((item) => guard(item as ELibraryItem));
-
-  return normalizedItems.length ? normalizedItems : fallback;
-}
-
 export default function ELibraryClient() {
   const [activeSection, setActiveSection] = useState<ELibrarySection>('standard-codes');
   const [searchQuery, setSearchQuery] = useState('');
@@ -166,11 +125,9 @@ export default function ELibraryClient() {
           throw new Error(`Failed to load newsletter data: ${response.status}`);
         }
 
-        const payload = (await response.json()) as unknown;
-        const items = normalizeFetchedItems<Newsletter>(payload, data.newsletters ?? [], 'newsletters', isNewsletter);
-
+        const payload = (await response.json()) as Newsletter[];
         if (!isCancelled) {
-          setNewsletterItems(items);
+          setNewsletterItems(Array.isArray(payload) ? payload : (data.newsletters ?? []));
         }
       } catch (error) {
         console.error('Failed to load newsletter data', error);
@@ -207,11 +164,9 @@ export default function ELibraryClient() {
           throw new Error(`Failed to load publication data: ${response.status}`);
         }
 
-        const payload = (await response.json()) as unknown;
-        const items = normalizeFetchedItems<Publication>(payload, data.publications ?? [], 'publications', isPublication);
-
+        const payload = (await response.json()) as Publication[];
         if (!isCancelled) {
-          setPublicationItems(items);
+          setPublicationItems(Array.isArray(payload) ? payload : (data.publications ?? []));
         }
       } catch (error) {
         console.error('Failed to load publication data', error);
@@ -248,11 +203,9 @@ export default function ELibraryClient() {
           throw new Error(`Failed to load curated papers data: ${response.status}`);
         }
 
-        const payload = (await response.json()) as unknown;
-        const items = normalizeFetchedItems<CuratedPaper>(payload, data.curatedPapers ?? [], 'curated-papers', isCuratedPaper);
-
+        const payload = (await response.json()) as CuratedPaper[];
         if (!isCancelled) {
-          setCuratedPaperItems(items);
+          setCuratedPaperItems(Array.isArray(payload) ? payload : (data.curatedPapers ?? []));
         }
       } catch (error) {
         console.error('Failed to load curated papers data', error);
@@ -274,45 +227,43 @@ export default function ELibraryClient() {
   }, [activeSection]);
 
   // ── Downloads ──
-  useEffect(() => {
-    if (activeSection !== 'downloads') return;
-    if (!JSON_SERVER_URL) return;
+useEffect(() => {
+  if (activeSection !== 'downloads') return;
+  if (!JSON_SERVER_URL) return;
 
-    let isCancelled = false;
+  let isCancelled = false;
 
-    const loadDownloads = async () => {
-      try {
-        setIsDownloadLoading(true);
-        const response = await fetch(`${JSON_SERVER_URL}/downloads`, { cache: 'no-store' });
+  const loadDownloads = async () => {
+    try {
+      setIsDownloadLoading(true);
+      const response = await fetch(`${JSON_SERVER_URL}/downloads`, { cache: 'no-store' });
 
-        if (!response.ok) {
-          throw new Error(`Failed to load downloads data: ${response.status}`);
-        }
-
-        const payload = (await response.json()) as unknown;
-        const items = normalizeFetchedItems<DownloadItem>(payload, data.downloads ?? [], 'downloads', isDownload);
-
-        if (!isCancelled) {
-          setDownloadItems(items);
-        }
-      } catch (error) {
-        console.error('Failed to load downloads data', error);
-        if (!isCancelled) {
-          setDownloadItems(data.downloads ?? []);
-        }
-      } finally {
-        if (!isCancelled) {
-          setIsDownloadLoading(false);
-        }
+      if (!response.ok) {
+        throw new Error(`Failed to load downloads data: ${response.status}`);
       }
-    };
 
-    void loadDownloads();
+      const payload = (await response.json()) as DownloadItem[];
+      if (!isCancelled) {
+        setDownloadItems(Array.isArray(payload) ? payload : (data.downloads ?? []));
+      }
+    } catch (error) {
+      console.error('Failed to load downloads data', error);
+      if (!isCancelled) {
+        setDownloadItems(data.downloads ?? []);
+      }
+    } finally {
+      if (!isCancelled) {
+        setIsDownloadLoading(false);
+      }
+    }
+  };
 
-    return () => {
-      isCancelled = true;
-    };
-  }, [activeSection]);
+  void loadDownloads();
+
+  return () => {
+    isCancelled = true;
+  };
+}, [activeSection]);
 
   const filteredItems = useMemo(() => {
     let items: ELibraryItem[] = [];
