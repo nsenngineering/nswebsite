@@ -1302,23 +1302,27 @@
     }
   ],
   "curatedPapers": [
-  {
-    "id": "curated-paper-geotechnical-2026",
-    "title": "Geotechnical Investigation Best Practices",
-    "section": "curatedPapers",
-    "fileUrl": "curated-papers/geotechnical-investigation-best-practices.pdf",
-    "description": "A curated technical paper covering industry best practices for geotechnical site investigations, soil exploration methods, foundation design considerations, and quality assurance procedures.",
-    "publishDate": "2026-07-07",
-    "category": "Curated Papers",
-    "author": "NSEGS Technical Team",
-    "tags": [
-      "geotechnical",
-      "foundation engineering",
-      "site investigation",
-      "technical paper"
-    ],
-    "featured": true
-  }
+    {
+      "id": "strength-genesis",
+      "title": "STRENGTH ALTERATION IN POINT LOAD INDEX TEST WITH LOADING ANGLE (β) IN GNEISSROCK",
+      "section": "publications",
+      "description": "Rock strength demonstrates anisotropy due to its formation process, which occurs under varying pressure and temperature conditions. This anisotropic nature can arise from inhomogeneity, particularly in sedimentary rocks, where differences in the anisotropic plane contribute to variability \"Strength anisotropy\", which refers to variations in the strength of intact rock under loading condition, depending on the orientation of anisotropy. The strength and deformation characteristics of rocks under load are crucial in underground excavations, mining, and civil engineering, as they significantly influence structural stability. This study investigates the strength index in relation to the anisotropic plane at different loading angles. The rock material, composed of layers formed by platy minerals with occasional differences in grain size, exhibits a direct relationship between increasing foliation degree and loading angle on its strength. In gneiss, the strength index is affected by the anisotropic plane and loading direction, both of which are influenced by the properties of mineral grains. This research aims to expand current knowledge by analyzing Point Load strength in anisotropic metamorphic rock.",
+      "externalUrl": "https://qtanalytics.in/journals/index.php/JREAS/article/view/4924/",
+      "source": "qtanalytics",
+      "authors": [
+        "Anand Gupta",
+        "Suman Panthee",
+        "Janani Selvam"
+      ],
+      "publishDate": "2025-03-20",
+      "category": "Research",
+      "tags": [
+        "Point Load Test (PLT)",
+        "Strength Anisotropy",
+        "Loading angle"
+      ],
+      "featured": true
+    }
 ],
   "downloads": [
     {
