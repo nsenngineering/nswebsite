@@ -6,7 +6,7 @@ import { BookOpen, Download, FileText, Lightbulb, Newspaper, Search } from 'luci
 import DocumentGrid from '@/components/elibrary/DocumentGrid';
 import ReadingPanel from '@/components/elibrary/ReadingPanel';
 import StandardCodesCategoryView from '@/components/elibrary/StandardCodesCategoryView';
-import type { ELibrarySection, ELibraryConfig, ELibraryItem, Newsletter, StandardCode, Publication, CuratedPaper } from '@/types/elibrary';
+import type { ELibrarySection, ELibraryConfig, ELibraryItem, Newsletter, StandardCode, Publication, CuratedPaper, Download as DownloadItem } from '@/types/elibrary';
 import {
   isStandardCode,
   isPublication,
@@ -42,10 +42,11 @@ export default function ELibraryClient() {
   const [publicationItems, setPublicationItems] = useState<ELibraryItem[]>(data.publications ?? []);
   const [newsletterItems, setNewsletterItems] = useState<ELibraryItem[]>(data.newsletters ?? []);
   const [curatedPaperItems, setCuratedPaperItems] = useState<ELibraryItem[]>(data.curatedPapers ?? []);
-
+  const [downloadItems, setDownloadItems] = useState<ELibraryItem[]>(data.downloads ?? []);
   const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
   const [isPublicationLoading, setIsPublicationLoading] = useState(false);
   const [isCuratedPaperLoading, setIsCuratedPaperLoading] = useState(false);
+  const [isDownloadLoading, setIsDownloadLoading] = useState(false);
 
   if (!JSON_SERVER_URL && typeof window !== 'undefined') {
     // Non-fatal: log once so it's obvious in the console why data isn't live.
@@ -56,7 +57,7 @@ export default function ELibraryClient() {
     'standard-codes': standardCodeItems.length || data.standardCodes?.length || 0,
     publications: publicationItems.length || data.publications?.length || 0,
     'curated-papers': curatedPaperItems.length || data.curatedPapers?.length || 0,
-    downloads: data.downloads?.length ?? 0,
+    downloads: downloadItems.length || data.downloads?.length || 0,
     newsletters: newsletterItems.length || data.newsletters?.length || 0,
   }), [newsletterItems, standardCodeItems, publicationItems, curatedPaperItems]);
 
@@ -211,6 +212,45 @@ export default function ELibraryClient() {
     };
   }, [activeSection]);
 
+  // ── Downloads ──
+useEffect(() => {
+  if (activeSection !== 'downloads') return;
+  if (!JSON_SERVER_URL) return;
+
+  let isCancelled = false;
+
+  const loadDownloads = async () => {
+    try {
+      setIsDownloadLoading(true);
+      const response = await fetch(`${JSON_SERVER_URL}/downloads`, { cache: 'no-store' });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load downloads data: ${response.status}`);
+      }
+
+      const payload = (await response.json()) as DownloadItem[];
+      if (!isCancelled) {
+        setDownloadItems(Array.isArray(payload) ? payload : (data.downloads ?? []));
+      }
+    } catch (error) {
+      console.error('Failed to load downloads data', error);
+      if (!isCancelled) {
+        setDownloadItems(data.downloads ?? []);
+      }
+    } finally {
+      if (!isCancelled) {
+        setIsDownloadLoading(false);
+      }
+    }
+  };
+
+  void loadDownloads();
+
+  return () => {
+    isCancelled = true;
+  };
+}, [activeSection]);
+
   const filteredItems = useMemo(() => {
     let items: ELibraryItem[] = [];
 
@@ -218,7 +258,7 @@ export default function ELibraryClient() {
       case 'standard-codes':  items = standardCodeItems; break;
       case 'publications':    items = publicationItems; break;
       case 'curated-papers':  items = curatedPaperItems; break;
-      case 'downloads':       items = data.downloads ?? []; break;
+      case 'downloads':       items = downloadItems; break;
       case 'newsletters':     items = newsletterItems; break;
     }
 
@@ -238,7 +278,7 @@ export default function ELibraryClient() {
       if (isNewsletter(item))    return base || item.description?.toLowerCase().includes(q) || item.quarter?.toLowerCase().includes(q);
       return base;
     });
-  }, [activeSection, newsletterItems, searchQuery, standardCodeItems, publicationItems, curatedPaperItems]);
+  }, [activeSection, newsletterItems, searchQuery, standardCodeItems, publicationItems, curatedPaperItems, downloadItems]);
 
   const handleSectionChange = (section: ELibrarySection) => {
     setActiveSection(section);
@@ -329,6 +369,7 @@ export default function ELibraryClient() {
           {activeSection === 'newsletters' && isNewsletterLoading ? ' • loading latest newsletters' : ''}
           {activeSection === 'publications' && isPublicationLoading ? ' • loading latest publications' : ''}
           {activeSection === 'curated-papers' && isCuratedPaperLoading ? ' • loading latest curated papers' : ''}
+          {activeSection === 'downloads' && isDownloadLoading ? ' • loading latest downloads' : ''}
         </p>
 
         <div className={selectedItem ? 'lg:mr-96' : ''}>
