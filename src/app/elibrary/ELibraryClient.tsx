@@ -22,6 +22,16 @@ const data = elibraryData as unknown as ELibraryConfig;
 
 // Resolved once at module load. Falls back to '' so fetches fail gracefully
 // (and we drop back to the static JSON) instead of throwing during render.
+//
+// IMPORTANT: NEXT_PUBLIC_* vars are inlined by Next.js at BUILD TIME, not
+// read at runtime. Having NEXT_PUBLIC_API_URL in your GitHub secrets does
+// nothing unless the build step itself has that env var set, e.g.:
+//
+//   - name: Build
+//     env:
+//       NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+//     run: npm run build
+//
 const JSON_SERVER_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 const sectionIcons: Record<ELibrarySection, ElementType> = {
@@ -30,6 +40,16 @@ const sectionIcons: Record<ELibrarySection, ElementType> = {
   'curated-papers': Lightbulb,
   downloads:        Download,
   newsletters:      Newspaper,
+};
+
+// Generic endpoint map so each section's effect stays a one-liner call
+// into a shared loader instead of five near-identical copy/paste blocks.
+const SECTION_ENDPOINTS: Record<ELibrarySection, string> = {
+  'standard-codes': 'standardCodes',
+  publications:     'publications',
+  'curated-papers': 'curatedPapers',
+  downloads:        'downloads',
+  newsletters:      'newsletters',
 };
 
 export default function ELibraryClient() {
@@ -43,15 +63,19 @@ export default function ELibraryClient() {
   const [newsletterItems, setNewsletterItems] = useState<ELibraryItem[]>(data.newsletters ?? []);
   const [curatedPaperItems, setCuratedPaperItems] = useState<ELibraryItem[]>(data.curatedPapers ?? []);
   const [downloadItems, setDownloadItems] = useState<ELibraryItem[]>(data.downloads ?? []);
+
+  const [isStandardCodeLoading, setIsStandardCodeLoading] = useState(false);
   const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
   const [isPublicationLoading, setIsPublicationLoading] = useState(false);
   const [isCuratedPaperLoading, setIsCuratedPaperLoading] = useState(false);
   const [isDownloadLoading, setIsDownloadLoading] = useState(false);
 
-  if (!JSON_SERVER_URL && typeof window !== 'undefined') {
-    // Non-fatal: log once so it's obvious in the console why data isn't live.
-    console.warn('ELibraryClient: NEXT_PUBLIC_API_URL is not configured, falling back to static JSON.');
-  }
+  // Warn exactly once (on mount), not on every render.
+  useEffect(() => {
+    if (!JSON_SERVER_URL) {
+      console.warn('ELibraryClient: NEXT_PUBLIC_API_URL is not configured, falling back to static JSON.');
+    }
+  }, []);
 
   const sectionCounts = useMemo<Record<ELibrarySection, number>>(() => ({
     'standard-codes': standardCodeItems.length || data.standardCodes?.length || 0,
@@ -70,20 +94,27 @@ export default function ELibraryClient() {
 
     const loadStandardCodes = async () => {
       try {
-        const response = await fetch(`${JSON_SERVER_URL}/standardCodes`, { cache: 'no-store' });
+        setIsStandardCodeLoading(true);
+        const response = await fetch(`${JSON_SERVER_URL}/${SECTION_ENDPOINTS['standard-codes']}`, { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error(`Failed to load standard codes: ${response.status}`);
         }
 
-        const payload = (await response.json()) as StandardCode[];
+        const payload = (await response.json()) as unknown;
+        const items = Array.isArray(payload) ? (payload as StandardCode[]).filter(isStandardCode) : null;
+
         if (!isCancelled) {
-          setStandardCodeItems(Array.isArray(payload) ? payload : (data.standardCodes ?? []));
+          setStandardCodeItems(items && items.length ? items : (data.standardCodes ?? []));
         }
       } catch (error) {
         console.error('Failed to load standard codes data', error);
         if (!isCancelled) {
           setStandardCodeItems(data.standardCodes ?? []);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsStandardCodeLoading(false);
         }
       }
     };
@@ -105,15 +136,17 @@ export default function ELibraryClient() {
     const loadNewsletters = async () => {
       try {
         setIsNewsletterLoading(true);
-        const response = await fetch(`${JSON_SERVER_URL}/newsletters`, { cache: 'no-store' });
+        const response = await fetch(`${JSON_SERVER_URL}/${SECTION_ENDPOINTS.newsletters}`, { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error(`Failed to load newsletter data: ${response.status}`);
         }
 
-        const payload = (await response.json()) as Newsletter[];
+        const payload = (await response.json()) as unknown;
+        const items = Array.isArray(payload) ? (payload as Newsletter[]).filter(isNewsletter) : null;
+
         if (!isCancelled) {
-          setNewsletterItems(Array.isArray(payload) ? payload : (data.newsletters ?? []));
+          setNewsletterItems(items && items.length ? items : (data.newsletters ?? []));
         }
       } catch (error) {
         console.error('Failed to load newsletter data', error);
@@ -144,15 +177,17 @@ export default function ELibraryClient() {
     const loadPublications = async () => {
       try {
         setIsPublicationLoading(true);
-        const response = await fetch(`${JSON_SERVER_URL}/publications`, { cache: 'no-store' });
+        const response = await fetch(`${JSON_SERVER_URL}/${SECTION_ENDPOINTS.publications}`, { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error(`Failed to load publication data: ${response.status}`);
         }
 
-        const payload = (await response.json()) as Publication[];
+        const payload = (await response.json()) as unknown;
+        const items = Array.isArray(payload) ? (payload as Publication[]).filter(isPublication) : null;
+
         if (!isCancelled) {
-          setPublicationItems(Array.isArray(payload) ? payload : (data.publications ?? []));
+          setPublicationItems(items && items.length ? items : (data.publications ?? []));
         }
       } catch (error) {
         console.error('Failed to load publication data', error);
@@ -183,15 +218,17 @@ export default function ELibraryClient() {
     const loadCuratedPapers = async () => {
       try {
         setIsCuratedPaperLoading(true);
-        const response = await fetch(`${JSON_SERVER_URL}/curatedPapers`, { cache: 'no-store' });
+        const response = await fetch(`${JSON_SERVER_URL}/${SECTION_ENDPOINTS['curated-papers']}`, { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error(`Failed to load curated papers data: ${response.status}`);
         }
 
-        const payload = (await response.json()) as CuratedPaper[];
+        const payload = (await response.json()) as unknown;
+        const items = Array.isArray(payload) ? (payload as CuratedPaper[]).filter(isCuratedPaper) : null;
+
         if (!isCancelled) {
-          setCuratedPaperItems(Array.isArray(payload) ? payload : (data.curatedPapers ?? []));
+          setCuratedPaperItems(items && items.length ? items : (data.curatedPapers ?? []));
         }
       } catch (error) {
         console.error('Failed to load curated papers data', error);
@@ -213,43 +250,45 @@ export default function ELibraryClient() {
   }, [activeSection]);
 
   // ── Downloads ──
-useEffect(() => {
-  if (activeSection !== 'downloads') return;
-  if (!JSON_SERVER_URL) return;
+  useEffect(() => {
+    if (activeSection !== 'downloads') return;
+    if (!JSON_SERVER_URL) return;
 
-  let isCancelled = false;
+    let isCancelled = false;
 
-  const loadDownloads = async () => {
-    try {
-      setIsDownloadLoading(true);
-      const response = await fetch(`${JSON_SERVER_URL}/downloads`, { cache: 'no-store' });
+    const loadDownloads = async () => {
+      try {
+        setIsDownloadLoading(true);
+        const response = await fetch(`${JSON_SERVER_URL}/${SECTION_ENDPOINTS.downloads}`, { cache: 'no-store' });
 
-      if (!response.ok) {
-        throw new Error(`Failed to load downloads data: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`Failed to load downloads data: ${response.status}`);
+        }
+
+        const payload = (await response.json()) as unknown;
+        const items = Array.isArray(payload) ? (payload as DownloadItem[]).filter(isDownload) : null;
+
+        if (!isCancelled) {
+          setDownloadItems(items && items.length ? items : (data.downloads ?? []));
+        }
+      } catch (error) {
+        console.error('Failed to load downloads data', error);
+        if (!isCancelled) {
+          setDownloadItems(data.downloads ?? []);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsDownloadLoading(false);
+        }
       }
+    };
 
-      const payload = (await response.json()) as DownloadItem[];
-      if (!isCancelled) {
-        setDownloadItems(Array.isArray(payload) ? payload : (data.downloads ?? []));
-      }
-    } catch (error) {
-      console.error('Failed to load downloads data', error);
-      if (!isCancelled) {
-        setDownloadItems(data.downloads ?? []);
-      }
-    } finally {
-      if (!isCancelled) {
-        setIsDownloadLoading(false);
-      }
-    }
-  };
+    void loadDownloads();
 
-  void loadDownloads();
-
-  return () => {
-    isCancelled = true;
-  };
-}, [activeSection]);
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeSection]);
 
   const filteredItems = useMemo(() => {
     let items: ELibraryItem[] = [];
@@ -285,6 +324,13 @@ useEffect(() => {
     setSelectedItem(null);
     setSelectedStandardCategory(null);
   };
+
+  const isActiveSectionLoading =
+    (activeSection === 'standard-codes' && isStandardCodeLoading) ||
+    (activeSection === 'newsletters' && isNewsletterLoading) ||
+    (activeSection === 'publications' && isPublicationLoading) ||
+    (activeSection === 'curated-papers' && isCuratedPaperLoading) ||
+    (activeSection === 'downloads' && isDownloadLoading);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -366,10 +412,7 @@ useEffect(() => {
           <span className="font-semibold text-gray-900">{filteredItems.length}</span>{' '}
           {activeSection === 'standard-codes' ? 'standard' : ''}{filteredItems.length === 1 ? ' item' : ' items'}
           {searchQuery.trim() ? ` for "${searchQuery}"` : ''}
-          {activeSection === 'newsletters' && isNewsletterLoading ? ' • loading latest newsletters' : ''}
-          {activeSection === 'publications' && isPublicationLoading ? ' • loading latest publications' : ''}
-          {activeSection === 'curated-papers' && isCuratedPaperLoading ? ' • loading latest curated papers' : ''}
-          {activeSection === 'downloads' && isDownloadLoading ? ' • loading latest downloads' : ''}
+          {isActiveSectionLoading ? ' • loading latest data' : ''}
         </p>
 
         <div className={selectedItem ? 'lg:mr-96' : ''}>
