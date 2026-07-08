@@ -22,6 +22,16 @@ const data = elibraryData as unknown as ELibraryConfig;
 
 // Resolved once at module load. Falls back to '' so fetches fail gracefully
 // (and we drop back to the static JSON) instead of throwing during render.
+//
+// IMPORTANT: NEXT_PUBLIC_* vars are inlined by Next.js at BUILD TIME, not
+// read at runtime. Having NEXT_PUBLIC_API_URL in your GitHub secrets does
+// nothing unless the build step itself has that env var set, e.g.:
+//
+//   - name: Build
+//     env:
+//       NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+//     run: npm run build
+//
 const JSON_SERVER_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 const sectionIcons: Record<ELibrarySection, ElementType> = {
@@ -43,15 +53,19 @@ export default function ELibraryClient() {
   const [newsletterItems, setNewsletterItems] = useState<ELibraryItem[]>(data.newsletters ?? []);
   const [curatedPaperItems, setCuratedPaperItems] = useState<ELibraryItem[]>(data.curatedPapers ?? []);
   const [downloadItems, setDownloadItems] = useState<ELibraryItem[]>(data.downloads ?? []);
+
+  const [isStandardCodeLoading, setIsStandardCodeLoading] = useState(false);
   const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
   const [isPublicationLoading, setIsPublicationLoading] = useState(false);
   const [isCuratedPaperLoading, setIsCuratedPaperLoading] = useState(false);
   const [isDownloadLoading, setIsDownloadLoading] = useState(false);
 
-  if (!JSON_SERVER_URL && typeof window !== 'undefined') {
-    // Non-fatal: log once so it's obvious in the console why data isn't live.
-    console.warn('ELibraryClient: NEXT_PUBLIC_API_URL is not configured, falling back to static JSON.');
-  }
+  // Warn exactly once (on mount), not on every render.
+  useEffect(() => {
+    if (!JSON_SERVER_URL) {
+      console.warn('ELibraryClient: NEXT_PUBLIC_API_URL is not configured, falling back to static JSON.');
+    }
+  }, []);
 
   const sectionCounts = useMemo<Record<ELibrarySection, number>>(() => ({
     'standard-codes': standardCodeItems.length || data.standardCodes?.length || 0,
@@ -285,6 +299,13 @@ useEffect(() => {
     setSelectedItem(null);
     setSelectedStandardCategory(null);
   };
+
+  const isActiveSectionLoading =
+    (activeSection === 'standard-codes' && isStandardCodeLoading) ||
+    (activeSection === 'newsletters' && isNewsletterLoading) ||
+    (activeSection === 'publications' && isPublicationLoading) ||
+    (activeSection === 'curated-papers' && isCuratedPaperLoading) ||
+    (activeSection === 'downloads' && isDownloadLoading);
 
   return (
     <div className="min-h-screen bg-gray-50">
