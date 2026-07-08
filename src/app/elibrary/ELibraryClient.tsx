@@ -42,60 +42,27 @@ const sectionIcons: Record<ELibrarySection, ElementType> = {
   newsletters:      Newspaper,
 };
 
-// Endpoint map so each section's effect stays a one-liner call into a
-// shared shape instead of five hand-typed path strings that can drift.
-// These MUST exactly match the top-level keys in your db.json — json-server
-const SECTION_ENDPOINTS: Record<ELibrarySection, string> = {
-  'standard-codes': 'standardCodes',
-  publications:     'publications',
-  'curated-papers': 'curatedPapers',
-  downloads:        'downloads',
-  newsletters:      'newsletters',
-};
-
 function buildApiUrl(endpoint: string) {
   const baseUrl = JSON_SERVER_URL.trim().replace(/\/+$/, '');
   const normalizedEndpoint = endpoint.replace(/^\/+/, '');
 
   if (!baseUrl) return '';
-  if (/\.json$/i.test(baseUrl)) return baseUrl;
   if (!normalizedEndpoint) return baseUrl;
 
   return `${baseUrl}/${normalizedEndpoint}`;
-}
-
-function resolvePayloadItems(payload: unknown, endpoint: string, targetSection: ELibrarySection) {
-  if (Array.isArray(payload)) return payload as unknown[];
-
-  if (typeof payload === 'object' && payload !== null) {
-    const record = payload as Record<string, unknown>;
-    const candidateKeys = [
-      endpoint,
-      targetSection,
-      endpoint.replace(/([a-z])([A-Z])/g, '$1-$2'),
-      endpoint === 'standardCodes' ? 'standard-codes' : '',
-      endpoint === 'curatedPapers' ? 'curated-papers' : '',
-    ].filter(Boolean) as string[];
-
-    for (const key of candidateKeys) {
-      const value = record[key];
-      if (Array.isArray(value)) return value;
-    }
-
-    if (Array.isArray(record.items)) return record.items as unknown[];
-  }
-
-  return [];
 }
 
 function normalizeFetchedItems<T extends ELibraryItem>(
   payload: unknown,
   fallback: T[],
   targetSection: ELibrarySection,
-  endpoint: string,
   guard: (item: ELibraryItem) => item is T,
 ): T[] {
-  const rawItems = resolvePayloadItems(payload, endpoint, targetSection);
+  const rawItems = Array.isArray(payload)
+    ? payload
+    : (typeof payload === 'object' && payload !== null && Array.isArray((payload as Record<string, unknown>).items)
+      ? ((payload as Record<string, unknown>).items as unknown[])
+      : []);
 
   const normalizedItems = rawItems
     .filter((item): item is Record<string, unknown> => !!item && typeof item === 'object')
@@ -158,27 +125,20 @@ export default function ELibraryClient() {
 
     const loadStandardCodes = async () => {
       try {
-        setIsStandardCodeLoading(true);
-        const response = await fetch(buildApiUrl(SECTION_ENDPOINTS['standard-codes']), { cache: 'no-store' });
+        const response = await fetch(`${JSON_SERVER_URL}/standardCodes`, { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error(`Failed to load standard codes: ${response.status}`);
         }
 
-        const payload = (await response.json()) as unknown;
-        const items = normalizeFetchedItems<StandardCode>(payload, data.standardCodes ?? [], 'standard-codes', SECTION_ENDPOINTS['standard-codes'], isStandardCode);
-
+        const payload = (await response.json()) as StandardCode[];
         if (!isCancelled) {
-          setStandardCodeItems(items);
+          setStandardCodeItems(Array.isArray(payload) ? payload : (data.standardCodes ?? []));
         }
       } catch (error) {
         console.error('Failed to load standard codes data', error);
         if (!isCancelled) {
           setStandardCodeItems(data.standardCodes ?? []);
-        }
-      } finally {
-        if (!isCancelled) {
-          setIsStandardCodeLoading(false);
         }
       }
     };
@@ -200,14 +160,14 @@ export default function ELibraryClient() {
     const loadNewsletters = async () => {
       try {
         setIsNewsletterLoading(true);
-        const response = await fetch(buildApiUrl(SECTION_ENDPOINTS.newsletters), { cache: 'no-store' });
+        const response = await fetch(`${JSON_SERVER_URL}/newsletters`, { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error(`Failed to load newsletter data: ${response.status}`);
         }
 
         const payload = (await response.json()) as unknown;
-        const items = normalizeFetchedItems<Newsletter>(payload, data.newsletters ?? [], 'newsletters', SECTION_ENDPOINTS.newsletters, isNewsletter);
+        const items = normalizeFetchedItems<Newsletter>(payload, data.newsletters ?? [], 'newsletters', isNewsletter);
 
         if (!isCancelled) {
           setNewsletterItems(items);
@@ -241,14 +201,14 @@ export default function ELibraryClient() {
     const loadPublications = async () => {
       try {
         setIsPublicationLoading(true);
-        const response = await fetch(buildApiUrl(SECTION_ENDPOINTS.publications), { cache: 'no-store' });
+        const response = await fetch(`${JSON_SERVER_URL}/publications`, { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error(`Failed to load publication data: ${response.status}`);
         }
 
         const payload = (await response.json()) as unknown;
-        const items = normalizeFetchedItems<Publication>(payload, data.publications ?? [], 'publications', SECTION_ENDPOINTS.publications, isPublication);
+        const items = normalizeFetchedItems<Publication>(payload, data.publications ?? [], 'publications', isPublication);
 
         if (!isCancelled) {
           setPublicationItems(items);
@@ -282,14 +242,14 @@ export default function ELibraryClient() {
     const loadCuratedPapers = async () => {
       try {
         setIsCuratedPaperLoading(true);
-        const response = await fetch(buildApiUrl(SECTION_ENDPOINTS['curated-papers']), { cache: 'no-store' });
+        const response = await fetch(`${JSON_SERVER_URL}/curatedPapers`, { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error(`Failed to load curated papers data: ${response.status}`);
         }
 
         const payload = (await response.json()) as unknown;
-        const items = normalizeFetchedItems<CuratedPaper>(payload, data.curatedPapers ?? [], 'curated-papers', SECTION_ENDPOINTS['curated-papers'], isCuratedPaper);
+        const items = normalizeFetchedItems<CuratedPaper>(payload, data.curatedPapers ?? [], 'curated-papers', isCuratedPaper);
 
         if (!isCancelled) {
           setCuratedPaperItems(items);
@@ -323,14 +283,14 @@ export default function ELibraryClient() {
     const loadDownloads = async () => {
       try {
         setIsDownloadLoading(true);
-        const response = await fetch(buildApiUrl(SECTION_ENDPOINTS.downloads), { cache: 'no-store' });
+        const response = await fetch(`${JSON_SERVER_URL}/downloads`, { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error(`Failed to load downloads data: ${response.status}`);
         }
 
         const payload = (await response.json()) as unknown;
-        const items = normalizeFetchedItems<DownloadItem>(payload, data.downloads ?? [], 'downloads', SECTION_ENDPOINTS.downloads, isDownload);
+        const items = normalizeFetchedItems<DownloadItem>(payload, data.downloads ?? [], 'downloads', isDownload);
 
         if (!isCancelled) {
           setDownloadItems(items);
