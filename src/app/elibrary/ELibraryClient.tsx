@@ -59,7 +59,7 @@ export default function ELibraryClient() {
     'curated-papers': curatedPaperItems.length || data.curatedPapers?.length || 0,
     downloads: downloadItems.length || data.downloads?.length || 0,
     newsletters: newsletterItems.length || data.newsletters?.length || 0,
-  }), [newsletterItems, standardCodeItems, publicationItems, curatedPaperItems]);
+  }), [newsletterItems, standardCodeItems, publicationItems, curatedPaperItems, downloadItems]);
 
   // ── Standard Codes ──
   useEffect(() => {
