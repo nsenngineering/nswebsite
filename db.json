@@ -1301,7 +1301,25 @@
       "featured": true
     }
   ],
-  "curatedPapers": [],
+  "curatedPapers": [
+  {
+    "id": "curated-paper-geotechnical-2026",
+    "title": "Geotechnical Investigation Best Practices",
+    "section": "curatedPapers",
+    "fileUrl": "curated-papers/geotechnical-investigation-best-practices.pdf",
+    "description": "A curated technical paper covering industry best practices for geotechnical site investigations, soil exploration methods, foundation design considerations, and quality assurance procedures.",
+    "publishDate": "2026-07-07",
+    "category": "Curated Papers",
+    "author": "NSEGS Technical Team",
+    "tags": [
+      "geotechnical",
+      "foundation engineering",
+      "site investigation",
+      "technical paper"
+    ],
+    "featured": true
+  }
+],
   "downloads": [
     {
       "id": "nsegs-2025-browser",
@@ -1367,7 +1385,7 @@
   "sections": {
     "standard-codes": 45,
     "publications": 3,
-    "curated-papers": 0,
+    "curated-papers": 1,
     "downloads": 1,
     "newsletters": 3
   },
