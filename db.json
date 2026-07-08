@@ -1337,6 +1337,19 @@
       "tags": [],
       "featured": true,
       "dateAdded": "2026-01-11"
+    },
+  {
+      "id": "nsegs-2025",
+      "title": "NSEGS 2025",
+      "section": "downloads",
+      "fileUrl": "downloads/NSEGS_2025_Browser.pdf",
+      "description": "north star engineering and geotechnical services",
+      "category": "Downloads",
+      "fileType": "PDF",
+      "fileSize": "37.2 MB",
+      "tags": [],
+      "featured": true,
+      "dateAdded": "2026-01-11"
     }
   ],
   "newsletters": [
