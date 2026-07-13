@@ -16,22 +16,8 @@ import {
 } from '@/types/elibrary';
 import elibraryData from '@/data/generated/elibrary.json';
 
-// Cast via unknown to avoid strict structural mismatch between generated JSON
-// and the ELibraryConfig TypeScript type (some optional fields may be missing).
 const data = elibraryData as unknown as ELibraryConfig;
 
-// Resolved once at module load. Falls back to '' so fetches fail gracefully
-// (and we drop back to the static JSON) instead of throwing during render.
-//
-// IMPORTANT: NEXT_PUBLIC_* vars are inlined by Next.js at BUILD TIME, not
-// read at runtime. Having NEXT_PUBLIC_API_URL in your GitHub secrets does
-// nothing unless the build step itself has that env var set, e.g.:
-//
-//   - name: Build
-//     env:
-//       NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-//     run: npm run build
-//
 const JSON_SERVER_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 const sectionIcons: Record<ELibrarySection, ElementType> = {
@@ -41,6 +27,33 @@ const sectionIcons: Record<ELibrarySection, ElementType> = {
   downloads:        Download,
   newsletters:      Newspaper,
 };
+
+// ── Safe JSON fetch helper ──
+// Guards against the classic "Unexpected token '<', <!DOCTYPE...' is not
+// valid JSON" crash, which happens when fetch() hits a URL that returns an
+// HTML error page (404/500) instead of actual JSON, and the code blindly
+// calls response.json() on it.
+async function fetchJsonSafe<T>(url: string): Promise<T | null> {
+  const response = await fetch(url, { cache: 'no-store' });
+
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status} ${response.statusText} (${url})`);
+  }
+
+  const contentType = response.headers.get('content-type') ?? '';
+  if (!contentType.includes('application/json')) {
+    // Server responded with HTML (or something else) instead of JSON.
+    // Read a bit of the body for a useful error message instead of letting
+    // response.json() throw the cryptic "Unexpected token '<'" error.
+    const text = await response.text();
+    throw new Error(
+      `Expected JSON but got "${contentType || 'unknown content-type'}" from ${url}. ` +
+      `First 120 chars: ${text.slice(0, 120)}`
+    );
+  }
+
+  return (await response.json()) as T;
+}
 
 export default function ELibraryClient() {
   const [activeSection, setActiveSection] = useState<ELibrarySection>('standard-codes');
@@ -60,7 +73,6 @@ export default function ELibraryClient() {
   const [isCuratedPaperLoading, setIsCuratedPaperLoading] = useState(false);
   const [isDownloadLoading, setIsDownloadLoading] = useState(false);
 
-  // Warn exactly once (on mount), not on every render.
   useEffect(() => {
     if (!JSON_SERVER_URL) {
       console.warn('ELibraryClient: NEXT_PUBLIC_API_URL is not configured, falling back to static JSON.');
@@ -84,13 +96,8 @@ export default function ELibraryClient() {
 
     const loadStandardCodes = async () => {
       try {
-        const response = await fetch(`${JSON_SERVER_URL}/standardCodes`, { cache: 'no-store' });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load standard codes: ${response.status}`);
-        }
-
-        const payload = (await response.json()) as StandardCode[];
+        setIsStandardCodeLoading(true);
+        const payload = await fetchJsonSafe<StandardCode[]>(`${JSON_SERVER_URL}/standardCodes`);
         if (!isCancelled) {
           setStandardCodeItems(Array.isArray(payload) ? payload : (data.standardCodes ?? []));
         }
@@ -98,6 +105,10 @@ export default function ELibraryClient() {
         console.error('Failed to load standard codes data', error);
         if (!isCancelled) {
           setStandardCodeItems(data.standardCodes ?? []);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsStandardCodeLoading(false);
         }
       }
     };
@@ -119,13 +130,7 @@ export default function ELibraryClient() {
     const loadNewsletters = async () => {
       try {
         setIsNewsletterLoading(true);
-        const response = await fetch(`${JSON_SERVER_URL}/newsletters`, { cache: 'no-store' });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load newsletter data: ${response.status}`);
-        }
-
-        const payload = (await response.json()) as Newsletter[];
+        const payload = await fetchJsonSafe<Newsletter[]>(`${JSON_SERVER_URL}/newsletters`);
         if (!isCancelled) {
           setNewsletterItems(Array.isArray(payload) ? payload : (data.newsletters ?? []));
         }
@@ -158,13 +163,7 @@ export default function ELibraryClient() {
     const loadPublications = async () => {
       try {
         setIsPublicationLoading(true);
-        const response = await fetch(`${JSON_SERVER_URL}/publications`, { cache: 'no-store' });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load publication data: ${response.status}`);
-        }
-
-        const payload = (await response.json()) as Publication[];
+        const payload = await fetchJsonSafe<Publication[]>(`${JSON_SERVER_URL}/publications`);
         if (!isCancelled) {
           setPublicationItems(Array.isArray(payload) ? payload : (data.publications ?? []));
         }
@@ -197,13 +196,7 @@ export default function ELibraryClient() {
     const loadCuratedPapers = async () => {
       try {
         setIsCuratedPaperLoading(true);
-        const response = await fetch(`${JSON_SERVER_URL}/curatedPapers`, { cache: 'no-store' });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load curated papers data: ${response.status}`);
-        }
-
-        const payload = (await response.json()) as CuratedPaper[];
+        const payload = await fetchJsonSafe<CuratedPaper[]>(`${JSON_SERVER_URL}/curatedPapers`);
         if (!isCancelled) {
           setCuratedPaperItems(Array.isArray(payload) ? payload : (data.curatedPapers ?? []));
         }
@@ -227,43 +220,37 @@ export default function ELibraryClient() {
   }, [activeSection]);
 
   // ── Downloads ──
-useEffect(() => {
-  if (activeSection !== 'downloads') return;
-  if (!JSON_SERVER_URL) return;
+  useEffect(() => {
+    if (activeSection !== 'downloads') return;
+    if (!JSON_SERVER_URL) return;
 
-  let isCancelled = false;
+    let isCancelled = false;
 
-  const loadDownloads = async () => {
-    try {
-      setIsDownloadLoading(true);
-      const response = await fetch(`${JSON_SERVER_URL}/downloads`, { cache: 'no-store' });
-
-      if (!response.ok) {
-        throw new Error(`Failed to load downloads data: ${response.status}`);
+    const loadDownloads = async () => {
+      try {
+        setIsDownloadLoading(true);
+        const payload = await fetchJsonSafe<DownloadItem[]>(`${JSON_SERVER_URL}/downloads`);
+        if (!isCancelled) {
+          setDownloadItems(Array.isArray(payload) ? payload : (data.downloads ?? []));
+        }
+      } catch (error) {
+        console.error('Failed to load downloads data', error);
+        if (!isCancelled) {
+          setDownloadItems(data.downloads ?? []);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsDownloadLoading(false);
+        }
       }
+    };
 
-      const payload = (await response.json()) as DownloadItem[];
-      if (!isCancelled) {
-        setDownloadItems(Array.isArray(payload) ? payload : (data.downloads ?? []));
-      }
-    } catch (error) {
-      console.error('Failed to load downloads data', error);
-      if (!isCancelled) {
-        setDownloadItems(data.downloads ?? []);
-      }
-    } finally {
-      if (!isCancelled) {
-        setIsDownloadLoading(false);
-      }
-    }
-  };
+    void loadDownloads();
 
-  void loadDownloads();
-
-  return () => {
-    isCancelled = true;
-  };
-}, [activeSection]);
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeSection]);
 
   const filteredItems = useMemo(() => {
     let items: ELibraryItem[] = [];
@@ -309,8 +296,6 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
-      {/* ── Hero — left-aligned, icon + title*/}
       <header className="bg-gradient-to-br from-purple-700 via-purple-600 to-blue-600 text-white">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold md:text-5xl">Engineering Library</h1>
@@ -322,11 +307,8 @@ useEffect(() => {
         </div>
       </header>
 
-      {/* ── Below-hero white panel*/}
       <div className="bg-gray-50">
         <div className="mx-auto max-w-4xl px-4 pt-8 pb-2 sm:px-6 lg:px-8">
-
-          {/* Full-width search */}
           <div className="relative">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <input
@@ -341,7 +323,6 @@ useEffect(() => {
             />
           </div>
 
-          {/* Section filter tabs — below search */}
           <div className="mt-5 flex flex-wrap gap-3">
             {data.sectionInfo
               .slice()
@@ -378,10 +359,7 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* ── Main content ── */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-
-        {/* Result count */}
         <p className="mb-6 text-sm text-gray-600">
           Showing{' '}
           <span className="font-semibold text-gray-900">{filteredItems.length}</span>{' '}
@@ -411,14 +389,12 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* ── Reading panel – desktop sidebar ── */}
       {selectedItem && (
         <div className="hidden lg:block fixed right-0 top-0 bottom-0 w-96 bg-white shadow-2xl border-l border-gray-200 overflow-y-auto z-40">
           <ReadingPanel item={selectedItem} onClose={() => setSelectedItem(null)} />
         </div>
       )}
 
-      {/* ── Reading panel – mobile fullscreen ── */}
       {selectedItem && (
         <div className="fixed inset-0 z-50 lg:hidden bg-white overflow-y-auto">
           <ReadingPanel item={selectedItem} onClose={() => setSelectedItem(null)} />
