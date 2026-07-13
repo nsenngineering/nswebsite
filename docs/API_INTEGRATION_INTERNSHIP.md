@@ -6,6 +6,7 @@
 **Branch**: `feature/ritika-stage`
 **Started**: TBD
 
+
 ---
 
 ## How to Use This Document
@@ -169,12 +170,176 @@ You also need `.env.local` to set `NEXT_PUBLIC_API_URL=http://localhost:5002`. W
 
 ### Questions to Answer
 
-1. Trace one click on the eLibrary page all the way to a rendered document card. Where is `fetch()` called? What URL does it hit? What port is json-server running on vs. the Next.js dev server?
-2. What HTTP method does json-server use to *list* documents? What method would it use to *create* one? Why does the method matter, not just the URL?
-3. Pick any response from json-server in the Network tab. What status code did it return? Name two other status codes you might see from a real API and what each means in plain terms.
-4. What's actually inside `db.json`? Is it the same data as `content/elibrary/*.csv`? Should it be?
-5. Draw (text or hand-drawn) both diagrams in the Big Picture section from memory, in your own words, before checking them against this doc.
+### 1. Trace one click on the eLibrary page all the way to a rendered document card. Where is `fetch()` called? What URL does it hit? What port is json-server running on vs. the Next.js dev server?
+=> 
+#### Step 1: User opens the eLibrary page.
+The user navigates to the eLibrary page in the browser. This causes the page and its React components to start loading.
+#### Step 2: React component loads.
+During this stage, React initializes the component and prepares it to display data.
+#### Step 3: fetch() is executed.
+A fetch() call (inside useEffect) runs to request data from the API endpoint, for example:
 
+`fetch("http://localhost:5002/newsletters")`
+#### Step 4: The browser sends an HTTP request.
+The browser creates an HTTP GET request and sends it to the specified URL to retrieve the requested resource.
+#### Step 5: Request goes to json-server.
+The request reaches the json-server running on your local machine. It acts as a mock backend server that handles API requests.
+#### Step 6: json-server reads db.json.
+json-server looks inside the db.json file, finds the requested collection (such as newsletters or standard-codes), and prepares the matching data.
+#### Step 7: JSON is returned.
+json-server sends the requested data back to the browser as a JSON response, along with a status code like 200 OK.
+#### Step 8: React receives the JSON.
+The fetch() promise resolves, React converts the response into a JavaScript object using response.json(), and the data becomes available to the component.
+#### Step 9: React updates the component state.
+The component stores the fetched data using a state setter (for example, setNewsletters(data)). Updating the state tells React that new data is available.
+#### Step 10: React renders the document cards on the screen.
+React automatically re-renders the component using the updated state. It loops through the data (for example, with .map()) and displays a document card for each item in the eLibrary.
+
+=> `Fetch` is called inside the eLibrary React component (or a helper function used by that component), where the code contains"
+
+await fetch(`${JSON_SERVER_URL}/standard-codes`)
+
+=>
+#### Example:
+
+`http://localhost:5002/standard-codes`
+
+depending on which section is being loaded.
+
+### 2. What HTTP method does json-server use to *list* documents? What method would it use to *create* one? Why does the method matter, not just the URL?
+=> json-server uses the GET HTTP method to list documents.
+
+#### Example:
+`GET /newsletters`
+
+This request retrieves all documents from the newsletters collection in db.json.
+
+=> json-server uses the POST HTTP method to create a new document.
+
+#### Example:
+
+`POST /newsletters`
+
+A POST request sends the new document's data to the server, which adds it to the newsletters collection in db.json.
+
+=> The HTTP method matters because it tells the server what action to perform on the resource.
+
+The URL identifies the resource (e.g., /newsletters).
+
+The HTTP method specifies the operation (e.g., GET to read, POST to create).
+
+### 3. Pick any response from json-server in the Network tab. What status code did it return? Name two other status codes you might see from a real API and what each means in plain terms.
+=> For a successful json-server request (such as GET /newsletters), the response returns:
+
+`200 OK` – The request was successful, and the server returned the requested data.
+
+#### Two other common status codes you might see from a real API are:
+
+`201 Created` – A new resource was successfully created (usually after a POST request).
+`404 Not Found` – The requested resource or endpoint does not exist on the server.
+
+### 4. What's actually inside `db.json`? Is it the same data as `content/elibrary/*.csv`? Should it be?
+=> db.json is the database file used by json-server. It stores data in JSON format. When an API request is made, json-server reads data from (or writes data to) this file.
+
+#### Example
+```json
+{
+  "newsletters": [
+    {
+      "id": "1",
+      "title": "Newsletter"
+    }
+  ],
+  "standard-codes": [
+    {
+      "id": "2",
+      "title": "ISO 9001"
+    }
+  ]
+}
+```
+#### Explanation
+`newsletters` → Creates the endpoint GET /newsletters.
+
+`standard-codes` → Creates the endpoint GET /standard-codes.
+
+Each object inside an array represents one record.
+
+`id` uniquely identifies each record.
+
+=> No, it is not necessarily the same data.
+
+`db.json` contains the data served by json-server during development.
+
+`content/elibrary/*.csv` contains the source content used by the project's content pipeline (for example, parsed into JSON during the build).
+
+## CSV vs JSON Example
+
+### CSV
+
+```csv
+id,title,fileUrl
+1,ISO 9001,https://example.com/iso9001.pdf
+```
+
+### JSON
+
+```json
+[
+  {
+    "id": "1",
+    "title": "ISO 9001",
+    "fileUrl": "https://example.com/iso9001.pdf"
+  }
+]
+```
+
+#### Should it be?
+
+=> Yes, if both are intended to represent the same eLibrary content, they should contain the same data. Keeping them in sync ensures that the application behaves consistently whether it is using the CSV files or json-server as its data source.
+
+### 5. Draw (text or hand-drawn) both diagrams in the Big Picture section from memory, in your own words, before checking them against this doc.
+=>
+## Request Flow
+
+```text
++----------------------+
+|      User clicks     |
++----------+-----------+
+           |
+           v
++----------------------+
+| React Component      |
++----------+-----------+
+           |
+           | fetch()
+           v
++----------------------+
+| Browser HTTP Request |
++----------+-----------+
+           |
+           v
++----------------------+
+| json-server          |
+| reads db.json        |
++----------+-----------+
+           |
+           | JSON response
+           v
++----------------------+
+| React receives data  |
++----------+-----------+
+           |
+           v
++----------------------+
+| State updated        |
++----------+-----------+
+           |
+           v
++----------------------+
+| Document Cards shown |
++----------------------+
+```
 ---
 
 ## Goal 1: Local State Fundamentals — Before Anything Crosses a Network
@@ -197,8 +362,48 @@ Most state bugs are ownership bugs, not logic bugs. The code usually "works" —
 
 ### Questions to Answer
 
-1. Which value was the *source of truth*, and which was a copy that shouldn't have existed?
-2. Find one place in `ELibraryClient.tsx` where a value is stored in `useState` but could instead be *derived* on every render from something else already in state (e.g., a filtered list computed from a full list + a search term, instead of stored as its own state that must be kept in sync manually). Explain why storing it was the riskier choice.
+### 1. Which value was the *source of truth*, and which was a copy that shouldn't have existed?
+
+=> `Source of truth`: The five state arrays (`standardCodeItems, publicationItems, curatedPaperItems, downloadItems, and newsletterItems`) are the source of truth in this component. They contain the current eLibrary items for each section. They are initially populated from the static data object and are replaced with the latest data when it is fetched from the JSON server. All rendering, searching, and item counts are based on these state variables.
+
+=> `Copy that shouldn't have existed`: In the current version of ELibraryClient.tsx, there is no unnecessary duplicate copy of these arrays. Values such as filteredItems and sectionCounts are derived from the source-of-truth state using useMemo and are recalculated whenever the state changes, rather than being stored as separate state. Therefore, this component does not contain duplicated state that could become out of sync.
+
+### 2. Find one place in `ELibraryClient.tsx` where a value is stored in `useState` but could instead be *derived* on every render from something else already in state (e.g., a filtered list computed from a full list + a search term, instead of stored as its own state that must be kept in sync manually). Explain why storing it was the riskier choice.
+
+=> Currently, the component stores five separate loading flags:
+
+```tsx
+const [isStandardCodeLoading, setIsStandardCodeLoading] = useState(false);
+const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
+const [isPublicationLoading, setIsPublicationLoading] = useState(false);
+const [isCuratedPaperLoading, setIsCuratedPaperLoading] = useState(false);
+const [isDownloadLoading, setIsDownloadLoading] = useState(false);
+```
+
+These values are later combined to determine whether the currently active section is loading:
+
+```tsx
+const isActiveSectionLoading =
+  (activeSection === 'standard-codes' && isStandardCodeLoading) ||
+  (activeSection === 'newsletters' && isNewsletterLoading) ||
+  (activeSection === 'publications' && isPublicationLoading) ||
+  (activeSection === 'curated-papers' && isCuratedPaperLoading) ||
+  (activeSection === 'downloads' && isDownloadLoading);
+```
+
+Since the application only fetches data for **one active section at a time**, the component does not need five separate loading flags. Instead, it could store a single state representing **which section is currently loading**:
+
+```tsx
+const [loadingSection, setLoadingSection] = useState<ELibrarySection | null>(null);
+
+const isActiveSectionLoading = loadingSection === activeSection;
+```
+
+## Why is the current approach riskier?
+
+* The loading information is spread across five separate state variables, making it easier to accidentally leave one of them set to `true`.
+* Adding a new eLibrary section requires creating another loading state and updating the logic that checks which section is loading, increasing the chance of mistakes.
+* Using a single `loadingSection` state is simpler because it represents the real information directly: **which section is currently loading**. The value `isActiveSectionLoading` can then be derived by comparing `loadingSection` with `activeSection`, ensuring that only one section can be considered loading at a time.
 
 ---
 

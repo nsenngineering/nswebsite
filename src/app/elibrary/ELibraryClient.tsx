@@ -67,12 +67,7 @@ export default function ELibraryClient() {
   const [curatedPaperItems, setCuratedPaperItems] = useState<ELibraryItem[]>(data.curatedPapers ?? []);
   const [downloadItems, setDownloadItems] = useState<ELibraryItem[]>(data.downloads ?? []);
 
-  const [isStandardCodeLoading, setIsStandardCodeLoading] = useState(false);
-  const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
-  const [isPublicationLoading, setIsPublicationLoading] = useState(false);
-  const [isCuratedPaperLoading, setIsCuratedPaperLoading] = useState(false);
-  const [isDownloadLoading, setIsDownloadLoading] = useState(false);
-
+  const [loadingSection, setLoadingSection] = useState<ELibrarySection | null>(null);
   useEffect(() => {
     if (!JSON_SERVER_URL) {
       console.warn('ELibraryClient: NEXT_PUBLIC_API_URL is not configured, falling back to static JSON.');
@@ -96,7 +91,7 @@ export default function ELibraryClient() {
 
     const loadStandardCodes = async () => {
       try {
-        setIsStandardCodeLoading(true);
+        setLoadingSection('standard-codes');
         const payload = await fetchJsonSafe<StandardCode[]>(`${JSON_SERVER_URL}/standardCodes`);
         if (!isCancelled) {
           setStandardCodeItems(Array.isArray(payload) ? payload : (data.standardCodes ?? []));
@@ -108,7 +103,7 @@ export default function ELibraryClient() {
         }
       } finally {
         if (!isCancelled) {
-          setIsStandardCodeLoading(false);
+          setLoadingSection(null);
         }
       }
     };
@@ -129,7 +124,7 @@ export default function ELibraryClient() {
 
     const loadNewsletters = async () => {
       try {
-        setIsNewsletterLoading(true);
+        setLoadingSection('newsletters');
         const payload = await fetchJsonSafe<Newsletter[]>(`${JSON_SERVER_URL}/newsletters`);
         if (!isCancelled) {
           setNewsletterItems(Array.isArray(payload) ? payload : (data.newsletters ?? []));
@@ -141,7 +136,7 @@ export default function ELibraryClient() {
         }
       } finally {
         if (!isCancelled) {
-          setIsNewsletterLoading(false);
+          setLoadingSection(null);
         }
       }
     };
@@ -162,7 +157,7 @@ export default function ELibraryClient() {
 
     const loadPublications = async () => {
       try {
-        setIsPublicationLoading(true);
+        setLoadingSection('publications');
         const payload = await fetchJsonSafe<Publication[]>(`${JSON_SERVER_URL}/publications`);
         if (!isCancelled) {
           setPublicationItems(Array.isArray(payload) ? payload : (data.publications ?? []));
@@ -174,7 +169,7 @@ export default function ELibraryClient() {
         }
       } finally {
         if (!isCancelled) {
-          setIsPublicationLoading(false);
+          setLoadingSection(null);
         }
       }
     };
@@ -195,7 +190,7 @@ export default function ELibraryClient() {
 
     const loadCuratedPapers = async () => {
       try {
-        setIsCuratedPaperLoading(true);
+        setLoadingSection('curated-papers');
         const payload = await fetchJsonSafe<CuratedPaper[]>(`${JSON_SERVER_URL}/curatedPapers`);
         if (!isCancelled) {
           setCuratedPaperItems(Array.isArray(payload) ? payload : (data.curatedPapers ?? []));
@@ -207,7 +202,7 @@ export default function ELibraryClient() {
         }
       } finally {
         if (!isCancelled) {
-          setIsCuratedPaperLoading(false);
+          setLoadingSection(null);
         }
       }
     };
@@ -228,7 +223,7 @@ export default function ELibraryClient() {
 
     const loadDownloads = async () => {
       try {
-        setIsDownloadLoading(true);
+        setLoadingSection('downloads');
         const payload = await fetchJsonSafe<DownloadItem[]>(`${JSON_SERVER_URL}/downloads`);
         if (!isCancelled) {
           setDownloadItems(Array.isArray(payload) ? payload : (data.downloads ?? []));
@@ -240,7 +235,7 @@ export default function ELibraryClient() {
         }
       } finally {
         if (!isCancelled) {
-          setIsDownloadLoading(false);
+          setLoadingSection(null);
         }
       }
     };
@@ -287,12 +282,7 @@ export default function ELibraryClient() {
     setSelectedStandardCategory(null);
   };
 
-  const isActiveSectionLoading =
-    (activeSection === 'standard-codes' && isStandardCodeLoading) ||
-    (activeSection === 'newsletters' && isNewsletterLoading) ||
-    (activeSection === 'publications' && isPublicationLoading) ||
-    (activeSection === 'curated-papers' && isCuratedPaperLoading) ||
-    (activeSection === 'downloads' && isDownloadLoading);
+  const isActiveSectionLoading = loadingSection === activeSection;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -365,10 +355,10 @@ export default function ELibraryClient() {
           <span className="font-semibold text-gray-900">{filteredItems.length}</span>{' '}
           {activeSection === 'standard-codes' ? 'standard' : ''}{filteredItems.length === 1 ? ' item' : ' items'}
           {searchQuery.trim() ? ` for "${searchQuery}"` : ''}
-          {activeSection === 'newsletters' && isNewsletterLoading ? ' • loading latest newsletters' : ''}
-          {activeSection === 'publications' && isPublicationLoading ? ' • loading latest publications' : ''}
-          {activeSection === 'curated-papers' && isCuratedPaperLoading ? ' • loading latest curated papers' : ''}
-          {activeSection === 'downloads' && isDownloadLoading ? ' • loading latest downloads' : ''}
+          {activeSection === 'newsletters' && isActiveSectionLoading ? ' • loading latest newsletters' : ''}
+          {activeSection === 'publications' && isActiveSectionLoading ? ' • loading latest publications' : ''}
+          {activeSection === 'curated-papers' && isActiveSectionLoading ? ' • loading latest curated papers' : ''}
+          {activeSection === 'downloads' && isActiveSectionLoading ? ' • loading latest downloads' : ''}
         </p>
 
         <div className={selectedItem ? 'lg:mr-96' : ''}>
