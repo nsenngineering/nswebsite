@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import ELibrarySidebar from '@/components/elibrary/ELibrarySidebar';
+import type { ElementType } from 'react';
+import { BookOpen, Download, FileText, Lightbulb, Newspaper, Search } from 'lucide-react';
 import DocumentGrid from '@/components/elibrary/DocumentGrid';
 import ReadingPanel from '@/components/elibrary/ReadingPanel';
-import type { ELibrarySection, ELibraryConfig, ELibraryItem } from '@/types/elibrary';
+import StandardCodesCategoryView from '@/components/elibrary/StandardCodesCategoryView';
+import type { ELibrarySection, ELibraryConfig, ELibraryItem, StandardCode } from '@/types/elibrary';
 import {
   isStandardCode,
   isPublication,
@@ -16,160 +18,175 @@ import elibraryData from '@/data/generated/elibrary.json';
 
 const data = elibraryData as ELibraryConfig;
 
+/** Derive counts directly from the data arrays so they're always accurate */
+const sectionCounts: Record<ELibrarySection, number> = {
+  'standard-codes': data.standardCodes?.length ?? 0,
+  publications:     data.publications?.length ?? 0,
+  'curated-papers': data.curatedPapers?.length ?? 0,
+  downloads:        data.downloads?.length ?? 0,
+  newsletters:      data.newsletters?.length ?? 0,
+};
+
+const sectionIcons: Record<ELibrarySection, ElementType> = {
+  'standard-codes': FileText,
+  publications:     BookOpen,
+  'curated-papers': Lightbulb,
+  downloads:        Download,
+  newsletters:      Newspaper,
+};
+
 export default function ELibraryClient() {
-  // Initialize with first section
   const [activeSection, setActiveSection] = useState<ELibrarySection>('standard-codes');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<ELibraryItem | null>(null);
+  const [selectedStandardCategory, setSelectedStandardCategory] = useState<string | null>(null);
 
-  // Get items for active section and apply search filter
   const filteredItems = useMemo(() => {
-    // Get items from active section
     let items: ELibraryItem[] = [];
+
     switch (activeSection) {
-      case 'standard-codes':
-        items = data.standardCodes;
-        break;
-      case 'publications':
-        items = data.publications;
-        break;
-      case 'curated-papers':
-        items = data.curatedPapers;
-        break;
-      case 'downloads':
-        items = data.downloads;
-        break;
-      case 'newsletters':
-        items = data.newsletters;
-        break;
+      case 'standard-codes':  items = data.standardCodes ?? []; break;
+      case 'publications':    items = data.publications ?? [];   break;
+      case 'curated-papers':  items = data.curatedPapers ?? [];  break;
+      case 'downloads':       items = data.downloads ?? [];      break;
+      case 'newsletters':     items = data.newsletters ?? [];    break;
     }
 
-    // Apply search filter
-    if (searchQuery === '') return items;
-
-    const searchLower = searchQuery.toLowerCase();
+    if (searchQuery.trim() === '') return items;
+    const q = searchQuery.toLowerCase();
 
     return items.filter((item) => {
-      // Base search (all items have these fields)
-      const baseMatch =
-        item.title.toLowerCase().includes(searchLower) ||
-        item.tags.some((tag) => tag.toLowerCase().includes(searchLower));
+      const base =
+        item.id.toLowerCase().includes(q) ||
+        item.title.toLowerCase().includes(q) ||
+        item.tags.some((t) => t.toLowerCase().includes(q));
 
-      // Section-specific search
-      if (isStandardCode(item)) {
-        return (
-          baseMatch ||
-          item.standards.some(std => std.organization.toLowerCase().includes(searchLower)) ||
-          item.standards.some(std => std.url.toLowerCase().includes(searchLower)) ||
-          item.category?.toLowerCase().includes(searchLower)
-        );
-      }
-      if (isPublication(item)) {
-        return (
-          baseMatch ||
-          item.description.toLowerCase().includes(searchLower) ||
-          item.authors.some(author => author.toLowerCase().includes(searchLower)) ||
-          item.category?.toLowerCase().includes(searchLower)
-        );
-      }
-      if (isCuratedPaper(item)) {
-        return (
-          baseMatch ||
-          item.source?.toLowerCase().includes(searchLower) ||
-          item.category?.toLowerCase().includes(searchLower)
-        );
-      }
-      if (isDownload(item)) {
-        return (
-          baseMatch ||
-          item.description?.toLowerCase().includes(searchLower) ||
-          item.category?.toLowerCase().includes(searchLower)
-        );
-      }
-      if (isNewsletter(item)) {
-        return (
-          baseMatch ||
-          item.description?.toLowerCase().includes(searchLower) ||
-          item.quarter?.toLowerCase().includes(searchLower)
-        );
-      }
-
-      return baseMatch;
+      if (isStandardCode(item))  return base || item.standards.some((s) => s.organization.toLowerCase().includes(q) || s.url.toLowerCase().includes(q)) || item.category?.toLowerCase().includes(q);
+      if (isPublication(item))   return base || item.description.toLowerCase().includes(q) || item.authors.some((a) => a.toLowerCase().includes(q)) || item.category?.toLowerCase().includes(q);
+      if (isCuratedPaper(item))  return base || item.source?.toLowerCase().includes(q) || item.category?.toLowerCase().includes(q);
+      if (isDownload(item))      return base || item.description?.toLowerCase().includes(q) || item.category?.toLowerCase().includes(q);
+      if (isNewsletter(item))    return base || item.description?.toLowerCase().includes(q) || item.quarter?.toLowerCase().includes(q);
+      return base;
     });
   }, [activeSection, searchQuery]);
 
-  // Handle section change
   const handleSectionChange = (section: ELibrarySection) => {
     setActiveSection(section);
-    setSelectedItem(null); // Clear selection when changing sections
-  };
-
-  // Handle item click
-  const handleItemClick = (item: ELibraryItem) => {
-    setSelectedItem(item);
-  };
-
-  // Handle reading pane close
-  const handleCloseReadingPane = () => {
     setSelectedItem(null);
+    setSelectedStandardCategory(null);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Page Header */}
-      <header className="bg-gradient-to-br from-purple-700 via-purple-600 to-blue-600 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Engineering Library
-          </h1>
-          <p className="text-xl text-purple-100 max-w-3xl">
-            Access our comprehensive collection of standards, technical publications, research papers, and resources.
-            Stay informed with the latest in geotechnical engineering and testing practices.
+
+      {/* ── Hero — left-aligned ── */}
+      <header className="bg-gradient-to-r from-purple-700 via-purple-500 to-blue-500 text-white">
+        <div className="mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-12">
+          <h1 className="text-5xl font-bold leading-tight md:text-6xl">Engineering Library</h1>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-purple-100">
+            Access our comprehensive collection of standards, technical publications,
+            research papers, and resources. Stay informed with the latest in geotechnical
+            engineering and testing practices.
           </p>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Sidebar - Section Navigation */}
-          <ELibrarySidebar
-            sections={data.sectionInfo}
-            activeSection={activeSection}
-            onSectionChange={handleSectionChange}
-            documentCounts={data.sections}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-          />
+      {/* ── Below-hero white panel*/}
+      <div className="bg-gray-50">
+        <div className="mx-auto max-w-4xl px-4 pt-8 pb-2 sm:px-6 lg:px-8">
 
-          {/* Document Grid - Main Content */}
-          <div className={`flex-1 ${selectedItem ? 'lg:mr-96' : ''}`}>
-            {/* Results Count */}
-            <div className="mb-6 text-sm text-gray-600">
-              Showing {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'}
-            </div>
-
-            {/* Document Grid */}
-            <DocumentGrid
-              items={filteredItems}
-              onItemClick={handleItemClick}
-              selectedItemId={selectedItem?.id}
+          {/* Full-width search */}
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setSelectedStandardCategory(null);
+              }}
+              placeholder="Search standards, publications, papers..."
+              className="w-full rounded-xl border border-gray-200 bg-white py-3.5 pl-12 pr-5 text-gray-900 shadow-sm outline-none ring-2 ring-transparent transition placeholder:text-gray-400 focus:border-purple-400 focus:ring-purple-100"
             />
           </div>
 
-          {/* Reading Pane - Desktop Side Panel */}
-          {selectedItem && (
-            <div className="hidden lg:block fixed right-0 top-0 bottom-0 w-96 bg-white shadow-2xl border-l border-gray-200 overflow-y-auto z-40">
-              <ReadingPanel item={selectedItem} onClose={handleCloseReadingPane} />
-            </div>
+          {/* Section filter tabs — below search */}
+          <div className="mt-5 flex flex-wrap gap-3">
+            {data.sectionInfo
+              .slice()
+              .sort((a, b) => a.order - b.order)
+              .map((section) => {
+                const Icon = sectionIcons[section.id as ELibrarySection] || FileText;
+                const isActive = section.id === activeSection;
+                const count = sectionCounts[section.id as ELibrarySection] ?? 0;
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => handleSectionChange(section.id as ELibrarySection)}
+                    className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition ${
+                      isActive
+                        ? 'border-purple-600 bg-purple-600 text-white shadow-sm'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{section.label}</span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        isActive
+                          ? 'bg-white/20 text-white'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Main content ── */}
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+        {/* Result count */}
+        <p className="mb-6 text-sm text-gray-600">
+          Showing{' '}
+          <span className="font-semibold text-gray-900">{filteredItems.length}</span>{' '}
+          {activeSection === 'standard-codes' ? 'standard' : ''}{filteredItems.length === 1 ? ' item' : ' items'}
+          {searchQuery.trim() ? ` for "${searchQuery}"` : ''}
+        </p>
+
+        <div className={selectedItem ? 'lg:mr-96' : ''}>
+          {activeSection === 'standard-codes' ? (
+            <StandardCodesCategoryView
+              items={filteredItems as StandardCode[]}
+              selectedCategory={selectedStandardCategory}
+              onCategorySelect={setSelectedStandardCategory}
+              onBack={() => setSelectedStandardCategory(null)}
+            />
+          ) : (
+            <DocumentGrid
+              items={filteredItems}
+              onItemClick={setSelectedItem}
+              selectedItemId={selectedItem?.id}
+            />
           )}
         </div>
       </div>
 
-      {/* Reading Pane - Mobile Modal */}
+      {/* ── Reading panel – desktop sidebar ── */}
+      {selectedItem && (
+        <div className="hidden lg:block fixed right-0 top-0 bottom-0 w-96 bg-white shadow-2xl border-l border-gray-200 overflow-y-auto z-40">
+          <ReadingPanel item={selectedItem} onClose={() => setSelectedItem(null)} />
+        </div>
+      )}
+
+      {/* ── Reading panel – mobile fullscreen ── */}
       {selectedItem && (
         <div className="fixed inset-0 z-50 lg:hidden bg-white overflow-y-auto">
-          <ReadingPanel item={selectedItem} onClose={handleCloseReadingPane} />
+          <ReadingPanel item={selectedItem} onClose={() => setSelectedItem(null)} />
         </div>
       )}
     </div>

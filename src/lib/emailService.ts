@@ -17,6 +17,7 @@
 export type EmailType = 'quotation' | 'job-application' | 'contact-inquiry' | 'technical-support';
 
 export interface EmailResponse {
+  details: Record<string, unknown>;
   success: boolean;
   message?: string;
   error?: string;
@@ -49,6 +50,7 @@ export interface QuotationFormData {
 // ============================================================================
 
 const getWorkerUrl = (): string => {
+  
   const url = process.env.NEXT_PUBLIC_EMAIL_WORKER_URL;
 
   if (!url) {
@@ -90,6 +92,7 @@ async function sendEmail(
       const errorText = await response.text();
       return {
         success: false,
+        details: {},
         error: `Failed to send email: ${errorText}`,
       };
     }
@@ -97,12 +100,14 @@ async function sendEmail(
     const result = await response.json();
     return {
       success: true,
+      details: result.details || {},
       message: result.message || 'Email sent successfully',
     };
   } catch (error) {
     console.error('Email service error:', error);
     return {
       success: false,
+      details: {},
       error: error instanceof Error ? error.message : 'Unknown error occurred',
     };
   }

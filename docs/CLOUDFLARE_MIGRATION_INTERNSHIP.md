@@ -1,0 +1,1255 @@
+# Cloudflare Migration — Internship Project Guide
+
+**Project**: NS Engineering Website — GitHub Pages → Cloudflare Pages  
+**Intern**: Ritika Kunwar  
+**Mentor**: Shobhit Tripathi  
+**Branch**: `feature/cloudflareMigration`  
+**Started**: 2026-04-29
+
+---
+
+## How to Use This Document
+
+This is your primary reference for the entire project. Every goal has two parts:
+
+- **Completion Goal** — the concrete deliverable. You are done when you can demonstrate this.
+- **Learning Goal** — the concept behind it. Understanding the *why* matters more than finishing the task.
+
+Check in with your mentor at the end of each goal before moving to the next. The checkpoint is not a formality — some goals unlock the next one, and a misunderstanding early will cost you days later.
+
+---
+
+## The Big Picture
+
+### Where We Are Today
+
+```
+Developer pushes code
+        ↓
+  GitHub Actions
+  ┌─────────────────────────────────────────────┐
+  │ Job 1: Sync media (Google Drive → R2)       │
+  │ Job 2: Build site (Sheets → CSV → HTML/JS)  │
+  │ Job 3: Deploy to GitHub Pages               │
+  │ Job 4: Commit CSV snapshots back to Git     │
+  └─────────────────────────────────────────────┘
+        ↓
+  GitHub Pages (one environment, one URL)
+        ↓
+  DNS: nsengineering.com.np → GitHub Pages
+```
+
+A single Cloudflare Email Worker handles the contact form.  
+Cloudflare R2 hosts all images and PDFs.  
+Cloudflare Turnstile protects the contact form from bots.
+
+### Where We Are Going
+
+```
+Developer pushes to main
+        ↓
+  GitHub Actions
+  ┌─────────────────────────────────────────────┐
+  │ Job 1: Sync media (Google Drive → R2)       │
+  │ Job 2: Build site ONCE → artifact           │
+  │ Job 3: Auto-deploy artifact → dev           │
+  │ Job 4: Approval → promote artifact → stage  │
+  │ Job 5: Approval → promote artifact → prod   │
+  │ Job 6: Commit CSV snapshots back to Git     │
+  └─────────────────────────────────────────────┘
+        ↓
+  Three isolated Cloudflare Pages environments:
+    dev.nsengineering.com.np   (always live, auto-deployed)
+    stage.nsengineering.com.np (promoted after review)
+    nsengineering.com.np       (promoted after staging passes)
+
+  Each environment has its own Email Worker and Turnstile keys.
+```
+
+---
+
+## Goal 0: Orientation — Read the Codebase Before Touching It
+
+### Completion Goal
+
+Answer the following questions in writing (a short notes file is fine). Walk your mentor through your answers in a 30-minute session.
+
+### 1. What does `npm run build:cloud` do, step by step? Trace it from the npm script to the final `out/` directory.
+=>
+#### Step 1 : npm reads the script
+npm run build:cloud looks into the package.json file and finds the corresponding script
+#### Step 2 : Load cloud environment variables
+The command used :
+dotenv -e .env.cloud
+#### Step 3 : Set build mode
+Next, this part runs:
+cross-env CONTENT_SOURCE_MODE=sheets
+This sets an environment variable:
+CONTENT_SOURCE_MODE = sheets
+This tells the system to fetch content from Google Sheets (cloud source) instead of local files like CSV.
+#### Step 4: Run the build script
+The main script is executed:
+tsx scripts/build-content.ts
+This TypeScript file controls the full build process.
+#### Step 5: Fetch content from cloud
+#### Step 6: Process and transform content
+#### Step 7: Generate static website
+#### Step 8: Write output to out/ directory
+Finally, everything is saved into the out/ folder
+
+### 2. What is the difference between `CONTENT_SOURCE_MODE=csv` and `CONTENT_SOURCE_MODE=sheets`? When is each used?
+
+=>
+| Mode                         | Source          | Usage                                  |
+| ---------------------------- | --------------- | -------------------------------------- |
+| `CONTENT_SOURCE_MODE=csv`    | Local CSV files | Used for local development and testing |
+| `CONTENT_SOURCE_MODE=sheets` | Google Sheets   | Used for cloud/production builds       |
+
+### 3. Why does the GitHub Actions pipeline have four separate jobs instead of one big script?
+=>
+The GitHub Actions pipeline is split into four separate jobs instead of one big script to improve reliability, speed, and control.
+#### Reasons:
+#### 1. Separation of concerns
+Each job has one responsibility (e.g., sync content, build site, deploy, promote). This makes the workflow easier to understand and maintain.
+#### 2. Faster execution (parallelism)
+Independent jobs can run in parallel, reducing total pipeline time instead of waiting for one long script.
+#### 3. Better failure handling
+If one job fails, only that part needs to be re-run instead of restarting the entire pipeline.
+#### 4. Controlled deployment flow
+It allows staged deployment (e.g., dev → staging → production with approval steps).
+Easier debugging
+Logs are separated per job, so it is easier to find where something broke.
+The four separate jobs used in our system are :
+
+#### For deploy.yml
+#### Job 1: Sync-assests:
+Google Drive → Cloudflare R2
+It moves images and files from Google Drive into Cloudflare R2 storage.
+##### Steps:
+1. Download rclone
+Tool that connects cloud storage services
+2. Configure Google Drive
+Uses service account (robot login)
+Gives access to Google Drive folder
+3. Configure Cloudflare R2
+Connects to your R2 bucket storage
+4. Sync files
+Copies only:
+images (jpg, png, webp)
+PDFs
+Skips CSV files
+#### Job 2: Build
+Build Next.js Website
+Depends on:
+Job 1 must finish first (assets must be ready in R2)
+##### What it does:
+1. Install dependencies
+Runs npm ci (installs project packages)
+2. Load Google credentials
+Allows access to Google Sheets
+3. Build website
+Runs:
+npm run build:cloud
+##### This step:
+Fetches content from Google Sheets
+Pulls images from R2
+Generates static website files
+Output:
+./out
+(static HTML website)
+4. Upload artifact
+Saves build output for deployment
+#### Job 3: Deploy
+Send website to GitHub Pages
+Depends on:
+Job 2 (build must be ready)
+##### What it does:
+Takes the /out folder
+Deploys it to GitHub Pages using:
+actions/deploy-pages@v4
+Result:
+Your website becomes live on a public URL
+#### Job 4: Commit-csv
+Save content backup into Git
+Depends on:
+Job 2 (build must finish first)
+##### What it does:
+1. Re-fetch content from Google Sheets
+Runs:
+npm run build:content:cloud
+This generates CSV files
+2. Saves CSV files into GitHub repo
+content/**/*.csv
+3. Git commit
+If changes exist:
+Update content from Google Sheets [skip ci]
+
+#### For manual-sync.yml
+#### Steps:
+#### Step 1: Checkout code
+uses: actions/checkout@v4
+#### Step 2: Install rclone
+#### Step 3: Configure Google Drive
+#### Step 4: Configure Cloudflare R2
+#### Step 5: Debug Google Drive
+#### Step 6: Sync files
+
+### 4. What is rclone and what specific problem does it solve here?
+=>
+rclone is a command-line tool used to sync and transfer files between cloud storage services and local systems.
+
+In this pipeline, it is used to automatically sync media files (like images and assets) from storage sources such as Google Drive to cloud storage (like R2) during CI/CD, ensuring all required files are available for the build and deployment.
+
+### 5. What is Cloudflare Turnstile and what happens to the contact form if the Turnstile token is missing or invalid?
+=>
+Cloudflare Turnstile is a bot protection and CAPTCHA alternative service that verifies whether a form is being submitted by a real human or an automated bot, without requiring users to solve puzzles.
+
+#### If the Turnstile token is missing or invalid:
+1.The backend rejects the form submission
+2.The contact form request is not processed or stored
+3.The user may see an error or validation failure message
+
+### 6. What is the `CNAME` file in the repo root? Why does it exist and what will happen to it after this migration?
+=>
+ A CNAME file in the repo root is used by GitHub Pages to map the site to a custom domain.
+
+#### After migration, (suppose moving to Cloudflare Pages or another host):
+it is no longer needed because the domain is managed in the new hosting (e.g., Cloudflare DNS/Pages), so it is usually ignored or removed.
+
+### 7. List all GitHub Actions secrets the pipeline uses today. For each one, write one sentence on what it does.
+=>
+A GitHub Actions secret is a secure place to store sensitive data (like passwords, API keys, tokens) that your workflow needs — without exposing them in your code.
+#### The GitHub Actions secrets the pipeline uses today are:
+##### 1. GDRIVE_CLIENT_ID =>
+OAuth client ID used to validate and authenticate the Google Drive service account.
+##### 2. GDRIVE_PRIVATE_KEY =>
+The actual private key used to securely authenticate the service account to Google Drive.
+##### 3. GDRIVE_PRIVATE_KEY_ID =>
+Specifies which private key is being used for the Google service account authentication.
+##### 4. GDRIVE_PROJECT_ID =>
+Identifies the Google Cloud project that owns the service account used to access Google Drive.
+##### 5. GDRIVE_ROOT_FOLDER_ID =>
+Defines the Google Drive folder that acts as the root source directory for syncing files.
+##### 6. GDRIVE_SERVICE_ACCOUNT_EMAIL =>
+The service account email that rclone uses to access Google Drive files.
+##### 7. GOOGLE_CREDENTIALS_JSON =>
+GOOGLE_CREDENTIALS_JSON is a GitHub Actions secret (or environment variable) that stores the full Google service account credentials in JSON format.
+##### 8.GOOGLE_SERVICE_ACCOUNT_EMAIL =>
+This is the email identity of a Google service account used to authenticate server-side access to Google APIs like Google Drive or Google Sheets.
+##### 9. GOOGLE_SHEET_ID =>
+This is the unique ID of a Google Sheet that your app or workflow reads from or writes to.
+##### 10. NEXT_PUBLIC_EMAIL_WORKER_URL =>
+This is the public URL of a backend email worker i.e. Cloudflare Worker used by the frontend to send form submissions or emails.
+##### 11. NEXT_PUBLIC_R2_BASE_URL =>
+This is the public base URL used to access files stored in Cloudflare R2 (usually for images, PDFs, or media assets).
+##### 12. NEXT_PUBLIC_TURNSTILE_SITE_KEY =>
+This is the public site key for Cloudflare Turnstile used in the frontend to render and activate bot protection on forms.
+##### 13. R2_ACCESS_KEY_ID =>
+This is the public access key used to authenticate requests to Cloudflare R2 storage
+##### 14. R2_ACCOUNT_ID =>
+This identifies the Cloudflare account and is used to build the correct R2 API endpoint URL.
+##### 15. R2_BUCKET_NAME =>
+This is the name of the storage bucket inside Cloudflare R2 where your files are stored and managed.
+##### 16. R2_SECRET_ACCESS_KEY =>
+This is the private secret key paired with the access key, used to securely authorize file uploads and downloads in R2.
+
+**Files to read**:
+- `CLAUDE.md` (project overview)
+- `.github/workflows/deploy.yml` (the pipeline)
+- `package.json` (build scripts)
+- `next.config.ts` (static export config)
+- `src/lib/emailService.ts` (email worker integration)
+- `TURNSTILE_IMPLEMENTATION.md` (spam protection)
+- `GITHUB_SECRETS_SETUP.md` (secrets reference)
+
+### Learning Goal
+
+**Read before you write.** The most expensive engineering mistakes come from building on top of a system you did not fully understand. In a professional setting, you will rarely be handed a greenfield project — you will inherit someone else's work. The ability to read an unfamiliar codebase and build an accurate mental model of it is one of the most valued skills a junior engineer can develop.
+
+> Key concept: **System mapping.** Before designing a new system, you must be able to draw the old one accurately. If your diagram is wrong, your migration plan will be wrong.
+
+---
+
+## Goal 1: Understand Why We Are Leaving GitHub Pages
+
+### Completion Goal
+
+### Write a short document (half a page) that answers: *why is GitHub Pages insufficient for a multi-environment deployment model?* Cover these specific points:
+=> GitHub Pages is insufficient for a multi-environment deployment model because it only supports a single live site per repository, which means you cannot create separate environments like development, staging, and production within the same project. It also automatically publishes changes as soon as they are pushed, without any built-in approval, so there is no safe way to test and review changes before the website go live. Additionally, it provides very limited control over deployment configuration and caching behavior, making it difficult to manage different environments properly.
+
+#### - What is the maximum number of deployment environments GitHub Pages supports per repository?
+=> GitHub Pages supports only one main deployment environment per repository. Even if we use different branches, they are not true separate environments. We cannot properly manage dev, staging, and production at the same time with full control.
+
+#### - What kind of approval mechanism does GitHub Pages offer before a deployment goes live?
+=> GitHub Pages does not have an approval system before deployment. When we push code, the website updates automatically. There is no option to review or approve changes before they go live. This can be risky because mistakes can be published immediately.
+
+#### - What control do you have over HTTP caching headers on GitHub Pages?
+=> GitHub Pages gives very little control over caching. We cannot properly decide how long files should be stored in the browser. Because of this, users might still see old content even after updates.
+
+#### - What does it mean that GitHub Pages is "vendor-coupled" to GitHub Actions in this context?
+=> GitHub Pages is closely connected to GitHub Actions. This means deployment mainly depends on GitHub’s system, and we cannot easily customize or use other tools. This limits flexibility.
+
+#### This is not a Google-copy exercise. Explore the GitHub Pages documentation, try to find the limits, and form your own opinion.
+
+### Learning Goal
+
+**Evaluate tools against requirements, not reputation.** GitHub Pages is an excellent tool. It is the wrong tool for this job. Good engineers do not pick tools because they are familiar or popular — they pick tools because the tool's capabilities match the problem's requirements.
+
+> Key concept: **Fitness for purpose.** Every hosting platform makes trade-offs. GitHub Pages optimises for simplicity. Cloudflare Pages optimises for edge performance, environment isolation, and Workers integration. Understanding what a platform is optimised *for* tells you what it is optimised *against*.
+
+---
+
+## Goal 2: Understand Cloudflare Pages
+
+### Completion Goal
+
+### You should be able to explain the following without looking anything up:
+
+### 1. What is a Cloudflare Pages **project**? What is a Cloudflare Pages **deployment**?
+=> A Cloudflare Pages project is the overall website setup in Cloudflare. It connects to a Git repository, stores build settings, and contains all deployments of the site.
+
+=> A Cloudflare Pages deployment is a single built and published version of the website. Each time code is pushed or deployed, a new deployment is created with its own live URL
+
+### 2. What is the difference between a **preview deployment** and a **production deployment** in Cloudflare Pages?
+=> A preview deployment is a temporary version of the website created from non-main branches (like feature branches) for testing and review. It is not the final live site.
+
+=> A production deployment is the final, live version of the website created from the main branch. It is the version that users see on the public domain.
+
+### 3. What does `wrangler pages deploy <directory> --project-name <name>` do? How is this different from connecting Cloudflare Pages directly to a GitHub repository?
+=> The command wrangler pages deploy <directory> --project-name <name> uploads a directory of built static files to a Cloudflare Pages project and creates a new deployment.
+
+=> When using Wrangler, deployment is manual and requires the user to build and upload files directly. When connected to a GitHub repository, Cloudflare Pages automatically builds and deploys the site whenever code is pushed, without manual intervention.
+
+### 4. What is `wrangler.toml` and what does the `[env.production]` block inside it do?
+=> 'wrangler.toml' is a configuration file used by Wrangler to define settings for your Cloudflare project, such as the project name, build settings, and environment variables.
+
+=> [env.production] is a special configuration block that lets safely change settings (like APIs, variables, and behavior) only for the live production deployment, while keeping development and preview environments separate.
+
+### 5. What is a Cloudflare Worker and how does it differ from the static site itself?
+=> A Cloudflare Worker is a serverless function that runs on Cloudflare’s global edge network and lets you execute custom logic (like modifying requests, responses, routing, or calling APIs) before a user reaches your website.
+
+=> A static site (e.g., hosted on Cloudflare Pages) consists of pre-built files like HTML, CSS, and JavaScript that are served directly to users without any server-side processing.
+#### Difference:
+##### Static site:
+=> Delivers pre-built files exactly as they are (no server-side logic).
+
+##### Cloudflare Worker:
+=> Runs code in between the user and the site to add dynamic behavior (e.g., redirects, authentication, API handling, content modification).
+
+### Create a simple hand-drawn or text-based diagram showing: a Cloudflare Pages project, its three environments (dev/stage/prod), and a Worker sitting alongside each environment.
+=>
+
+#### A[Cloudflare Pages Project -> ns-website]
+
+A --> B[Dev Environment -> Preview Deployments]
+
+A --> C[Stage Environment -> Preview Deployments]
+
+A --> D[Production Environment -> Live Site]
+
+#### Dev Branch
+B --> B1[feature/* branches]
+
+B1 --> B2[Static Site -> HTML / CSS]
+
+B2 --> B3[Worker (Dev Logic) => - Test APIs and - Debug enabled]
+
+#### Stage Branch
+C --> C1[main / test / release branches]
+
+C1 --> C2[Static Site -> HTML / CSS]
+
+C2 --> C3[Worker (Stage Logic) =>  Staging APIs and - Limited users]
+
+#### Prod Branch
+D --> D1[main branch users]
+
+D1 --> D2[Static Site -> HTML / CSS]
+
+D2 --> D3[Worker (Prod Logic) => - Real APIs and - Optimized rules]
+
+**Resources**:
+- Cloudflare Pages documentation: https://developers.cloudflare.com/pages/
+- Wrangler CLI documentation: https://developers.cloudflare.com/workers/wrangler/
+- Cloudflare Workers documentation: https://developers.cloudflare.com/workers/
+
+### Learning Goal
+
+**Understand the platform before you configure it.** Wrangler, Cloudflare's CLI tool, is an example of **Infrastructure as Code (IaC)** — your infrastructure configuration lives in a file (`wrangler.toml`) that is checked into Git, reviewed like code, and applied by CI. This is the modern industry standard. The alternative (clicking through a dashboard) is not reproducible, not reviewable, and not recoverable if something goes wrong.
+
+> Key concept: **Infrastructure as Code.** If your infrastructure cannot be version-controlled and peer-reviewed, it is not production-grade. The dashboard is for exploration. The config file is the source of truth.
+
+---
+
+## Goal 3: Design the Branch and Environment Strategy
+
+### Completion Goal
+
+### Produce a written proposal (1 page maximum) for the branch-to-environment mapping. Your proposal must address:
+### Present two options, state your recommendation, and explain the trade-off.
+=>
+This proposal outlines two approaches for mapping Git branches to deployment environments.
+
+#### Option A : Build Per Environment
+
+#### Overview
+The project follows a Build per Environment strategy, where each environment (Dev, Staging, Production) triggers its own independent build and deployment process. The same source code is used across all environments, but each environment produces a separate build artifact during deployment.
+
+#### 1. Which Git branch triggers which environment?
+
+=> The deployment flow is branch-based:
+
+##### feature/* branches
+- Used for development and feature work
+- No direct deployment to environments
+##### develop branch
+- Automatically deployed to Development environment
+- Used for testing
+##### staging branch
+- Deployed to Staging environment
+- Used for QA and pre-production validation
+##### main branch
+- Deployed to Production environment
+- Represents stable and release-ready code
+
+#### 2. Is the site rebuilt for each environment, or is one build artifact promoted across environments?
+
+=> The site is rebuilt for each environment so there is no single build artifact that is promoted across environments.
+
+1. Dev deployment → new build created for Dev
+2. Staging deployment → new build created for Staging
+3. Production deployment → new build created for Production
+
+#### 3. What is the promotion mechanism — automatic, manual approval, or time-based?
+
+=> Promotion is branch-driven and pipeline-triggered, not artifact-based.
+
+##### Dev → Staging
+- Fully automatic
+- Merge into staging triggers build and deployment to staging environment
+##### Staging → Production
+- Manual approval required
+- Deployment to production only occurs after approval of staging release
+
+#### 4. What happens when a hotfix needs to go directly to production?
+=>
+For critical production issues, a hotfix process is used:
+##### Steps:
+1. Create a branch from main:
+   - hotfix/*
+2. Implement and test the fix
+3. Merge directly into main
+4. Trigger immediate production build and deployment
+5. Back-merge changes into:
+   - staging
+   - develop
+
+#### Option B: Build Once, Promote Artifact(Recommended)
+
+#### 1. Which Git branch triggers which environment?
+=> The deployment flow is branch-based, but environments do not trigger separate builds:
+##### feature/* branches
+- Used for development work
+- No direct deployments
+##### develop branch
+- Deploys to Development environment (Preview)
+- Used for testing
+##### staging branch
+- Promotes the same build artifact to Staging environment
+- Used for QA and validation
+##### main branch
+- Promotes the same build artifact to Production environment
+- Represents stable release
+
+#### 2. Is the site rebuilt for each environment, or is one build artifact promoted across environments?
+=> This system follows a Build Once, Promote Artifact approach:
+
+1. The application is built only once, typically after merge into the first main integration branch (e.g., develop)
+2. The output is a single immutable build artifact
+3. That same artifact is promoted across all environments
+
+#### 3. What is the promotion mechanism — automatic, manual approval, or time-based?
+=> Promotion is artifact based.
+##### Dev → Staging
+- Automatic promotion
+- Successful build in Dev and promoted to Staging.
+##### Staging → Production
+- Manual approval required
+- Same artifact is promoted to Production after approval.
+
+#### 4. What happens when a hotfix needs to go directly to production?
+=> For critical production issues:
+
+##### Hotfix process:
+1. Create hotfix/* branch from main
+2. Fix issue and commit changes
+3. Build a new artifact specifically for hotfix
+4. Immediately promote to Production
+5. Back-merge fix into:
+   - staging
+   - develop
+
+**Do not implement anything yet.** Present this to your mentor first. This is a design review, not a ticket.
+
+**Hint — think about this**: this website is a static export. There is no database. There is no server. The `out/` directory produced by `npm run build:cloud` is a folder of HTML, CSS, and JavaScript files. Does it make sense to run the build three times (once per environment) if the output would be identical? What are the implications of running it only once?
+
+### Learning Goal
+
+**Design before you build.** A common mistake among junior engineers is to start writing code before the design is agreed upon. Changing code is cheap. Changing a deployment architecture mid-migration affects DNS, secrets, pipelines, and potentially live traffic. Alignment on design before implementation prevents expensive rework.
+
+> Key concept: **Artifact promotion vs. rebuild per environment.** The industry-standard approach for static sites and compiled applications is "build once, deploy many." You produce one immutable artifact and promote it through environments. This guarantees that what you tested in staging is *exactly* what runs in production — not a rebuild that could differ due to a changed dependency or a flaky API call. This principle is called **immutable artifacts**.
+
+---
+
+## Goal 4: Set Up GitHub Environments
+
+### Completion Goal
+
+In the GitHub repository settings, create three Environments:
+
+| Environment | Protection Rules |
+|-------------|-----------------|
+| `dev` | None — auto-deploys on every push |
+| `staging` | Required reviewer: your mentor |
+| `production` | Required reviewer: your mentor + 10-minute minimum wait after staging |
+
+For each environment, add the following secrets (values to be provided by your mentor):
+
+- `CLOUDFLARE_API_TOKEN` (scoped to that Pages project only)
+- `CLOUDFLARE_ACCOUNT_ID`
+- `NEXT_PUBLIC_EMAIL_WORKER_URL` (each environment's worker URL)
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (each environment's Turnstile app key)
+
+Verify: go to Settings → Environments in the GitHub UI and confirm all three exist with the correct protection rules and secrets.
+
+### Learning Goal
+
+**Secrets belong to environments, not repositories.** Today, this repo has one flat pool of secrets shared by every job. In a multi-environment world, that is a security problem: a bug in a dev workflow could theoretically read a production secret. GitHub Environments scope secrets so that a `dev` deployment job *cannot* access `production` secrets — they are simply not available in that job's context.
+
+> Key concept: **Principle of Least Privilege.** Every process, job, and person should have access to only the secrets and permissions they need for their specific task, and nothing more. This is a foundational security principle. In CI/CD, it means: production credentials should only be available in the production deployment job, behind a human approval gate.
+
+> Key concept: **Approval gates.** A deployment pipeline without approval gates is a liability. Requiring a human to review before promoting to production is not bureaucracy — it is the last line of defence against deploying a broken or unreviewed change to real users. The gate also creates an audit trail: you can always see who approved what and when.
+
+---
+=> successfully completed the setup for the `dev` environment in the GitHub repository.
+
+### Completed Tasks
+
+1. Created the `dev` environment in GitHub Settings → Environments.
+
+2. Configured the environment with no protection rules so it auto-deploys on every push.
+
+3. Added the required environment secrets:
+   - CLOUDFLARE_ACCOUNT_I
+   - CLOUDFLARE_API_TOKEN
+   - CLOUDFLARE_PROJECT_NAME
+   - NEXT_PUBLIC_EMAIL_WORKER_URL_DEV
+   - NEXT_PUBLIC_R2_BASE_URL
+   - NEXT_PUBLIC_TURNSTILE_SITE_KEY
+   - R2_ACCESS_KEY_ID
+   - R2_ACCOUNT_ID
+   - R2_BUCKET_NAME
+   - R2_SECRET_ACCESS_KEY
+
+=> successfully completed the setup for the `staging` environment in the GitHub repository.
+
+### Completed Tasks
+
+1. Created the `staging` environment in GitHub Settings -> Environments.
+
+2. Configured the environment with the following protection rules:
+    - Required reviewer: approval before deployment.
+
+3. Added the required environment secrets:
+   - CLOUDFLARE_ACCOUNT_ID
+   - CLOUDFLARE_API_TOKEN
+   - CLOUDFLARE_PROJECT_NAME
+   - DEV_R2_ACCESS_KEY_ID
+   - DEV_R2_ACCOUNT_ID
+   - DEV_R2_BUCKET_NAME
+   - DEV_R2_SECRET_ACCESS_KEY
+   - NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE
+   - NEXT_PUBLIC_R2_BASE_URL
+   - R2_ACCESS_KEY_ID
+   - R2_ACCOUNT_ID
+   - R2_BUCKET_NAME
+   - R2_SECRET_ACCESS_KEY
+
+4. Verified the environment configuration in GitHub Settings → Environments and confirmed:
+   - The staging environment exists successfully.
+   - Reviewer protection is enabled.
+   - All required environment secrets are properly configured.
+
+=> successfully completed the setup for the `production` environment in the GitHub repository.
+
+### Completed Tasks
+
+1. Created the `production` environment in GitHub Settings -> Environments.
+
+2. Configured the environment with the following protection rules:
+    - Required reviewer: approval before deployment.
+    - Required approval time: minimum 10 min.
+
+3. Added the required environment secrets:
+   - CLOUDFLARE_ACCOUNT_ID
+   - CLOUDFLARE_API_TOKEN
+   - CLOUDFLARE_PROJECT_NAME
+   - STAGE_R2_ACCESS_KEY_ID
+   - STAGE_R2_ACCOUNT_ID
+   - STAGE_R2_BUCKET_NAME
+   - STAGE_R2_SECRET_ACCESS_KEY
+   - NEXT_PUBLIC_EMAIL_WORKER_URL_PROD
+   - NEXT_PUBLIC_R2_BASE_URL
+   - R2_ACCESS_KEY_ID
+   - R2_ACCOUNT_ID
+   - R2_BUCKET_NAME
+   - R2_SECRET_ACCESS_KEY
+
+4. Verified the environment configuration in GitHub Settings → Environments and confirmed:
+   - The production environment exists successfully.
+   - Reviewer protection is enabled.
+   - All required environment secrets are properly configured.
+
+### Learning Reflection
+
+Through this task, I understood the importance of environment-scoped secrets in CI/CD pipelines. Instead of using one shared pool of repository secrets, GitHub Environments isolate credentials based on deployment stages (`dev`, `staging`, `production`).
+
+I learned about:
+
+* **Principle of Least Privilege** — deployment jobs should only access the secrets they actually need.
+* **Environment isolation** — a development workflow should not have access to production credentials.
+* **Approval gates** — production deployments require human verification to reduce the risk of deploying broken or unreviewed code.
+
+This setup improves both deployment security and operational safety.
+
+## Goal 5: Set Up Cloudflare Pages Projects
+
+### Completion Goal
+
+Create three Cloudflare Pages projects in the Cloudflare dashboard:
+
+| Project Name | Custom Domain |
+|---|---|
+| `nsengineering-dev` | `dev.nsengineering.com.np` |
+| `nsengineering-stage` | `stage.nsengineering.com.np` |
+| `nsengineering-prod` | `nsengineering.com.np` |
+
+Important: configure each project for **Direct Upload** (not the GitHub integration). Cloudflare Pages offers a GitHub integration that runs its own CI — we do not want this. GitHub Actions will control all deployments. Cloudflare Pages is just the hosting target.
+
+For each project, note the `*.pages.dev` preview URL that Cloudflare assigns. You will use these to verify deployments before DNS is pointed.
+
+### Learning Goal
+
+**Separate your CI/CD system from your hosting platform.** Cloudflare Pages offers its own GitHub integration that can trigger builds automatically. We are deliberately not using it. Here is why: if your CI lives inside your hosting platform, you are locked in. The day you want to switch from Cloudflare Pages to AWS CloudFront or Vercel, you have to rebuild your entire pipeline. When CI lives in GitHub Actions and the hosting platform is just a deployment target, switching hosts is a one-line change in your workflow file.
+
+> Key concept: **Separation of concerns.** CI/CD (what to build, when to build it, where to deploy it) is a different concern from hosting (serving files to users). Keeping them separate makes each independently replaceable.
+
+=> successfully completed the setup for the nsengineering-dev Cloudflare Pages project.
+
+### Completed Tasks
+1. Created the Cloudflare Pages project:
+   - nsengineering-dev
+
+2. Configured the project to use Direct Upload deployment instead of the GitHub integration.
+
+3. Confirmed that GitHub Actions will be responsible for CI/CD and deployments.
+
+4. Verified that Cloudflare Pages is being used only as the hosting target.
+
+5. Configured the development domain:
+   - dev.nsengineering.com.np
+
+=> Successfully Completed the Setup for the nsengineering-stage Cloudflare Pages Project
+
+### Completed Tasks
+1. Created the Cloudflare Pages project:
+    - nsengineering-stage
+
+2. Configured the project to use Direct Upload deployment instead of the GitHub integration.
+
+3. Confirmed that GitHub Actions will handle all CI/CD workflows and deployments.
+
+4. Verified that Cloudflare Pages is being used only as the hosting platform and not as the CI system.
+
+5. Configured the staging domain:
+    - stage.nsengineering.com.np
+
+=> successfully completed the setup for the nsengineering-prod Cloudflare Pages project.
+
+### Completed Tasks
+1. Created the Cloudflare Pages project:
+    - nsengineering-prod
+
+2. Configured the project to use Direct Upload deployment instead of the GitHub integration.
+
+3. Confirmed that GitHub Actions will handle all CI/CD workflows and deployments.
+
+4. Verified that Cloudflare Pages is being used only as the hosting platform and not as the CI system.
+
+5. Configured the production domain:
+    - nsengineering.com.np
+
+6. Recorded the Cloudflare Pages preview URL (*.pages.dev) for deployment verification before DNS cutover.
+---
+
+## Goal 6: Migrate the GitHub Actions Workflow
+
+### Completion Goal
+
+Rewrite `.github/workflows/deploy.yml` to implement the new pipeline. The new workflow must:
+
+1. **Keep Job 1 (sync-assets) identical** — it is not changing.
+2. **Keep Job 4 (commit-csv) identical** — it is not changing.
+3. **Modify Job 2 (build)** — instead of uploading a GitHub Pages artifact, upload the `out/` directory as a standard GitHub Actions artifact using `actions/upload-artifact@v4`.
+4. **Replace Job 3 (deploy)** with three new jobs:
+   - `deploy-dev` — downloads the artifact, runs `wrangler pages deploy out/ --project-name nsengineering-dev`, uses the `dev` GitHub Environment, runs automatically.
+   - `deploy-staging` — same artifact, deploys to `nsengineering-stage`, uses the `staging` GitHub Environment (triggers the approval gate you set up in Goal 4).
+   - `deploy-prod` — same artifact, deploys to `nsengineering-prod`, uses the `production` GitHub Environment, requires `deploy-staging` to have succeeded.
+
+5. **Remove all GitHub Pages permissions** (`pages: write`, `id-token: write` from the permissions block).
+
+Test the workflow by pushing to the branch. The `dev` environment should deploy automatically. Do not approve staging or production yet — just confirm the dev deployment works and the approval gates appear in the GitHub Actions UI.
+
+**Key tool**: `cloudflare/wrangler-action@v3` — a GitHub Action that wraps the Wrangler CLI.
+
+### Learning Goal
+
+**Pipelines are directed acyclic graphs (DAGs), not scripts.** A script runs steps in sequence. A pipeline declares *dependencies* between jobs. The `needs:` keyword in GitHub Actions is how you express "this job cannot start until these other jobs finish." This lets independent jobs (like `deploy-dev` and `commit-csv`) run in parallel, while dependent jobs (`deploy-prod` needs `deploy-staging`) run in sequence.
+
+> Key concept: **Pipeline as code.** Your deployment process is now version-controlled, reviewable, and auditable. Anyone on the team can read `deploy.yml` and understand exactly how code gets from a developer's laptop to production. This is not documentation — this is the process itself, written as code.
+
+> Key concept: **Idempotent deployments.** Deploying the same artifact twice should produce the same result. Running `wrangler pages deploy` on the same `out/` directory ten times in a row should be safe and predictable. Design your pipelines assuming they will be re-run.
+
+---
+=> successfully migrated the deployment workflow in .github/workflows/deploy-dev.yml for the development environment deployment pipeline.
+
+### Completed Tasks
+1. Kept `sync-assets` job unchanged.
+
+2. Modified the build job:
+   - Removed GitHub Pages artifact publishing.
+   - Configured actions/upload-artifact@v4 to upload the generated out/ directory as a standard       workflow artifact.
+ 
+3. Replaced the old deployment job with environment-specific deployment jobs.
+
+4. Configured `deploy-dev` job to:
+   - download the build artifact
+   - Deploy using:
+
+     ```bash
+     wrangler pages deploy out/ --project-name nsengineering-dev
+     ```
+   - use the dev GitHub Environment
+   - deploy automatically on push
+
+5. Removed unnecessary GitHub Pages permissions:
+   - pages: write
+   - id-token: write
+
+6. Integrated cloudflare/wrangler-action@v3 into the deployment workflow.
+
+7. Tested the workflow by pushing changes to the branch.
+
+8. Verified that:
+   - the dev deployment runs successfully
+   - the deployment artifact is reused correctly
+
+=> Successfully Migrated the Deployment Workflow for the `staging` Environment
+
+### Completed Tasks
+
+1. Kept the `sync-assets` job unchanged while configuring asset promotion from the R2 development bucket to the R2 staging bucket.
+
+2. Implemented the `Build Once, Promote Artifact` deployment strategy:
+
+   - the application is built only once during the `build` job
+   - the generated `out/` directory is uploaded as a reusable workflow artifact
+   - the same validated artifact is promoted and reused for staging deployment without rebuilding the application.
+
+3. Configured the `deploy-staging` job to:
+
+   - Download the previously generated build artifact.
+   - Deploy using:
+
+     ```bash
+     wrangler pages deploy out/ --project-name nsengineering-stage
+     ```
+   - Use the `staging` GitHub Environment.
+   - Trigger the required approval gate before deployment.
+
+4. Verified workflow dependencies using `needs:` to ensure correct deployment sequencing.
+
+5. Tested the workflow by pushing changes to the branch.
+
+6. Verified that:
+
+   - the same build artifact is reused successfully for staging deployment
+   - R2 development assets are promoted correctly to the staging bucket
+   - the staging approval gate appears correctly in GitHub Actions
+   - the deployment pipeline functions successfully with environment protections enabled
+
+=> Successfully Migrated the Deployment Workflow for the `production` Environment
+
+### Completed Tasks
+
+1. Kept the `sync-assets` job unchanged while preserving the existing asset synchronization process.
+
+2. Continued using the `Build Once, Promote Artifact` deployment strategy:
+    - the application is built only once during the build job
+    - the generated out/ directory is uploaded as a reusable workflow artifact
+    - the same validated artifact is promoted through the deployment pipeline without rebuilding.
+
+3. Configured the `deploy-prod` job to:
+    - Download the previously generated build artifact.
+    - Deploy using:
+
+       ```bash
+       wrangler pages deploy out/ --project-name nsengineering-prod
+       ```
+    - Use the production GitHub Environment.
+    - Require successful completion of deploy-staging before deployment.
+    - Enforce the production approval gate through GitHub Environment protection rules.
+
+4. Verified workflow dependencies using `needs:` to ensure production deployment can only occur after a successful staging deployment.
+
+5. Confirmed that the deployment workflow follows the artifact promotion model, ensuring the exact same tested artifact is deployed across all environments.
+
+6. Tested the workflow by pushing changes to the branch.
+
+7. Verified that:
+    - the same build artifact is reused successfully for production deployment
+    - deployment sequencing (dev → staging → production) functions correctly
+    - the production approval gate appears correctly in GitHub Actions
+    - environment protection rules are enforced before production deployment
+
+### Learning Reflection
+
+Through implementing the staging deployment workflow, I learned how the **Build Once, Promote Artifact** strategy improves deployment consistency and reliability.
+
+Key learnings include:
+
+* **Build Once, Promote Artifact** — the application is built a single time and the exact same artifact is promoted across environments, eliminating inconsistencies caused by rebuilding separately for staging or production.
+* **Artifact Promotion** — validated assets and build outputs from the development environment can be safely promoted to higher environments.
+* **Pipeline as Code** — deployment workflows are fully version-controlled, auditable, and reproducible using GitHub Actions.
+* **Directed Acyclic Graphs (DAGs)** — workflow dependencies are managed using `needs:` for controlled execution order.
+* **Idempotent Deployments** — redeploying the same artifact produces stable and predictable deployment results.
+* **Environment Protection Rules** — staging deployments require manual approval, improving operational safety and deployment governance.
+
+This migration established a scalable and production-ready CI/CD pipeline using GitHub Actions, Cloudflare Pages, and Cloudflare R2 with a reliable artifact promotion workflow.
+
+
+## Goal 7: Set Up Per-Environment Cloudflare Email Workers
+
+### Completion Goal
+
+The email worker currently lives as a single deployment. Split it into three environments using `wrangler.toml`:
+
+```
+[name]
+ns-email-worker
+
+[env.dev]
+name = "ns-email-worker-dev"
+
+[env.staging]
+name = "ns-email-worker-staging"
+
+[env.production]
+name = "ns-email-worker-prod"
+```
+
+For each worker environment:
+- Register a separate Cloudflare Turnstile application (one per domain: `dev.nsengineering.com.np`, `stage.nsengineering.com.np`, `nsengineering.com.np`) so Turnstile tokens are validated against the correct domain.
+- Set the worker's `TURNSTILE_SECRET_KEY` secret using `wrangler secret put --env <env>`.
+- Configure the dev worker to route emails to a test inbox (not the real company inbox) so form submissions during development do not reach the client.
+
+Update the `NEXT_PUBLIC_EMAIL_WORKER_URL` secret in each GitHub Environment to point to the correct worker.
+
+This goal can be worked on in parallel with Goal 6.
+
+### Learning Goal
+
+**Non-production environments must not touch production systems.** If the dev environment's contact form sends real emails to `info@nsengineering.com.np`, every test submission lands in the client's inbox. This is unprofessional and can erode trust. Non-prod environments should have their own email targets, their own Turnstile keys, and ideally their own API quotas so testing cannot exhaust production limits.
+
+> Key concept: **Environment parity.** Dev, staging, and production should be as similar as possible in *architecture* — same Worker code, same pipeline — but intentionally different in *data and credentials*. The goal is to catch bugs in dev and staging before they reach real users, without dev activity affecting real users or real data.
+
+> Key concept: **Microservice isolation.** Each environment's Worker is a separate, independently deployable unit. A crash or misconfiguration in `ns-email-worker-dev` has zero impact on `ns-email-worker-prod`. This is why you separate them even though the code is identical.
+
+=> Successfully Configured the dev and staging Cloudflare Email Worker Environments.
+
+### Completed Tasks
+
+1. Updated the wrangler.toml configuration to support environment-specific Worker deployments:
+
+- [name]
+
+  ns-email-worker
+
+- [env.dev]
+
+  name = "email-worker-dev"
+
+- [env.staging]
+
+  name = "email-worker-stage"
+
+### Development Environment (dev)
+### Completed Tasks
+=> Configured the development Worker environment:
+#### Worker name:
+    email-worker-dev
+#### Registered a dedicated Cloudflare Turnstile application for:
+    dev.nsengineering.com.np
+#### Configured the development Worker secret:
+    wrangler secret put TURNSTILE_SECRET_KEY --env dev
+#### Configured the development Worker to route emails to a test inbox instead of the real company inbox.
+#### Updated the GitHub dev Environment secrets:
+  - NEXT_PUBLIC_EMAIL_WORKER_URL_DEV
+  - NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  - NEXT_PUBLIC_TURNSTILE_SECRET_KEY
+#### Verified that:
+  - The development Worker deploys successfully.
+
+  - Turnstile validation works correctly for the development domain.
+
+  - environment-specific secrets are configured correctly.
+
+### Staging Environment (staging)
+### Completed Tasks
+=> Configured the staging Worker environment:
+#### Worker name:
+    email-worker-stage
+#### Registered a dedicated Cloudflare Turnstile application for:
+    stage.nsengineering.com.np
+#### Configured the staging Worker secret:
+    wrangler secret put TURNSTILE_SECRET_KEY --env staging
+#### Updated the GitHub staging Environment secrets:
+  - NEXT_PUBLIC_EMAIL_WORKER_URL_STAGE
+  - NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  - NEXT_PUBLIC_TURNSTILE_SECRET_KEY
+#### Verified that:
+  - the staging Worker deploys successfully.
+  - Turnstile validation works correctly for the staging domain
+  - environment-specific secrets are configured properly
+
+### Production Environment (production)
+### Completed Tasks
+=> Configured the production Worker environment:
+#### Worker name:
+    email-worker-prod
+#### Registered a dedicated Cloudflare Turnstile application for:
+    nsengineering.com.np
+#### Configured the production Worker secret:
+    wrangler secret put TURNSTILE_SECRET_KEY --env production
+#### Configured the production Worker to route emails to the real company inbox.
+#### Updated the GitHub production Environment secrets:
+  - NEXT_PUBLIC_EMAIL_WORKER_URL_PROD
+  - NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  - NEXT_PUBLIC_TURNSTILE_SECRET_KEY
+
+#### Verified that:
+
+  - the production Worker deploys successfully.
+  - Turnstile validation works correctly for the production domain.
+  - environment-specific secrets are configured properly.
+  - contact form submissions are delivered successfully to the production company inbox.
+  - production configuration is isolated from development and staging environments.
+
+---
+
+## Goal 8: DNS Cutover
+
+### Completion Goal
+
+This is the highest-risk step. Follow this sequence exactly:
+
+### 1. **Before touching DNS**: Verify the production Cloudflare Pages project (`nsengineering-prod`) is fully working using its `*.pages.dev` URL. Test the contact form end-to-end.
+=> 
+### Pre-Cutover Verification
+i. Verified that the production Cloudflare Pages project (nsengineering-prod) was fully functional using the *.pages.dev URL.
+
+ii. Performed end-to-end testing of the contact form.
+
+iii. Confirmed successful communication between the website, Cloudflare Email Worker, and Turnstile validation service.
+
+### 2. **Reduce TTL**: Lower the DNS TTL for `nsengineering.com.np` to 60 seconds at least 24 hours before the cutover. This means DNS changes propagate globally within 1 minute instead of up to 24 hours.
+=>
+### DNS Preparation
+i. Reduced the DNS TTL for nsengineering.com.np to 60 seconds more than 24 hours before the cutover.
+
+ii. Verified that the lower TTL had propagated successfully prior to making DNS changes.
+
+### 3. **Cutover**: In Cloudflare DNS, remove the CNAME pointing to GitHub Pages. Add the custom domain for `nsengineering-prod` inside the Cloudflare Pages dashboard (it auto-creates the DNS record).
+=>
+### DNS Cutover
+i. Removed the existing CNAME record pointing to GitHub Pages.
+
+ii. Added the custom domain nsengineering.com.np to the Cloudflare Pages production project (nsengineering-prod).
+
+iii. Allowed Cloudflare Pages to automatically create and manage the required DNS records.
+
+### 4. **Verify**: Run `curl -I https://nsengineering.com.np` and confirm the response headers show Cloudflare Pages. Test all major pages and the contact form.
+=>
+### Post-Cutover Verification
+ `curl -I https://nsengineering.com.np`
+
+i. Confirmed response headers were returned from Cloudflare Pages infrastructure.
+
+ii. Tested all major website pages and navigation paths.
+
+iii. Verified successful contact form submission and email delivery.
+
+iv. Confirmed Turnstile validation operated correctly in production.
+
+### 5. **Do not decommission GitHub Pages immediately.** Leave it running for 48 hours as a fallback. If something is wrong, the rollback is to repoint DNS back to the old CNAME.
+=>
+### GitHub Pages Fallback
+
+i. Kept the GitHub Pages deployment active for 48 hours after the DNS cutover.
+
+ii. Maintained GitHub Pages as a rollback option in case any production issues occurred.
+
+iii. Documented the rollback procedure by restoring the previous GitHub Pages DNS configuration if required.
+
+### 6. After 48 hours of stable production: disable GitHub Pages in the repository settings.
+=>
+### GitHub Pages Decommissioning
+i. Monitored the production environment for 48 hours after the cutover.
+
+ii. Confirmed stable website operation with no issues.
+
+iii. Disabled GitHub Pages in the repository settings after the stabilization period.
+
+iv. Verified that Cloudflare Pages became the sole production hosting platform.
+
+### Learning Goal
+
+**DNS changes are slow and global.** When you update a DNS record, the change does not instantly reach every user. DNS records are cached by ISPs, routers, and browsers according to the TTL (Time To Live) value. If your TTL is 24 hours, some users will still hit the old GitHub Pages server for up to 24 hours after your change. This is why you reduce TTL in advance — you are pre-warming the system for a fast propagation.
+
+> Key concept: **Zero-downtime migration.** The sequence above ensures that at no point is `nsengineering.com.np` unreachable. The new target is verified before DNS is changed. The old target stays running as a fallback. This is called a **blue-green migration at the DNS layer**.
+
+> Key concept: **Rollback planning.** Every production change should have a rollback plan written before the change is made, not after something goes wrong. For this migration, the rollback is: repoint DNS to GitHub Pages. How long would that take? What is the maximum time users would see an error? Write this down before you touch anything.
+
+---
+
+## Goal 9: Cleanup
+
+### Completion Goal
+
+Once production has been stable on Cloudflare Pages for 48 hours:
+
+### 1. Delete the `CNAME` file from the repository root.
+
+### 2. Remove the `pages: write` and `id-token: write` permissions from `deploy.yml` if not already done in Goal 6.
+=>
+
+i. Removed the pages: write permission from the deployment workflow.
+
+ii. Removed the id-token: write permission from the deployment workflow.
+
+iii. Verified that the workflow now contains only the permissions required for the Cloudflare Pages deployment process.
+
+### 3. Disable GitHub Pages in the repository settings (Settings → Pages → Source → None).
+=> 
+
+i. Disabled GitHub Pages in the repository settings.
+
+ii. Confirmed that GitHub Pages is no longer configured as a deployment target.
+
+iii. Verified that Cloudflare Pages is the sole production hosting platform.
+
+### 4. Remove the `upload-pages-artifact` and `deploy-pages` action references if any remain.
+=>
+
+i. Removed all remaining upload-pages-artifact action references.
+
+ii. Removed all remaining deploy-pages action references.
+
+iii. Confirmed that the deployment pipeline no longer contains any GitHub Pages dependencies.
+
+### 5. Open a Pull Request from `feature/cloudflareMigration` into `main` with a clean description of what changed and why.
+
+### Learning Goal
+
+**Dead configuration is a liability.** The `CNAME` file pointed to a hosting platform that no longer hosts this site. Leaving it there is a trap for the next engineer who reads it. Outdated configuration misleads, confuses, and eventually causes incidents. Cleaning up after a migration is not optional housekeeping — it is part of the migration.
+
+> Key concept: **Definition of done.** A feature or migration is not complete when it works in production. It is complete when the old system is decommissioned, the dead code is removed, and the documentation reflects the new reality. "It works but I left the old stuff in just in case" is not done.
+
+---
+
+## Goal 10: Document the New Architecture
+
+### Completion Goal
+
+Update the following files to reflect the new world:
+
+=> Successfully updated the project documentation to reflect the Cloudflare Pages deployment architecture and environment strategy.
+
+### 1. **`CLAUDE.md`** — update the deployment section and the quick commands reference.
+### Completed Tasks
+=>
+
+i. Updated the deployment section to describe the Cloudflare Pages deployment workflow.
+
+ii. Removed references to GitHub Pages deployment processes.
+
+iii. Updated the quick commands reference with Cloudflare Pages and Wrangler commands.
+
+iv. Added environment-specific deployment and troubleshooting commands.
+
+### 2. **`DEPLOYMENT.md`** — rewrite the deployment steps to describe the new pipeline (push to main → approve dev → approve staging → approve prod). Add a Rollback section specific to Cloudflare Pages (how to roll back to a previous deployment using `wrangler pages deployment list` and `wrangler pages deployment rollback`).
+=>
+
+i. Rewrote the deployment guide to reflect the new deployment pipeline:
+
+```text
+Push to main
+    ↓
+Deploy Dev (automatic)
+    ↓
+Approve Staging
+    ↓
+Deploy Staging
+    ↓
+Approve Production
+    ↓
+Deploy Production
+```
+
+ii. Updated deployment procedures for Cloudflare Pages.
+
+iii. Removed obsolete GitHub Pages deployment instructions.
+
+iv. Added deployment validation and verification steps for each environment.
+
+### 3. **Create `docs/technical/ENVIRONMENT_STRATEGY.md`** — a short document describing the three environments, their domains, their purpose, and the promotion flow. Include the architecture diagram.
+=>
+Created docs/technical/ENVIRONMENT_STRATEGY.md.
+
+### The document includes:
+
+i. Environment overview
+
+ii. Domain mapping
+
+iii. Environment responsibilities
+
+iv. Promotion workflow
+
+v. Deployment approvals
+
+vi. Email Worker isolation strategy
+
+vii. Turnstile isolation strategy
+
+viii. Rollback strategy
+
+ix. Environment Mapping
+
+
+| Environment | Domain                     | Purpose                                          |
+| ----------- | -------------------------- | ------------------------------------------------ |
+| Development | dev.nsengineering.com.np   | testing and validation                 |
+| Staging     | stage.nsengineering.com.np | Pre-production validation and stakeholder review |
+| Production  | nsengineering.com.np       | Live customer-facing environment                 |
+
+x. Architecture Diagram
+
+```text
+                     main branch push
+                            │
+                            ▼
+
+     ┌─────────────────────────────────────────┐
+     │           GitHub Actions                │
+     │                                         │
+     │  ┌──────────┐   ┌────────────────────┐  │
+     │  │ sync-    │   │ build (once)       │  │
+     │  │ assets   │   │ artifact: out/     │  │
+     │  └──────────┘   └─────────┬──────────┘  │
+     │                           │             │
+     │           ┌───────────────┼───────────┐ │
+     │           ▼               ▼           ▼ │
+     │  ┌────────────┐ ┌────────────┐ ┌────────────┐
+     │  │ deploy-dev │ │deploy-stage│ │deploy-prod│
+     │  │ (auto)     │ │(approval✓) │ │(approval✓)│
+     │  └─────┬──────┘ └─────┬──────┘ └─────┬──────┘
+     └────────┼──────────────┼──────────────┼────────
+
+              ▼              ▼              ▼
+
+   dev.nsengineering   stage.nsengineering   nsengineering.com.np
+        .com.np             .com.np
+
+              │              │              │
+              ▼              ▼              ▼
+
+    email-worker-dev  email-worker-stage  email-worker-prod
+```
+
+```
+### Learning Goal
+
+**Documentation is part of the deliverable, not an afterthought.** A system that works but is not documented depends on the person who built it. That person will leave eventually. Good documentation means the next engineer — or your future self — can understand, operate, and extend the system without asking you.
+
+> Key concept: **Runbooks.** A runbook is a step-by-step guide for operating a system: how to deploy, how to roll back, what to do when something breaks. Runbooks should be written by the person who built the system while the knowledge is fresh. They should be tested: have someone else follow the runbook and note where it was unclear.
+
+> Key concept: **Docs as code.** Documentation checked into Git is versioned, reviewable in pull requests, and lives alongside the system it describes. A Google Doc or Confluence page is not version-controlled and will drift out of sync with the code. Keep documentation in the repo.
+
+---
+
+## Checkpoint Summary
+
+| Goal | Deliverable | Blocks Next? | Mentor Review |
+|------|-------------|:------------:|:-------------:|
+| 0 | Written Q&A + verbal walkthrough | Yes | Required |
+| 1 | Written analysis of GitHub Pages limits | No | Recommended |
+| 2 | Concept explanations + architecture diagram | Yes | Required |
+| 3 | Written design proposal (2 options) | Yes | Required |
+| 4 | GitHub Environments configured | Yes | Required |
+| 5 | 3 Cloudflare Pages projects created | Yes | Required |
+| 6 | Rewritten deploy.yml, dev auto-deploying | Yes | Required |
+| 7 | 3 Workers deployed (parallel with Goal 6) | Yes | Required |
+| 8 | DNS cutover complete, prod stable 48h | Yes | Required |
+| 9 | CNAME deleted, GitHub Pages disabled, PR open | Yes | Required |
+| 10 | CLAUDE.md, DEPLOYMENT.md, ENVIRONMENT_STRATEGY.md updated | No | Required |
+
+---
+
+## Vocabulary Reference
+
+Terms you will encounter throughout this project. Look these up when you first see them.
+
+| Term | Short Definition |
+|------|-----------------|
+| Static export | A website compiled to plain HTML/CSS/JS files with no server required at runtime |
+| Artifact | A build output (e.g., the `out/` folder) stored so it can be deployed without rebuilding |
+| Artifact promotion | Deploying the same artifact to multiple environments in sequence, instead of rebuilding |
+| Immutable artifact | An artifact that is never modified after it is built — only replaced by a new build |
+| GitHub Environment | A named deployment target in GitHub that can have its own secrets and protection rules |
+| Approval gate | A pause in the pipeline that requires a human to explicitly approve before proceeding |
+| Wrangler | Cloudflare's CLI tool for deploying Workers and Pages |
+| wrangler.toml | Infrastructure as Code config file for Cloudflare resources |
+| TTL (DNS) | Time To Live — how long DNS records are cached before being re-fetched |
+| Blue-green migration | Running old and new systems in parallel, then switching traffic atomically |
+| Rollback | Reverting a deployment to a previous known-good state |
+| Principle of Least Privilege | Giving every process and person only the permissions they need, and nothing more |
+| Runbook | Step-by-step operational guide for a system |
+| DAG | Directed Acyclic Graph — the structure of a CI/CD pipeline (jobs with dependencies, no cycles) |
+| Idempotent | An operation that produces the same result no matter how many times it is run |
+
+---
+
+## Notes Space
+
+Use this section to jot down questions, blockers, and decisions as you go. Bring these to your mentor sessions.
+
+**Open questions:**
+
+**Decisions made:**
+
+**Blockers:**
+
+---
+
+*This document is your contract for the project. When you complete Goal 10, update the header to reflect the completion date and your name.*

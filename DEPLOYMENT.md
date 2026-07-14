@@ -1,430 +1,493 @@
 # Deployment Guide
 
-Complete deployment guide for NS Engineering website to production.
+Complete deployment guide for NS Engineering website — Cloudflare Pages multi-environment architecture with artifact promotion.
+
+**Last Updated**: 2026-06-07  
+**Architecture**: GitHub Actions → Cloudflare Pages (Dev / Stage / Prod) with approval gates  
+**Status**: Active — DNS cutover to Cloudflare Pages pending  
+**Workflow**: [.github/workflows/deploy-dev.yml](.github/workflows/deploy-dev.yml)
+
+---
+
+## Architecture Overview
+
+```
+Push to branch (main or feature)
+      │
+      ▼
+GitHub Actions: deploy-dev.yml
+      │
+      ├─────────────────────────────────────────────────────────┐
+      │  Single Build Phase (happens once)                      │
+      │  ┌──────────────────────────────────────────────────┐   │
+      │  │ • Sync Google Drive → Dev R2 (rclone)           │   │
+      │  │ • Build Next.js to static artifact (./out)       │   │
+      │  │ • Placeholders baked in:                          │   │
+      │  │   - https://NSENGINEERING_R2_URL                 │   │
+      │  │   - NSENGINEERING_TURNSTILE_KEY                  │   │
+      │  │   - NSENGINEERING_EMAIL_WORKER_URL               │   │
+      │  │ • Commit CSV exports to Git                       │   │
+      │  └──────────────────────────────────────────────────┘   │
+      └─────────────────────────────────────────────────────────┘
+      │
+      ├─ Deploy Phase 1: DEV (automatic)
+      │  ├─ Inject dev R2 URL, Turnstile key, Email Worker URL
+      │  └─ Deploy to nsengineering-dev Pages
+      │     └─ Live at: dev.nsengineering.com.np
+      │
+      ├─ Asset Promotion 1: dev R2 → stage R2 (automatic)
+      │  └─ Use rclone to sync assets
+      │
+      ├─ Deploy Phase 2: STAGING (⚠️ requires approval)
+      │  ├─ Inject stage R2 URL, Turnstile key, Email Worker URL
+      │  └─ Deploy to nsengineering-stage Pages
+      │     └─ Live at: stage.nsengineering.com.np
+      │
+      ├─ Asset Promotion 2: stage R2 → prod R2 (automatic)
+      │  └─ Use rclone to sync assets
+      │
+      └─ Deploy Phase 3: PRODUCTION (⚠️ requires approval)
+         ├─ Inject prod R2 URL, Turnstile key, Email Worker URL
+         └─ Deploy to nsengineering-prod Pages
+            └─ Live at: nsengineering.com.np (post-cutover)
+
+Key advantage: Same artifact is deployed to all environments.
+Only R2 URLs, Turnstile keys, and Worker URLs change per environment.
+```
+
+---
+
+## Cloudflare Pages Projects
+
+| Project | Production Branch | Custom Domain | GitHub Env | Status |
+|---|---|---|---|---|
+| `nsengineering-dev` | `dev` | `dev.nsengineering.com.np` | `dev` | ✅ Active |
+| `nsengineering-stage` | `stage` | `stage.nsengineering.com.np` | `staging` | ✅ Active |
+| `nsengineering-prod` | `main` | `nsengineering.com.np`, `www.nsengineering.com.np` | `production` | ✅ Configured |
+
+**⚠️ Important**: The CF Pages project's **"Production branch"** setting must match the `--branch` flag in the wrangler deploy command. If they differ, wrangler creates a Preview deployment that will NOT be served by custom domains.
+
+---
+
+## Triggering a Deployment
+
+### Full Pipeline (dev → stage → prod)
+
+The `deploy-dev.yml` workflow runs on manual dispatch only:
+
+1. Go to **GitHub repository** → **Actions** tab
+2. Select **"Deploy to Cloudflare Pages (Dev)"** workflow (left sidebar)
+3. Click **"Run workflow"** dropdown
+4. Select branch (usually `main` or your feature branch)
+5. Click **"Run workflow"** button
+6. Pipeline starts immediately:
+   - ✅ Dev deploys automatically
+   - ⏸️ Awaits approval for staging (check GitHub environment protection rules)
+   - ⏸️ Awaits approval for production (check GitHub environment protection rules)
+
+### Approving Staging and Production Deployments
+
+Once dev is deployed successfully:
+
+1. Go to **Actions** tab → select the running workflow
+2. Scroll down to see pending approvals
+3. Click **"Review deployments"** button
+4. Select the environment (`staging` or `production`)
+5. Add optional comment (e.g., "Tested on dev, ready for stage")
+6. Click **"Approve and deploy"**
+
+---
+
+## Required GitHub Secrets
+
+### Repository-Level Secrets (all environments inherit)
+
+All of these secrets are available to the entire workflow:
+
+| Secret | Purpose | Example |
+|---|---|---|
+| `GOOGLE_SHEET_ID` | Google Sheets content source ID | `1xwrA9RXDq77tCHkeeOGwmjMXYgcT07keR_0qRkBctRI` |
+| `GOOGLE_CREDENTIALS_JSON` | Google service account (full JSON) | `{"type":"service_account",...}` |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Google service account email | `name@project.iam.gserviceaccount.com` |
+| `GDRIVE_PROJECT_ID` | Google Cloud project ID | `ns-engineering-2026` |
+| `GDRIVE_PRIVATE_KEY` | Google Drive service account private key | `-----BEGIN PRIVATE KEY-----...` |
+| `GDRIVE_PRIVATE_KEY_ID` | Google Drive key ID | `abc123...` |
+| `GDRIVE_SERVICE_ACCOUNT_EMAIL` | Google Drive service account email | `gdrive-sync@project.iam.gserviceaccount.com` |
+| `GDRIVE_CLIENT_ID` | Google Drive client ID | `123456789.apps.googleusercontent.com` |
+| `GDRIVE_ROOT_FOLDER_ID` | Root Google Drive folder for syncing | `1aB2cD3eF4gH5i6j7k8l9m0n1o2p3q4r` |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API token (wrangler access) | `v1.abc123...` |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID | `abc123def456` |
+
+### `dev` GitHub Environment Secrets
+
+Set these in **Settings** → **Environments** → **dev**:
+
+| Secret | Purpose | Notes |
+|---|---|---|
+| `CLOUDFLARE_PROJECT_NAME` | Cloudflare Pages project name | `nsengineering-dev` |
+| `R2_BUCKET_NAME` | Dev R2 bucket name | `nswebsite-dev` |
+| `R2_ACCESS_KEY_ID` | Dev R2 access key | Generated in CF dashboard |
+| `R2_SECRET_ACCESS_KEY` | Dev R2 secret | Generated in CF dashboard |
+| `R2_ACCOUNT_ID` | Dev R2 account ID | Same as CLOUDFLARE_ACCOUNT_ID |
+| `NEXT_PUBLIC_R2_BASE_URL` | Dev R2 public base URL | `https://pub-abc123.r2.dev` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Dev Turnstile site key | From Cloudflare dashboard |
+| `NEXT_PUBLIC_EMAIL_WORKER_URL` | Dev email worker URL | `https://email-worker-dev.emailapi-nsengineering.workers.dev` |
+
+### `staging` GitHub Environment Secrets
+
+Set these in **Settings** → **Environments** → **staging**:
+
+| Secret | Purpose | Notes |
+|---|---|---|
+| `CLOUDFLARE_PROJECT_NAME` | Cloudflare Pages project name | `nsengineering-stage` |
+| `R2_BUCKET_NAME` | Stage R2 bucket (target for stage deploy) | `nswebsite-stage` |
+| `R2_ACCESS_KEY_ID` | Stage R2 access key | Generated in CF dashboard |
+| `R2_SECRET_ACCESS_KEY` | Stage R2 secret | Generated in CF dashboard |
+| `R2_ACCOUNT_ID` | Stage R2 account ID | Same as CLOUDFLARE_ACCOUNT_ID |
+| `STAGE_R2_BUCKET_NAME` | Not used in staging env | Kept for future use |
+| `STAGE_R2_ACCESS_KEY_ID` | Not used in staging env | Kept for future use |
+| `STAGE_R2_SECRET_ACCESS_KEY` | Not used in staging env | Kept for future use |
+| `STAGE_R2_ACCOUNT_ID` | Not used in staging env | Kept for future use |
+| `DEV_R2_BUCKET_NAME` | Dev R2 bucket (source for promotion) | `nswebsite-dev` |
+| `DEV_R2_ACCESS_KEY_ID` | Dev R2 access key (read, for promotion) | Generated in CF dashboard |
+| `DEV_R2_SECRET_ACCESS_KEY` | Dev R2 secret (read, for promotion) | Generated in CF dashboard |
+| `DEV_R2_ACCOUNT_ID` | Dev R2 account ID (read, for promotion) | Same as CLOUDFLARE_ACCOUNT_ID |
+| `NEXT_PUBLIC_R2_BASE_URL` | Stage R2 public base URL (injected at deploy time) | `https://pub-stage123.r2.dev` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Stage Turnstile site key | From Cloudflare dashboard |
+| `NEXT_PUBLIC_EMAIL_WORKER_URL` | Stage email worker URL | `https://email-worker-stage.emailapi-nsengineering.workers.dev` |
+
+### `production` GitHub Environment Secrets
+
+Set these in **Settings** → **Environments** → **production**:
+
+| Secret | Purpose | Notes |
+|---|---|---|
+| `CLOUDFLARE_PROJECT_NAME` | Cloudflare Pages project name | `nsengineering-prod` |
+| `R2_BUCKET_NAME` | Prod R2 bucket (target for prod deploy) | `nswebsite-prod` |
+| `R2_ACCESS_KEY_ID` | Prod R2 access key | Generated in CF dashboard |
+| `R2_SECRET_ACCESS_KEY` | Prod R2 secret | Generated in CF dashboard |
+| `R2_ACCOUNT_ID` | Prod R2 account ID | Same as CLOUDFLARE_ACCOUNT_ID |
+| `STAGE_R2_BUCKET_NAME` | Stage R2 bucket (source for promotion) | `nswebsite-stage` |
+| `STAGE_R2_ACCESS_KEY_ID` | Stage R2 access key (read, for promotion) | Generated in CF dashboard |
+| `STAGE_R2_SECRET_ACCESS_KEY` | Stage R2 secret (read, for promotion) | Generated in CF dashboard |
+| `STAGE_R2_ACCOUNT_ID` | Stage R2 account ID (read, for promotion) | Same as CLOUDFLARE_ACCOUNT_ID |
+| `PROD_R2_BUCKET_NAME` | Not used after deploy | Kept for reference |
+| `PROD_R2_ACCESS_KEY_ID` | Not used after deploy | Kept for reference |
+| `PROD_R2_SECRET_ACCESS_KEY` | Not used after deploy | Kept for reference |
+| `PROD_R2_ACCOUNT_ID` | Not used after deploy | Kept for reference |
+| `NEXT_PUBLIC_R2_BASE_URL` | Prod R2 public base URL (injected at deploy time) | `https://pub-prod123.r2.dev` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Prod Turnstile site key | From Cloudflare dashboard |
+| `NEXT_PUBLIC_EMAIL_WORKER_URL` | Prod email worker URL | `https://email-worker-prod.emailapi-nsengineering.workers.dev` |
 
 ---
 
 ## Pre-Deployment Checklist
 
-### 1. Code Quality
+### Cloudflare Dashboard Setup (one-time)
 
-- [ ] All TypeScript type errors resolved (`npx tsc --noEmit`)
-- [ ] ESLint passes (`npm run lint`)
-- [ ] Build succeeds locally (`npm run build`)
-- [ ] All tests pass (if applicable)
+- [ ] **`nsengineering-dev`**
+  - Settings → Builds & deployments → Production branch → set to `dev`
+  - Ensure custom domain `dev.nsengineering.com.np` is configured
+  
+- [ ] **`nsengineering-stage`**
+  - Settings → Builds & deployments → Production branch → set to `stage`
+  - Ensure custom domain `stage.nsengineering.com.np` is configured
+  
+- [ ] **`nsengineering-prod`**
+  - Settings → Builds & deployments → Production branch → set to `main`
+  - Custom domains: Add `nsengineering.com.np` and `www.nsengineering.com.np` (post-cutover)
 
-### 2. Content Validation
+### GitHub Configuration
 
-- [ ] All CSV files are valid and parse correctly
-- [ ] Project images exist and paths are correct
-- [ ] Google Sheets connection works (`npm run build:content:cloud`)
-- [ ] CSV files are synced with latest Sheets data
-- [ ] No sensitive data in CSV files
+- [ ] `dev` environment exists with secrets configured
+- [ ] `staging` environment exists with secrets configured
+- [ ] `production` environment exists with secrets configured
+- [ ] Protection rules: `staging` and `production` require manual approval (if desired)
+  - Go to **Settings** → **Environments** → **staging/production** → **Deployment branches and secrets** → Check **Required reviewers**
 
-### 3. Environment Configuration
+### Security Pre-Deployment
 
-- [ ] `.env.cloud` configured (NOT committed)
-- [ ] `.env.cloud.example` updated and committed
-- [ ] Google credentials file exists locally (NOT committed)
-- [ ] All required environment variables documented
+- [ ] Rotate Turnstile secret key if previously exposed
+- [ ] Update `TURNSTILE_SECRET_KEY` in all three email workers:
+  ```bash
+  wrangler secret put TURNSTILE_SECRET_KEY --env=email-worker-dev
+  wrangler secret put TURNSTILE_SECRET_KEY --env=email-worker-stage
+  wrangler secret put TURNSTILE_SECRET_KEY --env=email-worker-prod
+  ```
 
-### 4. Security
+### Pre-Cutover Verification
 
-- [ ] `.env*` files in .gitignore (except examples)
-- [ ] `google-credentials.json` in .gitignore
-- [ ] No API keys or secrets in code
-- [ ] No sensitive data in CSV files
-- [ ] HTTPS enabled on production domain
-
-### 5. Performance
-
-- [ ] Images optimized (< 500KB each)
-- [ ] Lazy loading implemented
-- [ ] Build output size reasonable (< 10MB)
-- [ ] Lighthouse score > 90 (if applicable)
-
-### 6. SEO & Metadata
-
-- [ ] Meta tags present on all pages
-- [ ] Open Graph tags configured
-- [ ] Sitemap generated (if applicable)
-- [ ] robots.txt configured
-- [ ] Favicon exists
-
-### 7. Testing
-
-- [ ] Test on Chrome, Firefox, Safari
-- [ ] Test on mobile devices
-- [ ] Test all internal links
-- [ ] Test all external links
-- [ ] Test forms and validation
-- [ ] Test map functionality
-- [ ] Test image carousels
+- [ ] Run full `deploy-dev.yml` workflow manually
+- [ ] Verify **dev** deployment succeeds
+- [ ] Visit `dev.nsengineering.com.np` — confirm:
+  - Latest content from Google Sheets loads
+  - Favicon present
+  - Images load from R2
+  - Contact form works
+- [ ] Approve staging deployment in GitHub
+- [ ] Visit `stage.nsengineering.com.np` — verify same checks
+- [ ] Approve production deployment in GitHub
+- [ ] Visit `nsengineering-prod.pages.dev` (pre-cutover prod) — verify same checks
+- [ ] Test contact form on prod URL and confirm email arrives
+- [ ] Verify OG image `/logo/ns-logo.jpg` resolves from R2
 
 ---
 
-## GitHub Pages Deployment
+## DNS Cutover
 
-### Current Setup
+The domain `nsengineering.com.np` is already managed by Cloudflare nameservers. Cutover is instant — no TTL propagation needed.
 
-- **Branch**: `cloudflare`
-- **Trigger**: Push to branch
-- **Build**: GitHub Actions workflow
-- **Output**: Static files to GitHub Pages
+### Cutover Steps
 
-### Deployment Steps
+1. In **Cloudflare Dashboard** → **Pages** → **`nsengineering-prod`** → **Custom domains**
+2. Add domain `nsengineering.com.np`
+   - Cloudflare prompts to create CNAME/DNS record (auto-created)
+3. Add domain `www.nsengineering.com.np` (same process)
+4. CF automatically issues SSL certificate (wait ~5 min)
+5. Traffic switches immediately
 
-```bash
-# 1. Ensure you're on the correct branch
-git checkout cloudflare
+### Rollback (if needed)
 
-# 2. Sync latest content from Sheets
-npm run build:content:cloud
-
-# 3. Review changes
-git status
-git diff content/
-
-# 4. Test build locally
-npm run build
-npx serve@latest out
-
-# 5. Commit content changes
-git add content/
-git commit -m "Content sync: [describe changes]"
-
-# 6. Push to deploy
-git push origin cloudflare
-
-# 7. Monitor GitHub Actions
-# Go to: https://github.com/[username]/ns-engineering-website/actions
-# Wait for build to complete (~3-5 minutes)
-
-# 8. Verify deployment
-# Visit: https://[username].github.io/ns-engineering-website
-```
-
-### Rollback Procedure
-
-If deployment fails or has issues:
-
-```bash
-# Option 1: Revert last commit
-git revert HEAD
-git push origin cloudflare
-
-# Option 2: Reset to previous working commit
-git reset --hard <commit-hash>
-git push origin cloudflare --force
-
-# Option 3: Checkout specific file from previous commit
-git checkout HEAD~1 -- path/to/file
-git commit -m "Rollback: Revert changes to [file]"
-git push origin cloudflare
-```
+1. Remove custom domains from `nsengineering-prod` in CF dashboard
+2. Restore original DNS records (or contact DNS provider if not using CF)
+3. Traffic reverts to previous host (GitHub Pages)
 
 ---
 
-## GitHub Actions Configuration
+## Rolling Back a Deployment
 
-### Required Secrets
+### Option 1: Revert to a Previous Cloudflare Pages Deployment
 
-Add these in: GitHub → Settings → Secrets → Actions
+```bash
+# List recent deployments (requires wrangler CLI)
+wrangler pages deployment list --project-name nsengineering-prod
 
+# View details of a specific deployment
+wrangler pages deployment view <deployment-id> --project-name nsengineering-prod
+
+# Promote a previous deployment to production (in CF dashboard)
+# Pages → nsengineering-prod → Deployments → [select deployment] → Promote to Production
 ```
-GOOGLE_SHEET_ID
-GOOGLE_SERVICE_ACCOUNT_EMAIL
-GOOGLE_PRIVATE_KEY
+
+### Option 2: Revert Content to Previous Git State
+
+All CSVs are version-controlled in `content/` — you can restore any previous state:
+
+```bash
+# View commit history for content changes
+git log --oneline -- content/
+
+# Restore content to a previous commit
+git checkout <commit-hash> -- content/
+git commit -m "Rollback content to <date>"
+
+# Trigger deploy-dev.yml to rebuild and redeploy with old content
 ```
 
-### Workflow File
+### Option 3: Emergency DNS Rollback
 
-Location: `.github/workflows/deploy.yml`
+If a production deployment causes critical issues:
 
-Key configurations:
-- Runs on push to `cloudflare` branch
-- Builds with `npm run build:cloud`
-- Deploys to GitHub Pages
+1. In **Cloudflare Dashboard** → **Pages** → **`nsengineering-prod`** → **Custom domains**
+2. Remove `nsengineering.com.np` and `www.nsengineering.com.np`
+3. Manually update DNS to point to previous host (or restore GitHub Pages A records)
+4. Traffic switches immediately
 
 ---
 
-## Custom Domain Setup
+## Post-Deployment Verification
 
-### 1. Add CNAME File
-
-Create `public/CNAME` with your domain:
-
-```
-nsengineering.com
-```
-
-### 2. Configure DNS
-
-Add these records at your DNS provider:
-
-**Option A: Apex Domain (@)**
-```
-Type: A
-Name: @
-Value: 185.199.108.153
-Value: 185.199.109.153
-Value: 185.199.110.153
-Value: 185.199.111.153
-```
-
-**Option B: Subdomain (www)**
-```
-Type: CNAME
-Name: www
-Value: [username].github.io
-```
-
-### 3. Enable HTTPS
-
-1. Go to GitHub → Settings → Pages
-2. Check "Enforce HTTPS"
-3. Wait for SSL certificate (up to 24 hours)
-
-### 4. Verify
+Run these checks after every production deployment:
 
 ```bash
-dig nsengineering.com
-curl -I https://nsengineering.com
+# Check site is live
+curl -I https://nsengineering.com.np
+
+# Verify favicon loads
+curl -I https://nsengineering.com.np/favicon.ico
+
+# Verify R2 images load (check actual R2 URL)
+curl -I https://pub-abc123.r2.dev/logo/ns-logo.jpg
+
+# Check for security headers
+curl -I https://nsengineering.com.np | grep -i "x-content-type-options\|x-frame-options"
+
+# Verify contact form works (test endpoint)
+curl -X POST https://nsengineering.com.np/api/contact \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test","email":"test@example.com","message":"Test"}'
 ```
-
----
-
-## Monitoring & Maintenance
-
-### Post-Deployment Checks
-
-Run immediately after deployment:
-
-```bash
-# 1. Check site loads
-curl -I https://[your-domain]
-
-# 2. Verify content
-# Visit all major pages:
-# - Home
-# - Projects
-# - Services
-# - About
-# - eLibrary
-# - FAQ
-# - Careers
-# - Contact
-
-# 3. Check console for errors
-# Open browser DevTools → Console
-
-# 4. Test forms
-# Fill out contact/RFQ form
-
-# 5. Check mobile
-# Use browser DevTools → Device Mode
-```
-
-### Regular Maintenance
-
-**Weekly**:
-- [ ] Sync content from Google Sheets
-- [ ] Review and merge content updates
-- [ ] Deploy to production
-
-**Monthly**:
-- [ ] Update dependencies (`npm outdated`)
-- [ ] Review analytics (if configured)
-- [ ] Check for broken links
-- [ ] Backup content (CSV files are in git)
-
-**Quarterly**:
-- [ ] Security audit
-- [ ] Performance review
-- [ ] Content audit
-- [ ] Dependency updates
 
 ---
 
 ## Troubleshooting
 
-### Build Failures
+### Deployment fails at "Inject dev R2 URL"
 
-**"Module not found"**
+**Error**: `NEXT_PUBLIC_R2_BASE_URL is not set in the dev GitHub environment`
+
+**Solution**:
+1. Go to **GitHub Settings** → **Environments** → **dev**
+2. Add/verify secret `NEXT_PUBLIC_R2_BASE_URL` with the correct R2 URL
+3. Re-run the workflow
+
+### Staging approval doesn't appear in GitHub
+
+**Possible causes**:
+- `staging` environment doesn't exist yet
+- No protection rules configured
+
+**Solution**:
+1. Go to **Settings** → **Environments**
+2. Click **"New environment"** → name it `staging`
+3. (Optional) Add deployment protection rules if you want manual approval
+
+### Wrangler deploy command fails
+
+**Error**: `Could not authenticate with Cloudflare. Did you save your API token?`
+
+**Solution**:
+1. Verify `CLOUDFLARE_API_TOKEN` is set in the GitHub environment
+2. Verify token is still valid (check Cloudflare dashboard)
+3. Re-run the workflow after updating the token
+
+### Images not loading from R2
+
+**Cause**: R2 URL placeholder not substituted correctly
+
+**Debug**:
 ```bash
-# Clear cache and reinstall
-rm -rf node_modules package-lock.json
-npm install
-npm run build
+# Check if placeholder still exists in deployed files
+curl https://dev.nsengineering.com.np/ | grep "NSENGINEERING_R2_URL"
+
+# If found, the substitution failed — check deploy logs in GitHub Actions
 ```
 
-**"Type errors"**
+**Fix**: Re-run the workflow and check for errors in the "Inject R2 URL" step.
+
+### Contact form fails on new environment
+
+**Cause**: Email Worker URL mismatch
+
+**Debug**:
+1. Check deployed HTML contains correct worker URL:
+   ```bash
+   curl https://dev.nsengineering.com.np/ | grep "worker"
+   ```
+2. Test worker endpoint directly:
+   ```bash
+   curl -X POST https://email-worker-dev.emailapi-nsengineering.workers.dev/send \
+     -H "Content-Type: application/json" \
+     -d '{"to":"test@example.com","subject":"Test","text":"Test"}'
+   ```
+
+---
+
+## Quick Commands Reference
+
 ```bash
-# Check for type errors
-npx tsc --noEmit
+# View available workflows
+gh workflow list
 
-# If errors found, fix them and rebuild
-```
+# Trigger deploy-dev.yml
+gh workflow run deploy-dev.yml -r main
 
-**"Out of memory"**
-```bash
-# Increase Node.js memory
-NODE_OPTIONS="--max-old-space-size=4096" npm run build
-```
+# Monitor running workflow
+gh run list --status in_progress
 
-### Deployment Failures
+# View logs for specific job
+gh run view <run-id> --log
 
-**"GitHub Actions failing"**
-1. Check Actions tab for error logs
-2. Verify secrets are configured correctly
-3. Ensure branch name matches workflow trigger
-4. Check build succeeds locally first
+# List Cloudflare Pages projects
+wrangler pages project list
 
-**"Site not updating"**
-1. Hard refresh browser (Ctrl+F5 / Cmd+Shift+R)
-2. Clear browser cache
-3. Check GitHub Pages settings
-4. Verify deployment completed successfully
-5. Wait 5-10 minutes for CDN propagation
+# List deployments for a project
+wrangler pages deployment list --project-name nsengineering-prod
 
-**"404 errors"**
-1. Check `basePath` configuration in `next.config.js`
-2. Verify `assetPrefix` matches deployment path
-3. Check that `out/` directory contains built files
-
-### Content Issues
-
-**"Images not loading"**
-```bash
-# Rebuild content
-npm run build:content:cloud
-
-# Check public folder
-ls -la public/projects/
-ls -la public/elibrary/
-
-# Ensure images copied correctly
-npm run build
-```
-
-**"Google Sheets not syncing"**
-```bash
-# Test connection
-dotenv -e .env.cloud -- npm run build:content:cloud
-
-# Check credentials
-cat google-credentials.json | jq .client_email
-
-# Verify Sheet access
-# Open Google Sheet and check service account has Viewer access
+# Check Wrangler version
+wrangler --version
 ```
 
 ---
 
-## Emergency Procedures
+## References
 
-### Site Down
+- **Workflow**: [.github/workflows/deploy-dev.yml](.github/workflows/deploy-dev.yml)
+- **Environments Guide**: [docs/technical/ENVIRONMENT_STRATEGY.md](./docs/technical/ENVIRONMENT_STRATEGY.md)
+- **Cloudflare Pages Docs**: https://developers.cloudflare.com/pages/
+- **Wrangler CLI Docs**: https://developers.cloudflare.com/workers/wrangler/
 
-1. **Verify issue**: Check GitHub Pages status, DNS resolution
-2. **Check GitHub Actions**: Look for failed deployments
-3. **Rollback**: Revert to last known good commit
-4. **Monitor**: Watch for recovery
+# Verify email worker
+curl -X POST https://email-worker-prod.emailapi-nsengineering.workers.dev \
+  -H "Content-Type: application/json" \
+  -d '{"emailType":"contact-inquiry","data":{"test":true}}'
+```
 
-### Security Incident
-
-1. **Immediate**: Revoke compromised credentials
-2. **Rotate**: Generate new API keys/credentials
-3. **Audit**: Check git history for exposed secrets
-4. **Update**: Push new credentials via GitHub Secrets
-5. **Redeploy**: Force deployment with clean credentials
-
-### Data Loss
-
-1. **Check Git**: All content is version controlled
-2. **Restore**: `git checkout <commit> -- content/`
-3. **Rebuild**: `npm run build:content:cloud`
-4. **Verify**: Check restored data
-5. **Deploy**: Push restored content
+Visit all major pages: `/`, `/projects`, `/services`, `/about`, `/team`, `/elibrary`, `/faq`, `/careers`, `/contact`
 
 ---
 
-## Performance Optimization
+## Regular Maintenance
 
-### Before Deployment
+### Weekly content sync
 
 ```bash
-# 1. Analyze bundle size
-npm run build
-ls -lh out/_next/static/chunks/
-
-# 2. Optimize images
-# Use tools like: imagemagick, sharp, or online compressors
-# Target: < 500KB per image
-
-# 3. Check lighthouse score
-npx lighthouse https://[your-domain] --view
+# On the delivery branch (feature/cloudflareMigration or main)
+npm run build:content:cloud    # Fetch from Sheets + export CSV
+git diff content/              # Review changes
+git add content/
+git commit -m "Content sync: $(date +%Y-%m-%d)"
+git push
+# Then trigger deploy-dev.yml via GitHub Actions UI
 ```
 
-### Ongoing Optimization
+### Dependency updates
 
-- Enable image lazy loading (already implemented)
-- Use WebP format for images (future enhancement)
-- Implement code splitting (already done by Next.js)
-- Add service worker for offline support (future enhancement)
+```bash
+npm outdated          # Check outdated packages
+npm update            # Update within semver range
+npx tsc --noEmit      # Verify no type errors
+npm run build:local   # Verify build passes
+```
 
 ---
 
-## Backup & Recovery
+## Troubleshooting
 
-### Automated Backups
+### Custom domain not showing latest content
 
-Content is automatically backed up via Git:
+The CF Pages project's production branch is likely misconfigured. Check:
+- CF Dashboard → Pages → `nsengineering-<env>` → Settings → Builds & deployments → Production branch
+- Must match the `--branch` flag used in the wrangler deploy step (`dev`, `stage`, or `main`)
+- Recent deployments showing `Environment: Preview` instead of `Production` confirm this is the issue
 
-```bash
-# View all historical versions
-git log content/
+### Favicon not loading
 
-# Backup specific date
-git checkout $(git rev-list -n 1 --before="2024-12-01" cloudflare) -- content/
+1. Check `out/favicon.ico` exists in the build artifact
+2. Check `<link rel="icon">` in the HTML for the R2 logo URL — confirm the R2 URL was substituted correctly (should NOT contain `NSENGINEERING_R2_URL` placeholder)
+3. Confirm `logo/ns-logo.jpg` exists in the correct R2 bucket
 
-# Create tagged backup
-git tag -a backup-2024-12-17 -m "Pre-holiday backup"
-git push origin backup-2024-12-17
-```
+### Images not loading
 
-### Manual Backup
+Confirm the R2 URL substitution ran successfully in the inject step. In the GitHub Actions log for the deploy job, the step "Inject `<env>` R2 URL and Turnstile key" should show `✅ <env> environment values injected`. If missing or errored, check that `NEXT_PUBLIC_R2_BASE_URL` is set in the corresponding GitHub environment.
 
-```bash
-# Export all content to archive
-tar -czf content-backup-$(date +%Y%m%d).tar.gz content/
+### Turnstile not working on forms
 
-# Upload to secure location
-# (Google Drive, Dropbox, S3, etc.)
-```
+Confirm `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set in the GitHub environment for that deploy (especially `staging`). The inject step will fail fast with a clear error if the secret is missing.
+
+### Email form submission fails
+
+1. Check `window.location.hostname` at runtime — `emailService.ts` routes based on this
+2. On custom domains: dev/stage/prod each route to their own worker
+3. On `*.pages.dev` preview URLs: falls back to `NEXT_PUBLIC_EMAIL_WORKER_URL` (dev worker)
+4. Test the worker endpoint directly with `curl -X POST ...`
 
 ---
 
 ## Documentation References
 
-- [Project README](./README.md) - Main project documentation
-- [Content Workflow](./docs/guides/content-workflow.md) - Content management guide
-- [Google Sheets Setup](./docs/setup/GOOGLE_SHEETS_SETUP.md) - Initial setup
-- [Build Modes](./docs/technical/BUILD_MODES.md) - Local vs Cloud builds
-
----
-
-## Support Contacts
-
-**Technical Issues:**
-- GitHub Issues: [ns-engineering-website/issues](https://github.com/[username]/ns-engineering-website/issues)
-- Email: development-team@example.com
-
-**Content Issues:**
-- Google Sheet: [NS Engineering Data](https://docs.google.com/spreadsheets/d/1xwrA9RXDq77tCHkeeOGwmjMXYgcT07keR_0qRkBctRI/edit)
-- Email: content-team@example.com
-
----
-
-**Last Updated**: 2024-12-17
-**Version**: 1.0.0
-**Status**: Production Ready 🚀
+- [Audit Report](./docs/DEPLOYMENT_AUDIT_2026-06-03.md) — Full infrastructure audit with all findings
+- [Cloudflare R2 Migration](./docs/technical/CLOUDFLARE_R2_MIGRATION.md) — R2 setup and configuration
+- [rclone Sync](./docs/technical/RCLONE_SYNC.md) — GDrive → R2 sync details
+- [Content Workflow](./docs/guides/content-workflow.md) — Non-technical content editing guide
+- [Project Progress](./PROJECT_PROGRESS.md) — Feature completion status
