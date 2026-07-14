@@ -423,8 +423,21 @@ CORS is a browser security feature, not a bug. The browser enforces the Same-Ori
 
 ### Questions to Answer
 
-1. Why did the browser block this, when the same URL works fine if you `curl` it or paste it directly into the address bar?
-2. What three things make an "origin" — and which one changed?
+### 1. Why did the browser block this, when the same URL works fine if you `curl` it or paste it directly into the address bar?
+=> The browser blocked the request because it was made by JavaScript (fetch()) from a different origin. Browsers follow a security rule called the Same-Origin Policy, which only allows JavaScript to read data from another origin if the server gives permission through CORS headers.
+
+The same URL works with curl because curl is not a web browser and does not enforce the Same-Origin Policy. It also works when pasted into the browser's address bar because that is a normal page navigation, not a JavaScript request from another website. Since CORS only applies to cross-origin requests made by browser JavaScript, those two methods are not blocked.
+
+### 2. What three things make an "origin" — and which one changed?
+=> An origin is made up of three things:
+
+* `Scheme (Protocol)` – for example, http or https
+
+* `Host (Domain/IP Address)` – for example, localhost
+
+* `Port` – for example, 5002 or 5003
+
+ The frontend was running on http://localhost:3000 and the API was accessed at http://localhost:5003. The scheme (http) and host (localhost) stayed the same, but the port changed from 5002 to 5003. Since the port is part of the origin, the browser treated them as different origins and applied the CORS (Same-Origin Policy) security rules.
 
 ---
 
