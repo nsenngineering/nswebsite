@@ -1,0 +1,350 @@
+
+<h2 class="sr-only">NS Engineering eLibrary — Standard Codes category landing page with search and category grid</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+.page{background:var(--color-background-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;}
+.topbar{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:52px;}
+.topbar-logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--color-text-primary);}
+.topbar-logo .logo-box{width:28px;height:28px;background:#534AB7;border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.topbar-nav{display:flex;align-items:center;gap:4px;}
+.nav-item{font-size:13px;color:var(--color-text-secondary);padding:5px 10px;border-radius:var(--border-radius-md);cursor:pointer;border:none;background:transparent;}
+.nav-item:hover{background:var(--color-background-secondary);}
+.nav-item.active{background:#EEEDFE;color:#3C3489;font-weight:500;}
+.hero{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:28px 24px 24px;}
+.hero-title{font-size:20px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;}
+.hero-sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:18px;}
+.search-row{display:flex;align-items:center;gap:10px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0 12px;max-width:480px;}
+.search-row i{font-size:16px;color:var(--color-text-tertiary);}
+.search-row input{border:none;background:transparent;font-size:13.5px;color:var(--color-text-primary);padding:9px 0;outline:none;width:100%;}
+.stats-row{display:flex;gap:20px;margin-top:18px;}
+.stat{text-align:center;}
+.stat-n{font-size:22px;font-weight:500;color:#534AB7;}
+.stat-l{font-size:11px;color:var(--color-text-tertiary);margin-top:1px;}
+.content{padding:20px 24px;}
+.section-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.05em;margin-bottom:12px;}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;}
+.cat-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;cursor:pointer;transition:border-color .15s,background .15s;position:relative;overflow:hidden;}
+.cat-card:hover{border-color:var(--color-border-secondary);background:var(--color-background-secondary);}
+.cat-card:hover .arrow{opacity:1;}
+.icon-wrap{width:38px;height:38px;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+.cat-name{font-size:13.5px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;}
+.cat-count{font-size:12px;color:var(--color-text-tertiary);}
+.arrow{position:absolute;top:12px;right:12px;font-size:14px;color:var(--color-text-tertiary);opacity:0;transition:opacity .15s;}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-tertiary);margin-bottom:16px;}
+.breadcrumb span{color:var(--color-text-primary);}
+.detail-view{display:none;padding:20px 24px;}
+.detail-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.back-btn{background:transparent;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:6px 12px;font-size:13px;color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;gap:6px;}
+.back-btn:hover{background:var(--color-background-secondary);}
+.test-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;}
+.test-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px 14px;}
+.test-id{display:inline-block;font-size:11px;font-weight:500;padding:2px 7px;border-radius:99px;margin-bottom:7px;}
+.test-name{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px;}
+.std-wrap{display:flex;flex-wrap:wrap;gap:3px;}
+.std-tag{font-size:11px;padding:2px 6px;border-radius:4px;background:var(--color-background-secondary);color:var(--color-text-secondary);}
+</style>
+
+<div class="page">
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="logo-box"><i class="ti ti-hammer" style="font-size:15px;color:#fff;" aria-hidden="true"></i></div>
+      NS Engineering
+    </div>
+    <div class="topbar-nav">
+      <button class="nav-item">Home</button>
+      <button class="nav-item">Services</button>
+      <button class="nav-item">Projects</button>
+      <button class="nav-item active">eLibrary</button>
+      <button class="nav-item">FAQ</button>
+    </div>
+    <button style="font-size:12px;padding:6px 14px;border-radius:var(--border-radius-md);background:#534AB7;color:#fff;border:none;cursor:pointer;font-weight:500;">Request quote</button>
+  </div>
+
+  <div class="hero">
+    <p class="hero-title">Standard codes</p>
+    <p class="hero-sub">Industry standards and testing protocols for geotechnical engineering</p>
+    <div class="search-row">
+      <i class="ti ti-search" aria-hidden="true"></i>
+      <input id="hero-search" placeholder="Search by test name, code, or material..." oninput="filterAll(this.value)" />
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-n">12</div><div class="stat-l">Categories</div></div>
+      <div class="stat"><div class="stat-n">150+</div><div class="stat-l">Test protocols</div></div>
+      <div class="stat"><div class="stat-n">3</div><div class="stat-l">Standard bodies</div></div>
+    </div>
+  </div>
+
+  <div class="content" id="cat-view">
+    <p class="section-label">ALL CATEGORIES</p>
+    <div class="cat-grid" id="cat-grid"></div>
+  </div>
+
+  <div class="detail-view" id="detail-view">
+    <div class="breadcrumb">
+      <i class="ti ti-file-text" style="font-size:13px;" aria-hidden="true"></i>
+      Standard codes
+      <i class="ti ti-chevron-right" style="font-size:12px;" aria-hidden="true"></i>
+      <span id="breadcrumb-name"></span>
+    </div>
+    <div class="detail-header">
+      <button class="back-btn" onclick="showCats()">
+        <i class="ti ti-arrow-left" style="font-size:14px;" aria-hidden="true"></i>
+        Back
+      </button>
+      <div id="detail-icon-wrap" class="icon-wrap" style="margin-bottom:0;width:32px;height:32px;"></div>
+      <div>
+        <div id="detail-title" style="font-size:15px;font-weight:500;color:var(--color-text-primary);"></div>
+        <div id="detail-sub" style="font-size:12px;color:var(--color-text-tertiary);"></div>
+      </div>
+    </div>
+    <div class="test-grid" id="test-grid"></div>
+  </div>
+</div>
+
+<script>
+const CATS=[
+  {key:"metal",name:"Metal",icon:"ti-tool",bg:"#FAECE7",ic:"#D85A30",tc:"#993C1D",idbg:"#FAECE7",idc:"#993C1D",
+   items:[
+    {id:"MT-001",test:"Tensile strength / elongation",stds:["IS 1786:2008","ASTM A370","ISO 6892-1"]},
+    {id:"MT-002",test:"Shear test",stds:["IS 1852:1985","ASTM D143","BS EN 789"]},
+    {id:"MT-003",test:"Wood test",stds:["IS 1708:1986","ASTM D143","BS 373"]},
+    {id:"MT-004",test:"Strand / steel rope test",stds:["IS 6003:1983","ASTM A1061","BS 3617"]},
+    {id:"MT-005",test:"Chemical composition (spectrometer)",stds:["IS 228","ASTM E415","ISO 9556"]},
+    {id:"MT-006",test:"Strength",stds:["IS 1786:2008","ASTM A370","ISO 6892-1"]},
+    {id:"MT-007",test:"Adhesion",stds:["IS 1608:2005","ASTM D3359","ISO 2409:2020"]},
+    {id:"MT-008",test:"Zinc coating",stds:["IS 2629:1985","ASTM A123","BS EN ISO 1461"]},
+    {id:"MT-009",test:"Diameter of wire",stds:["IS 280:2005","IS 1786:2008"]},
+    {id:"MT-010",test:"Mass of wire",stds:["IS 1852:1985","IS 1786:2008"]},
+    {id:"MT-011",test:"Hardness / Charpy impact",stds:["IS 1757:1988","ASTM E23","ISO 148-1"]},
+  ]},
+  {key:"rocks",name:"Rocks",icon:"ti-mountain",bg:"#FAEEDA",ic:"#BA7517",tc:"#633806",idbg:"#FAEEDA",idc:"#633806",
+   items:[
+    {id:"RK-001",test:"Triaxial test (C & φ)",stds:["IS 13047:1991","ASTM D7012","ISRM Methods"]},
+    {id:"RK-002",test:"Modulus of elasticity",stds:["IS 10082:1981","ASTM D7012","ISO/TS 17892-5"]},
+    {id:"RK-003",test:"Joint direct shear test",stds:["IS 13047:1991","ASTM D5607","BS EN 14509"]},
+    {id:"RK-004",test:"Poisson's ratio",stds:["IS 10082:1981","ASTM D7012"]},
+    {id:"RK-005",test:"Unconfined compressive strength",stds:["IS 9143:1979","ASTM D7012","ASTM D2938"]},
+    {id:"RK-006",test:"Slake durability",stds:["IS 12583:1988","ASTM D4644","ISRM Methods"]},
+    {id:"RK-007",test:"Tensile (Brazilian) test",stds:["IS 10082:1981","ASTM D3967","ISRM Methods"]},
+    {id:"RK-008",test:"Point load test",stds:["IS 8764:1978","ASTM D5731","ISRM Methods"]},
+    {id:"RK-009",test:"Porosity",stds:["IS 1124:1974","ASTM C97","BS 1924-2"]},
+    {id:"RK-010",test:"Density",stds:["IS 1124:1974","ASTM C97","BS 1924-2"]},
+    {id:"RK-011",test:"Water absorption",stds:["IS 1124:1974","ASTM C97","BS EN 13755"]},
+    {id:"RK-012",test:"Specific gravity",stds:["IS 1124:1974","ASTM C127","ASTM C97"]},
+    {id:"RK-013",test:"Natural moisture content",stds:["IS 2720-2:1973","ASTM D2216","BS 1377-2"]},
+    {id:"RK-014",test:"Block coring",stds:["IS 8764:1978","ASTM D4543"]},
+  ]},
+  {key:"water",name:"Water",icon:"ti-droplet",bg:"#E6F1FB",ic:"#378ADD",tc:"#0C447C",idbg:"#E6F1FB",idc:"#0C447C",
+   items:[
+    {id:"WT-001",test:"pH value",stds:["IS 3025-11","ASTM D1293","ISO 10523"]},
+    {id:"WT-002",test:"Chloride content (ppm)",stds:["IS 3025-32","ASTM D512","ISO 9297"]},
+    {id:"WT-003",test:"Sulphate content (ppm)",stds:["IS 3025-24","ASTM D516","ISO 9280"]},
+    {id:"WT-004",test:"TSP (ppm)",stds:["IS 3025-16","ASTM D5907"]},
+    {id:"WT-005",test:"Turbidity",stds:["IS 3025-10","ASTM D1889","ISO 7027"]},
+    {id:"WT-006",test:"Total hardness",stds:["IS 3025-21","ASTM D1126","ISO 6059"]},
+    {id:"WT-007",test:"Chloride",stds:["IS 3025-32","ASTM D512"]},
+    {id:"WT-008",test:"Total alkalinity",stds:["IS 3025-23","ASTM D1067","ISO 9963-1"]},
+    {id:"WT-009",test:"Iron",stds:["IS 3025-53","ASTM D1068","ISO 6332"]},
+    {id:"WT-010",test:"Manganese",stds:["IS 3025-54","ASTM D858","ISO 6333"]},
+    {id:"WT-011",test:"Ammonia",stds:["IS 3025-35","ASTM D1426"]},
+    {id:"WT-012",test:"Nitrate (NO3)",stds:["IS 3025-34","ASTM D3867","ISO 7890-3"]},
+    {id:"WT-013",test:"Fluoride",stds:["IS 3025-61","ASTM D1179","ISO 10304-1"]},
+    {id:"WT-014",test:"Coliform",stds:["IS 1622:1981","ASTM D3370","ISO 9308-1"]},
+    {id:"WT-015",test:"Total dissolved solid",stds:["IS 3025-16","ASTM D1888"]},
+    {id:"WT-016",test:"BOD",stds:["IS 3025-44","ASTM D888","ISO 5815-1"]},
+    {id:"WT-017",test:"Copper",stds:["IS 3025-36","ASTM D1688","ISO 8288"]},
+    {id:"WT-018",test:"Sodium",stds:["IS 3025-46","ASTM D1428"]},
+    {id:"WT-019",test:"Potassium",stds:["IS 3025-57","ASTM D6919","ISO 9964-2"]},
+    {id:"WT-020",test:"Calcium",stds:["IS 3025-40","ASTM D511"]},
+    {id:"WT-021",test:"Lithium",stds:["IS 3025-58","ASTM D3650","ISO 9964-3"]},
+    {id:"WT-022",test:"Lead",stds:["IS 3025-49","ASTM D3559","ISO 8288"]},
+    {id:"WT-023",test:"Nitrate",stds:["IS 3025-34","ASTM D3867","ISO 7890-3"]},
+    {id:"WT-024",test:"Phosphate",stds:["IS 3025-31","ASTM D515","ISO 6878"]},
+    {id:"WT-025",test:"Chromium",stds:["IS 3025-48","ASTM D1687","ISO 11083"]},
+  ]},
+  {key:"concrete",name:"Concrete & Brick",icon:"ti-building",bg:"#F1EFE8",ic:"#888780",tc:"#444441",idbg:"#F1EFE8",idc:"#444441",
+   items:[
+    {id:"CAB-001",test:"Grain size analysis",stds:["IS 2386-1:1963","ASTM C136","BS 812-103.1"]},
+    {id:"CAB-002",test:"Organic impurities",stds:["IS 2386-2","ASTM C40","BS 812-117"]},
+    {id:"CAB-003",test:"Chloride content",stds:["IS 2386-5","ASTM C1152","BS 1881-124"]},
+    {id:"CAB-004",test:"Sulphate soundness",stds:["IS 2386-5","ASTM C88","BS 812-121"]},
+    {id:"CAB-005",test:"Alkali reactivity",stds:["IS 2386-7","ASTM C1260","BS 812-123"]},
+    {id:"CAB-006",test:"Aggregate crushing value (ACV)",stds:["IS 2386-4","ASTM C535","BS 812-110"]},
+    {id:"CAB-007",test:"Aggregate impact value (AIV)",stds:["IS 2386-4","ASTM C131","BS 812-112"]},
+    {id:"CAB-008",test:"Flakiness index (FI)",stds:["IS 2386-1","ASTM D4791","BS 812-105.1"]},
+    {id:"CAB-009",test:"Los Angeles abrasion (LAA)",stds:["IS 2386-4","ASTM C131","AASHTO T96"]},
+    {id:"CAB-010",test:"Concrete mix design",stds:["IS 10262:2019","ACI 211.1","BS 5328-1"]},
+    {id:"CAB-011",test:"Compressive strength of cube",stds:["IS 516:1959","ASTM C39","BS EN 12390-3"]},
+    {id:"CAB-012",test:"Compressive strength of brick",stds:["IS 3495-1","ASTM C67","BS EN 772-1"]},
+    {id:"CAB-013",test:"Water absorption of brick",stds:["IS 3495-2","ASTM C67","BS EN 772-21"]},
+  ]},
+  {key:"agg",name:"Aggregate",icon:"ti-grain",bg:"#EAF3DE",ic:"#639922",tc:"#27500A",idbg:"#EAF3DE",idc:"#27500A",
+   items:[
+    {id:"AGG-001",test:"Proctor compaction (OMC/MDD)",stds:["IS 2720-7","ASTM D698","AASHTO T99"]},
+    {id:"AGG-002",test:"CBR test",stds:["IS 2720-16","ASTM D1883","BS 1377-4"]},
+    {id:"AGG-003",test:"Organic content",stds:["IS 2720-22","ASTM D2974","BS 1377-3"]},
+    {id:"AGG-004",test:"Grain size analysis",stds:["IS 2720-4","ASTM D422","AASHTO T88"]},
+    {id:"AGG-005",test:"Mica/clay content",stds:["IS 2386-2","ASTM C117","BS 812-117"]},
+  ]},
+  {key:"cement",name:"Cement / Lime",icon:"ti-package",bg:"#E1F5EE",ic:"#1D9E75",tc:"#085041",idbg:"#E1F5EE",idc:"#085041",
+   items:[
+    {id:"CL-001",test:"Initial setting",stds:["IS 4031-5","ASTM C191","BS EN 196-3"]},
+    {id:"CL-002",test:"Final setting",stds:["IS 4031-5","ASTM C191","BS EN 196-3"]},
+    {id:"CL-003",test:"Normal consistency",stds:["IS 4031-4","ASTM C187","BS EN 196-3"]},
+    {id:"CL-004",test:"Soundness",stds:["IS 4031-3","ASTM C151","BS EN 196-3"]},
+    {id:"CL-005",test:"Compressive strength",stds:["IS 4031-6","ASTM C109","BS EN 196-1"]},
+  ]},
+  {key:"soil",name:"Soil",icon:"ti-layers-subtract",bg:"#FAEEDA",ic:"#BA7517",tc:"#633806",idbg:"#FAEEDA",idc:"#633806",
+   items:[
+    {id:"SL-001",test:"Natural moisture content",stds:["IS 2720-2","ASTM D2216","BS 1377-2"]},
+    {id:"SL-002",test:"Liquid limit",stds:["IS 2720-5","ASTM D4318","BS 1377-2"]},
+    {id:"SL-003",test:"Shrinkage limit",stds:["IS 2720-6","ASTM D4943","BS 1377-2"]},
+    {id:"SL-004",test:"Grain size analysis",stds:["IS 2720-4","ASTM D422","AASHTO T88"]},
+    {id:"SL-005",test:"Hydrometer analysis",stds:["IS 2720-4","ASTM D7928","BS 1377-2"]},
+    {id:"SL-006",test:"Bulk density",stds:["IS 2720-29","ASTM D2937","BS 1377-4"]},
+    {id:"SL-007",test:"Specific gravity",stds:["IS 2720-3","ASTM D854","AASHTO T100"]},
+    {id:"SL-008",test:"In situ density",stds:["IS 2720-28","ASTM D1556","ASTM D2922"]},
+    {id:"SL-009",test:"Direct shear test",stds:["IS 2720-13","ASTM D3080","BS 1377-7"]},
+    {id:"SL-010",test:"Triaxial test UU/CU",stds:["IS 2720-11","ASTM D2850","ASTM D4767"]},
+    {id:"SL-011",test:"Unconfined compression",stds:["IS 2720-10","ASTM D2166","BS 1377-7"]},
+    {id:"SL-012",test:"Permeability test",stds:["IS 2720-17","ASTM D2434","BS 1377-5"]},
+    {id:"SL-013",test:"Standard Proctor / swell test",stds:["IS 2720-7","ASTM D698","ASTM D4546"]},
+    {id:"SL-014",test:"Organic content",stds:["IS 2720-22","ASTM D2974","BS 1377-3"]},
+    {id:"SL-015",test:"Aluminium oxide (Al₂O₃)",stds:["IS 4032:1985","ASTM C311","ISO 29581-2"]},
+    {id:"SL-016",test:"Silicon dioxide (SiO₂)",stds:["IS 4032:1985","ASTM C114","ISO 29581-2"]},
+    {id:"SL-017",test:"Ferric oxide (Fe₂O₃)",stds:["IS 4032:1985","ASTM C311","ISO 29581-2"]},
+  ]},
+  {key:"flyash",name:"Fly Ash",icon:"ti-wind",bg:"#EEEDFE",ic:"#7F77DD",tc:"#3C3489",idbg:"#EEEDFE",idc:"#3C3489",
+   items:[
+    {id:"FA-001",test:"Fineness (Blaine)",stds:["IS 1727:1967","ASTM C204","BS EN 451-2"]},
+    {id:"FA-002",test:"Retained on 45μm sieve",stds:["IS 1727:1967","ASTM C430","BS EN 451-2"]},
+    {id:"FA-003",test:"Specific gravity",stds:["IS 1727:1967","ASTM C188","BS EN 196-6"]},
+    {id:"FA-004",test:"Soundness by autoclave",stds:["IS 4031-3","ASTM C151"]},
+    {id:"FA-005",test:"Average reactivity compressive strength",stds:["IS 3812-1:2013","ASTM C618"]},
+    {id:"FA-006",test:"Compressive strength 28 days",stds:["IS 3812-1:2013","ASTM C618"]},
+  ]},
+  {key:"steel",name:"Steel pipe / plate",icon:"ti-circle-dashed",bg:"#FAECE7",ic:"#D85A30",tc:"#712B13",idbg:"#FAECE7",idc:"#712B13",
+   items:[
+    {id:"WSP-001",test:"Tensile strength",stds:["IS 1239:2004","ASTM A53","BS EN 10255"]},
+    {id:"WSP-002",test:"Yield strength",stds:["IS 1239:2004","ASTM A53","BS EN 10255"]},
+    {id:"WSP-003",test:"Elongation after breaking",stds:["IS 1239:2004","ASTM A53","BS EN 10255"]},
+    {id:"WSP-004",test:"Chemical composition",stds:["IS 228","ASTM A751","BS EN 10025"]},
+    {id:"WSP-005",test:"Hydro-test",stds:["IS 1239:2004","ASTM A53","API 5L"]},
+    {id:"WSP-006",test:"Weight of galvanizing layer",stds:["IS 2629:1985","ASTM A90","BS EN ISO 1461"]},
+    {id:"WSP-007",test:"Uniformity of galvanizing",stds:["IS 2629:1985","ASTM A123","BS EN ISO 1461"]},
+    {id:"WSP-008",test:"Squishing test",stds:["IS 1239:2004","ASTM A53"]},
+    {id:"SP-001",test:"Steel plate dimension",stds:["IS 2062:2011","ASTM A36","BS EN 10025-2"]},
+    {id:"SP-002",test:"Tensile / yield stress",stds:["IS 2062:2011","ASTM A36","ISO 6892-1"]},
+    {id:"SP-003",test:"Elongation at break",stds:["IS 2062:2011","ASTM A36","ISO 6892-1"]},
+  ]},
+  {key:"pipes",name:"Pipes & conduits",icon:"ti-line-dashed",bg:"#E1F5EE",ic:"#1D9E75",tc:"#085041",idbg:"#E1F5EE",idc:"#085041",
+   items:[
+    {id:"HPP-001",test:"HDPE outer diameter",stds:["IS 4984:2016","ASTM D3350","ISO 4427-2"]},
+    {id:"HPP-002",test:"HDPE wall thickness",stds:["IS 4984:2016","ASTM D3350","ISO 4427-2"]},
+    {id:"HPP-003",test:"HDPE weight per meter",stds:["IS 4984:2016","ASTM D2122","ISO 4427-2"]},
+    {id:"HPP-004",test:"HDPE hydrostatic test 20°C",stds:["IS 4984:2016","ASTM D1598","ISO 1167-1"]},
+    {id:"HPP-005",test:"Carbon black content",stds:["IS 4984:2016","ASTM D1603","ISO 6964"]},
+    {id:"HPP-010",test:"Melt flow rate",stds:["IS 4984:2016","ASTM D1238","ISO 1133-1"]},
+    {id:"HPP-015",test:"Tensile / yield strength",stds:["IS 4984:2016","ASTM D638","ISO 527-2"]},
+    {id:"CVP-001",test:"CPVC outer diameter",stds:["IS 14735:1999","ASTM F1483","BS EN 1401-1"]},
+    {id:"CVP-002",test:"CPVC wall thickness",stds:["IS 14735:1999","ASTM F1483","BS EN 1401-1"]},
+    {id:"CVP-005",test:"CPVC hydrostatic pressure",stds:["IS 14735:1999","ASTM D1599","BS EN 1401-1"]},
+    {id:"FC-001",test:"Flexible conduit dimension",stds:["IS 9537-2","BS EN 61386-1"]},
+    {id:"FC-006",test:"Flame retardant properties",stds:["IS 9537-2","IEC 60332-1-2","UL 1581"]},
+  ]},
+  {key:"electrical",name:"Electrical",icon:"ti-bolt",bg:"#FAEEDA",ic:"#BA7517",tc:"#633806",idbg:"#FAEEDA",idc:"#633806",
+   items:[
+    {id:"EW-001",test:"Wire outer diameter",stds:["IS 694:2010","IEC 60228","BS 6360"]},
+    {id:"EW-002",test:"Core thread diameter",stds:["IS 694:2010","IEC 60228"]},
+    {id:"EW-003",test:"Insulation thickness",stds:["IS 694:2010","IEC 60502-1","BS 6346"]},
+    {id:"EW-004",test:"Single thread thickness",stds:["IS 694:2010","IEC 60228"]},
+    {id:"EW-005",test:"Flammability test",stds:["IS 694:2010","IEC 60332-1-2","BS EN 60332"]},
+  ]},
+  {key:"misc",name:"Misc materials",icon:"ti-box",bg:"#F1EFE8",ic:"#888780",tc:"#444441",idbg:"#F1EFE8",idc:"#444441",
+   items:[
+    {id:"TL-001",test:"Tiles — dimensional stability",stds:["IS 15622:2017","ASTM C499","ISO 10545-2"]},
+    {id:"TL-002",test:"Tiles — water absorption",stds:["IS 15622:2017","ASTM C373","ISO 10545-3"]},
+    {id:"TL-004",test:"Tiles — modulus of rupture",stds:["IS 15622:2017","ASTM C648","ISO 10545-4"]},
+    {id:"TL-008",test:"Tiles — skid resistance",stds:["IS 15622:2017","ASTM C1028","ISO 10545-17"]},
+    {id:"TPP-001",test:"Thermoplastic paint constituents",stds:["IS 9417:2017","ASTM D2621","BS EN 1871"]},
+    {id:"TPP-006",test:"Dropping point",stds:["IS 9417:2017","ASTM D36","AASHTO T53"]},
+    {id:"CFG-001",test:"Carbon/glass fiber area weight",stds:["IS 1964:1970","ASTM D3776","ISO 3374"]},
+    {id:"CFG-004",test:"Fiber tensile strength",stds:["IS 1964:1970","ASTM D3039","ISO 527-4"]},
+    {id:"PCB-006",test:"Plastic composite — modulus of rupture",stds:["IS 1734:2016","ASTM D1037","BS EN 310"]},
+    {id:"PCB-012",test:"Plastic composite — fire resistance",stds:["IS 1734:2016","ASTM E84","BS 476-6"]},
+    {id:"SW-001",test:"Strand wire diameter",stds:["IS 6003:1983","ASTM A416","BS EN 10138-3"]},
+    {id:"SW-003",test:"Strand min breaking load",stds:["IS 6003:1983","ASTM A416","BS EN 10138-3"]},
+    {id:"SD-001",test:"Sheathing duct internal diameter",stds:["IS 14233:1995","ASTM D2122","BS EN ISO 1452-2"]},
+    {id:"CH-001",test:"Chemical SiO₂+Al₂O₃+Fe₂O₃",stds:["IS 3812-1","ASTM C618","BS EN 450-1"]},
+    {id:"EVA-001",test:"EVA thickness",stds:["IS 14268:1995","ASTM D5199","GB/T 6672"]},
+    {id:"EVA-002",test:"EVA tensile strength",stds:["IS 14268:1995","ASTM D412","GB/T 328.9"]},
+    {id:"NWG-001",test:"Geotextile mass per unit area",stds:["IS 13162:1991","ASTM D3776","ISO 9864"]},
+    {id:"NWG-004",test:"CBR bursting strength",stds:["IS 13162:1991","ASTM D6241","ISO 12236"]},
+    {id:"RWS-001",test:"Rubber water stopper — hardness",stds:["IS 3400-4","ASTM D2240","ISO 48-4"]},
+    {id:"RWS-002",test:"Rubber tensile strength",stds:["IS 3400-1","ASTM D412","ISO 37"]},
+  ]},
+];
+
+function buildCats(filter){
+  const grid=document.getElementById('cat-grid');
+  grid.innerHTML='';
+  CATS.forEach(c=>{
+    if(filter){
+      const q=filter.toLowerCase();
+      const match=c.name.toLowerCase().includes(q)||c.items.some(i=>i.test.toLowerCase().includes(q)||i.id.toLowerCase().includes(q)||i.stds.some(s=>s.toLowerCase().includes(q)));
+      if(!match)return;
+    }
+    const card=document.createElement('div');
+    card.className='cat-card';
+    card.innerHTML=`
+      <div class="icon-wrap" style="background:${c.bg};">
+        <i class="ti ${c.icon}" style="font-size:18px;color:${c.ic};" aria-hidden="true"></i>
+      </div>
+      <div class="cat-name">${c.name}</div>
+      <div class="cat-count">${c.items.length} test${c.items.length!==1?'s':''}</div>
+      <i class="ti ti-arrow-right arrow" aria-hidden="true"></i>`;
+    card.addEventListener('click',()=>showDetail(c.key));
+    grid.appendChild(card);
+  });
+  if(!grid.children.length){
+    grid.innerHTML='<div style="grid-column:1/-1;padding:2rem;text-align:center;color:var(--color-text-tertiary);font-size:13px;"><i class="ti ti-file-off" style="font-size:28px;display:block;margin-bottom:8px;" aria-hidden="true"></i>No categories match your search</div>';
+  }
+}
+
+function showDetail(key){
+  const c=CATS.find(x=>x.key===key);
+  if(!c)return;
+  document.getElementById('cat-view').style.display='none';
+  const dv=document.getElementById('detail-view');
+  dv.style.display='block';
+  document.getElementById('breadcrumb-name').textContent=c.name;
+  document.getElementById('detail-title').textContent=c.name;
+  document.getElementById('detail-sub').textContent=c.items.length+' test protocols';
+  const iw=document.getElementById('detail-icon-wrap');
+  iw.style.background=c.bg;
+  iw.innerHTML=`<i class="ti ${c.icon}" style="font-size:16px;color:${c.ic};" aria-hidden="true"></i>`;
+  const tg=document.getElementById('test-grid');
+  tg.innerHTML=c.items.map(i=>`
+    <div class="test-card">
+      <span class="test-id" style="background:${c.idbg};color:${c.idc};">${i.id}</span>
+      <div class="test-name">${i.test}</div>
+      <div class="std-wrap">${i.stds.map(s=>`<span class="std-tag">${s}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+function showCats(){
+  document.getElementById('detail-view').style.display='none';
+  document.getElementById('cat-view').style.display='block';
+  document.getElementById('hero-search').value='';
+  buildCats('');
+}
+
+function filterAll(q){
+  if(document.getElementById('detail-view').style.display==='block'){
+    showCats();
+  }
+  buildCats(q);
+}
+
+buildCats('');
+</script>

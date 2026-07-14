@@ -1,8 +1,35 @@
-name,role,education,experience,order,featured,linkedinUrl,specializations
-Arun Kumar Pandit,Managing Director,MSc. Geotechnical Engineering,19 Years,1,TRUE,,Pile Testing; Foundation Design; Project Management; Geotechnical Investigation
-Dhurba Raj Tirpathi,Director,Bachelor in Civil Engineering,28 Years,2,TRUE,,Geotechnical Investigation; Site Supervision; Quality Control; Construction Management
-Shrawan Kumar Thapa,Director,MSc. Transportation Engineering,30 Years,3,TRUE,,Transportation Engineering; Road Design; Infrastructure Planning; Highway Engineering
-Madhav Pokhrel,Director,MSc. Disaster Risk Engineering,15 Years,4,TRUE,,Disaster Risk Management; Structural Assessment; Risk Analysis; Emergency Planning
-Arjun Adhikari,Director,MSc. Geotechnical Engineering,20 Years,5,TRUE,,Geotechnical Engineering; Soil Mechanics; Laboratory Testing; Site Investigation
-Namrata Shrestha,Asst. Geologist,Bachelor in Geology,2 Years,6,FALSE,www.linkedin.com/chance304,Geology;Site-Geology
-Bipana Kumari Devi Thapa,Geologist,Masters in Hydrogeology,2 Years,7,FALSE,,Geology;Hydrogeology
+"name","role","education","experience","order","featured","linkedinUrl","specializations"
+"Arun Kumar Pandit","Managing Director","MSc. in Geotechnical Engineering","18 years","2","TRUE","https://www.linkedin.com/in/arun-pandit-5bba9a1b","Geotechnical Investigation; Site Supervision; Quality Control; Construction Management"
+"Madhav Pokhrel","Material Testing Director","Bachelors in Civil Engineering","14 years","3","TRUE","https://www.linkedin.com/in/madhav-pokhrel-b0b368264","Disaster Risk Management; Structural Assessment; Risk Analysis; Emergency Planning"
+"Shrawan Kumar Thapa","Director","Masters in Transportation Engineering","25 years","4","TRUE","","Transportation Engineering; Road Design; Infrastructure Planning; Highway Engineering"
+"Arjun Adhikari","Er. Geo-Tech","MSc. in Geotechnical Engineering","19 years","5","TRUE","","Slope & Landslide Expert, Road & Highway Design; Geotechnical Investigation; Quality Control; Construction Management"
+"Rajan Psd. Humagain","Accountant","Bachelors in Commerce","13 years","6","FALSE","","Accounts Manager"
+"Sanjaya Dutta Chaudhary","Er. Civil","Bachelors in Civil Engineering","5 years","7","FALSE","","Soil Mechanics; Pile Testing; Geotechnical Investigation"
+"Vijay Pandit","Lab Technician","Diploma in Civil Engineering","5 years","8","FALSE","","Field Supervision"
+"Bishnu Chaudhary","Lab Technician","SLC","10 years","9","FALSE","","Material testing; Lab testing"
+"Arun Lekhi","Re-bar Section Incharge","Not Available","4 years","10","FALSE","","Material testing; Lab testing"
+"Apekshya Lamichhane","Accountant","Bachelor in Business Management","4 years","11","FALSE","https://www.linkedin.com/in/apekshya-lamichhane-813831261","Accounts Management; Social Media Manager; HR Manager; "
+"Usha Chaudhary","Receptionist","10+2(Bachelor in Business studies Running)","3 years","12","FALSE","","Customer Service Representative"
+"Gangadhar Shrestha","Asst Lab Technician","Not Available","6 years","13","FALSE","","Material testing; Lab testing"
+"Sharmila Karki Shrestha","Office Assistant","Not Available","3 years","14","FALSE","","Overall Office Assistance"
+"Samjhana Tharu","Asst Lab Technician","SLC","2 years","15","FALSE","","Material testing; Lab testing"
+"Shiva Damai","Guard","Not Available","5 years","16","FALSE","","Security Specialist"
+"Suresh Samari","Driver","Not Available","5 years","17","FALSE","","Precesion Driving; Vehicle maintenance expert"
+"Kiran Adhikari","Lab Technician","Not Available","1 year","18","FALSE","","Chemical testing; Material testing; Lab testing"
+"Mohan Shrestha","Er. Geologist","Masters Degree in Geology","2 years","19","FALSE","https://www.linkedin.com/in/mohan-raj-shrestha-345b15169","Rock mechanics; Geotechnical Site-Investigation; Tunneling; GIS"
+"Bipana Thapa","Geologist","Masters in Geology","2 years","20","FALSE","https://www.linkedin.com/in/bipana-thapa-b30318311","Geology;Hydrogeology"
+"Bigyan Thapa","Er. Civil","Bachelors in Civil Engineering","1 year","21","FALSE","https://www.linkedin.com/in/bigyan-thapa-s-m-asce-2043661bb","Field Supervision; Material Testing; Lab Testing"
+"Namrata Shrestha","Geologist","Bachelors in Geology","1year","22","FALSE","https://www.linkedin.com/in/namrata-shrestha-235148374","Geology;Site-Geology;Labratory testing"
+"Pushpa Deshar","Lab Technician","Bachelor in Civil Engineering","1 year","23","FALSE","","Material testing; Lab testing;Field Supervision"
+"Vibek Mijar","Lab Technician","Not Available","2 years","24","FALSE","","Field Supervision"
+"Rupesh Kumar Pandit","Lab Technician","Not Available","1 year","25","FALSE","","Material testing; Lab testing;Field Supervision"
+"Siwani Rauniyar","Er. Civil","Bachelor in Civil Engineering","1 year","26","FALSE","https://www.linkedin.com/in/siwani-rauniyar-5341222b4","Material testing; Lab testing"
+"Anuj Kunwar","Er. Civil","Bachelor in Civil Engineering","0.5 year","27","FALSE","https://www.linkedin.com/in/anuj-kunwar-4943252a7","Material testing; Lab testing"
+"Basanti Sapkota","Er. Civil","Diploma in Civil Engineering","0.5 year","28","FALSE","","Material testing; Lab testing"
+"Janak Raj Bhatta","Geotechnical Engineer","Not Available","0.5 year","29","FALSE","https://www.linkedin.com/in/janak-raj-bhatt-70770b260","Material testing; Lab testing"
+"Nirjala Chaudhary","Lab Technician","Not Available","0.5 year","30","FALSE","","Material testing; Lab testing"
+"Sawan Pandit","Civil Engineer","Not Available","0.5 year","31","FALSE","","Field Supervision"
+"Abjit Kumar Pandit","Lab Technician","Not Available","0.5 year","32","FALSE","","Field Supervision"
+"Rahul Chauhan","Lab Technician","Not Available","0.5 year","33","FALSE","","Material testing; Lab testing"
+"Rakesh Barhi","PDA Technician","SLC","6 years","34","FALSE","","Field Supervision"
+"Alisha Shrestha","          Sanitary Engineer","Masters in Sanitation Engineering","7 years","35","FALSE","","Soil Mechanics; Geotechnical Investigation"
