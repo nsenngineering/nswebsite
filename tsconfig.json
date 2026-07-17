@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "src/components/elibrary/DocumentGridtsx", "src/components/elibrary/DocumentGridtsx"  ],
   "exclude": ["node_modules"]
 }
