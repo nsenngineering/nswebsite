@@ -4,14 +4,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import ELibraryClient from '@/app/elibrary/ELibraryClient';
 import * as elibraryApi from '@/lib/api/elibrary';
+import type { Publication } from '@/types/elibrary';
 
 // Mock the entire service module. ELibraryClient (and therefore
 // DocumentGrid, which it renders) will never see a real fetch call —
 // every section getter resolves with whatever we hand it below.
 vi.mock('@/lib/api/elibrary');
 
-const fakePublication = {
+const fakePublication: Publication = {
   id: 'pub-fake-1',
+  section: 'publications',
   title: 'Totally Fake Soil Testing Whitepaper',
   tags: ['geotechnical', 'testing'],
   description: 'A fake publication used only in this test.',
@@ -23,7 +25,7 @@ const fakePublication = {
 
 describe('DocumentGrid (via ELibraryClient + mocked service layer)', () => {
   beforeEach(() => {
-    vi.mocked(elibraryApi.getPublications).mockResolvedValue([fakePublication as any]);
+    vi.mocked(elibraryApi.getPublications).mockResolvedValue([fakePublication]);
     // Other sections aren't visited in this test, but we stub them too so
     // no unmocked call can slip through and hit the real module.
     vi.mocked(elibraryApi.getStandardCodes).mockResolvedValue([]);
@@ -34,7 +36,7 @@ describe('DocumentGrid (via ELibraryClient + mocked service layer)', () => {
 
   it('renders the fake publication returned by the mocked service, with no real network call', async () => {
     // Sanity check per Vitest's own docs: fetch must never actually run.
-    // const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
 
     render(<ELibraryClient />);
 
@@ -46,13 +48,13 @@ describe('DocumentGrid (via ELibraryClient + mocked service layer)', () => {
     // (mocked, instant) service call resolves.
     await waitFor(() => {
       expect(screen.getByText('Totally Fake Soil Testing Whitepaper')).toBeInTheDocument();
-  
     });
-    // And the author / category metadata DocumentGrid derives from the item:
-        expect(screen.getByText('Ada Lovelace')).toBeInTheDocument();
-        expect(screen.getByText('Testing')).toBeInTheDocument();
-    
-    // expect(elibraryApi.getPublications).toHaveBeenCalledTimes(1);
-    // expect(fetchSpy).not.toHaveBeenCalled();
+
+    expect(screen.getByText('Ada Lovelace')).toBeInTheDocument();
+    expect(screen.getByText('Testing')).toBeInTheDocument();
+    expect(screen.getByText('A fake publication used only in this test.')).toBeInTheDocument();
+
+    expect(elibraryApi.getPublications).toHaveBeenCalledTimes(1);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });
