@@ -181,7 +181,8 @@ async function buildContent() {
     const standardCodesRecords = await fetchDataWithFallback(
       STANDARD_CODES_CSV_PATH,
       'StandardCodes',
-      'GOOGLE_SHEET_TAB_STANDARD_CODES'
+      'GOOGLE_SHEET_TAB_STANDARD_CODES',
+      'standard-codes'
     );
     const publicationsRecords = await fetchDataWithFallback(
       PUBLICATIONS_CSV_PATH,
