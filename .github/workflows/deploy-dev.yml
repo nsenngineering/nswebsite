@@ -219,7 +219,7 @@ jobs:
           R2_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
           TURNSTILE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
           EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
-          JSON_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          JSON_API_URL: ${{ secrets.JSON_SERVER_URL }}
         run: |
           set -euo pipefail
           : "${R2_URL:?NEXT_PUBLIC_R2_BASE_URL is not set in the dev GitHub environment}"
@@ -234,7 +234,7 @@ jobs:
           find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \;
           find ./out -type f \( -name "*.html" -o -name "*.js" \) \
-            -exec sed -i "s|NSENGINEERING_API_URL|${NEXT_PUBLIC_API_URL}|g" {} \;
+            -exec sed -i "s|nothing|${JSON_API_URL}|g" {} \;
           echo "✅ Dev environment values injected"
 
       - name: Setup Node.js
