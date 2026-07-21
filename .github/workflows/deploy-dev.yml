@@ -31,7 +31,7 @@ env:
 
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: "NSENGINEERING_TURNSTILE_KEY"
   NEXT_PUBLIC_EMAIL_WORKER_URL: "NSENGINEERING_EMAIL_WORKER_URL"
-  NEXT_PUBLIC_API_URL: "NSENGINEERING_API_URL"
+  JSON_SERVER_URL: "NSENGINEERING_API_URL"
 
 jobs:
   sync-assets:
@@ -129,8 +129,8 @@ jobs:
       # Placeholder — substituted with the correct per-env key at deploy time
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: "NSENGINEERING_TURNSTILE_KEY"
       NEXT_PUBLIC_EMAIL_WORKER_URL: "NSENGINEERING_EMAIL_WORKER_URL"
-      NEXT_PUBLIC_API_URL: "NSENGINEERING_API_URL"
-      
+      JSON_SERVER_URL: "NSENGINEERING_API_URL"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -219,13 +219,13 @@ jobs:
           R2_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
           TURNSTILE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
           EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          JSON_API_URL: ${{ secrets.JSON_SERVER_URL }}
         run: |
           set -euo pipefail
           : "${R2_URL:?NEXT_PUBLIC_R2_BASE_URL is not set in the dev GitHub environment}"
           : "${TURNSTILE_KEY:?NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set in the dev GitHub environment}"
           : "${EMAIL_WORKER_URL:?NEXT_PUBLIC_EMAIL_WORKER_URL is not set in the dev GitHub environment}"
-          : "${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is not set in the dev GitHub environment}"
+          : "${JSON_API_URL:?JSON_SERVER_URL is not set in the dev GitHub environment}"
           echo "Substituting R2 URL, Turnstile key, Email Worker URL and API URL for dev environment..."
           find ./out -type f \( -name "*.html" -o -name "*.js" -o -name "_redirects" \) \
             -exec sed -i "s|https://NSENGINEERING_R2_URL|${R2_URL}|g" {} \;
