@@ -212,25 +212,29 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: site-build
-          path: ./site-build
+          path: ./out
 
-      - name: Inject dev R2 URL, Turnstile key and Email Worker URL
+      - name: Inject dev R2 URL, Turnstile key, Email Worker URL and API URL
         env:
           R2_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
           TURNSTILE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
           EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
+          JSON_API_URL: ${{ secrets.JSON_SERVER_URL }}
         run: |
           set -euo pipefail
           : "${R2_URL:?NEXT_PUBLIC_R2_BASE_URL is not set in the dev GitHub environment}"
           : "${TURNSTILE_KEY:?NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set in the dev GitHub environment}"
           : "${EMAIL_WORKER_URL:?NEXT_PUBLIC_EMAIL_WORKER_URL is not set in the dev GitHub environment}"
-          echo "Substituting R2 URL, Turnstile key and Email Worker URL for dev environment..."
-          find ./site-build -type f \( -name "*.html" -o -name "*.js" -o -name "_redirects" \) \
+          : "${JSON_API_URL:?JSON_SERVER_URL is not set in the dev GitHub environment}"
+          echo "Substituting R2 URL, Turnstile key, Email Worker URL and API URL for dev environment..."
+          find ./out -type f \( -name "*.html" -o -name "*.js" -o -name "_redirects" \) \
             -exec sed -i "s|https://NSENGINEERING_R2_URL|${R2_URL}|g" {} \;
-          find ./site-build -type f \( -name "*.html" -o -name "*.js" \) \
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_TURNSTILE_KEY|${TURNSTILE_KEY}|g" {} \;
-          find ./site-build -type f \( -name "*.html" -o -name "*.js" \) \
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \;
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
+            -exec sed -i "s|nothing|${JSON_API_URL}|g" {} \;
           echo "✅ Dev environment values injected"
 
       - name: Setup Node.js
@@ -238,27 +242,14 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Set JSON_SERVER_URL secret for this Pages project (dev)
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          JSON_SERVER_URL: ${{ secrets.JSON_SERVER_URL }}
-        run: |
-          set -euo pipefail
-          : "${JSON_SERVER_URL:?JSON_SERVER_URL is not set in the dev GitHub environment — set it to your Render URL, e.g. https://ns-elibrary-json-server.onrender.com}"
-          echo "$JSON_SERVER_URL" | npx --yes wrangler@4 pages secret put JSON_SERVER_URL \
-            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }}
-
       - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          npx --yes wrangler@4 pages deploy ./site-build \
+          npx --yes wrangler@4 pages deploy ./out \
             --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} \
-            --branch=dev \
-            --compatibility-flag=nodejs_compat \
-            --compatibility-date=2024-09-23
+            --branch=dev
 
       - name: Deployment complete
         run: echo "🚀 Dev deployment successful via Wrangler"
@@ -335,7 +326,7 @@ jobs:
         run: |
           echo "📦 Listing STAGING R2 bucket files..."
           rclone ls r2-stage:${STAGE_R2_BUCKET_NAME} | head -50
-          
+
   deploy-stage:
     name: Deploy to Cloudflare Pages (STAGE via Wrangler)
     needs:
@@ -349,55 +340,44 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: site-build
-          path: ./site-build
+          path: ./out
 
-      - name: Inject stage R2 URL, Turnstile key and Email Worker URL
+      - name: Inject stage R2 URL, Turnstile key, and Email Worker URL
         env:
           R2_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
           TURNSTILE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
           EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
         run: |
           set -euo pipefail
           : "${R2_URL:?NEXT_PUBLIC_R2_BASE_URL is not set in the staging GitHub environment}"
-          : "${TURNSTILE_KEY:?NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set in the staging GitHub environment}"
+          : "${TURNSTILE_KEY:?NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set in the staging GitHub environment - add it to the staging environment secrets}"
           : "${EMAIL_WORKER_URL:?NEXT_PUBLIC_EMAIL_WORKER_URL is not set in the staging GitHub environment}"
-          echo "Substituting R2 URL, Turnstile key and Email Worker URL for staging environment..."
-          find ./site-build -type f \( -name "*.html" -o -name "*.js" -o -name "_redirects" \) \
+          : "${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is not set in the staging GitHub environment}"
+          echo "Substituting R2 URL, Turnstile key, Email Worker URL and API URL for staging environment..."
+          find ./out -type f \( -name "*.html" -o -name "*.js" -o -name "_redirects" \) \
             -exec sed -i "s|https://NSENGINEERING_R2_URL|${R2_URL}|g" {} \;
-          find ./site-build -type f \( -name "*.html" -o -name "*.js" \) \
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_TURNSTILE_KEY|${TURNSTILE_KEY}|g" {} \;
-          find ./site-build -type f \( -name "*.html" -o -name "*.js" \) \
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \;
+          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
+            -exec sed -i "s|NSENGINEERING_API_URL|${NEXT_PUBLIC_API_URL}|g" {} \;
           echo "✅ Staging environment values injected"
-          # No more NEXT_PUBLIC_API_URL sed step — JSON_SERVER_URL is a
-          # server-side secret now, set below, never baked into these files.
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Set JSON_SERVER_URL secret for this Pages project (staging)
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          JSON_SERVER_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-        run: |
-          set -euo pipefail
-          : "${JSON_SERVER_URL:?JSON_SERVER_URL is not set in the staging GitHub environment}"
-          echo "$JSON_SERVER_URL" | npx --yes wrangler@4 pages secret put JSON_SERVER_URL \
-            --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }}
-
       - name: Deploy to Cloudflare Pages (Stage)
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          npx --yes wrangler@4 pages deploy ./site-build \
+          npx --yes wrangler@4 pages deploy ./out \
             --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} \
-            --branch=stage \
-            --compatibility-flag=nodejs_compat \
-            --compatibility-date=2024-09-23
+            --branch=stage
 
       - name: Deployment complete
         run: echo "🚀 stage deployment successful via Wrangler"
