@@ -4,43 +4,12 @@ import elibraryData from '@/data/generated/elibrary.json';
 
 const staticData = elibraryData as unknown as ELibraryConfig;
 
-const JSON_SERVER_URL = process.env.JSON_SERVER_URL ?? '';
-
+// Save as: src/app/api/elibrary/publications/route.ts
+// See src/app/api/elibrary/standard-codes/route.ts for why this must stay
+// free of any fetch()/dynamic-API usage — the dev proxy to json-server
+// lives in next.config.ts's rewrites() instead.
 export const dynamic = 'force-static';
 
 export async function GET() {
-  if (process.env.NODE_ENV !== 'development' || !JSON_SERVER_URL) {
-    return NextResponse.json(staticData.publications ?? []);
-  }
-
-  try {
-    const upstream = await fetch(`${JSON_SERVER_URL}/publications`, {
-      cache: 'no-store',
-    });
-
-    if (!upstream.ok) {
-      return NextResponse.json(
-        { error: `Upstream request failed: ${upstream.status} ${upstream.statusText}` },
-        { status: upstream.status }
-      );
-    }
-
-    const contentType = upstream.headers.get('content-type') ?? '';
-    if (!contentType.includes('application/json')) {
-      const text = await upstream.text();
-      console.error(
-        `Upstream returned non-JSON content-type "${contentType}". First 120 chars: ${text.slice(0, 120)}`
-      );
-      return NextResponse.json({ error: 'Upstream did not return JSON.' }, { status: 502 });
-    }
-
-    const data = await upstream.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Failed to reach json-server for publications', error);
-    return NextResponse.json(
-      { error: 'Could not reach the upstream data source.' },
-      { status: 502 }
-    );
-  }
+  return NextResponse.json(staticData.publications ?? []);
 }
