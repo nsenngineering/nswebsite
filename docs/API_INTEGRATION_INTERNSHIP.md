@@ -474,7 +474,7 @@ Then, alone: do the same for Publications, Newsletters, Curated Papers, Download
 ### Checkpoint Concepts
 
 The Route Handler is a Backend-for-Frontend (BFF). It's the one place a real API key or secret could live safely — the browser never sees past it. It's also the seam where server state physically enters your app for the first time. Every framework has an equivalent: Next.js Route Handlers, a small Express server in front of a React SPA, a NestJS controller for Angular. The name changes; the job — "one trusted place that talks to the real backend, so the browser doesn't have to" — never does.
-
+    
 - **Backend-for-Frontend (BFF) / API proxy.**
 
 ---

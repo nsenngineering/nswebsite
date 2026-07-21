@@ -10,7 +10,11 @@ import elibraryData from '@/data/generated/elibrary.json';
 
 const staticData = elibraryData as unknown as ELibraryConfig;
 
-const JSON_SERVER_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// No more NEXT_PUBLIC_API_URL here. This file runs in the browser, and the
+// browser now only ever needs to know about paths on its own origin — the
+// Route Handlers under src/app/api/elibrary/*. Where those handlers get
+// their data from (json-server, a real API, a database) is no longer this
+// file's concern, and that's the point: the BFF absorbed that knowledge.
 
 // ── Safe JSON fetch helper ──
 // Guards against the classic "Unexpected token '<', <!DOCTYPE...' is not
@@ -37,24 +41,21 @@ async function fetchJsonSafe<T>(url: string): Promise<T> {
 }
 
 /**
- * Generic "load a section from the live API, fall back to the bundled
- * static JSON on any failure (including the API not being configured)."
- * Every exported getter below is a thin, typed wrapper around this.
+ * Generic "load a section from our own Route Handler, fall back to the
+ * bundled static JSON on any failure." Every exported getter below is a
+ * thin, typed wrapper around this.
+ *
+ * `routeSegment` is the kebab-case path under /api/elibrary/, e.g.
+ * "standard-codes" or "curated-papers" — it matches the folder name under
+ * src/app/api/elibrary/, not json-server's own (camelCase) resource name.
  */
 async function loadSection<T>(
-  endpoint: string,
+  routeSegment: string,
   staticFallback: T[],
   sectionName: string
 ): Promise<T[]> {
-  if (!JSON_SERVER_URL) {
-    // No API configured at all — this is expected in some environments,
-    // not an error, so we warn (not error) and use the bundled data.
-    console.warn(`elibrary service: NEXT_PUBLIC_API_URL is not configured, using static ${sectionName} data.`);
-    return staticFallback;
-  }
-
   try {
-    const payload = await fetchJsonSafe<T[]>(`${JSON_SERVER_URL}/${endpoint}`);
+    const payload = await fetchJsonSafe<T[]>(`/api/elibrary/${routeSegment}`);
     return Array.isArray(payload) ? payload : staticFallback;
   } catch (error) {
     console.error(`Failed to load ${sectionName} data`, error);
@@ -63,7 +64,7 @@ async function loadSection<T>(
 }
 
 export async function getStandardCodes(): Promise<StandardCode[]> {
-  return loadSection<StandardCode>('standardCodes', staticData.standardCodes ?? [], 'standard codes');
+  return loadSection<StandardCode>('standard-codes', staticData.standardCodes ?? [], 'standard codes');
 }
 
 export async function getPublications(): Promise<Publication[]> {
@@ -75,7 +76,7 @@ export async function getNewsletters(): Promise<Newsletter[]> {
 }
 
 export async function getCuratedPapers(): Promise<CuratedPaper[]> {
-  return loadSection<CuratedPaper>('curatedPapers', staticData.curatedPapers ?? [], 'curated papers');
+  return loadSection<CuratedPaper>('curated-papers', staticData.curatedPapers ?? [], 'curated papers');
 }
 
 export async function getDownloads(): Promise<DownloadItem[]> {
