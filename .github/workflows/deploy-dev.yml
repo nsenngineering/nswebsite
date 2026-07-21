@@ -335,9 +335,7 @@ jobs:
         run: |
           echo "📦 Listing STAGING R2 bucket files..."
           rclone ls r2-stage:${STAGE_R2_BUCKET_NAME} | head -50
-
-  # sync-assets-stage: unchanged, still promotes R2 media only
-
+          
   deploy-stage:
     name: Deploy to Cloudflare Pages (STAGE via Wrangler)
     needs:
