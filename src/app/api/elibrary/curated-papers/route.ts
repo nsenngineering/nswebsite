@@ -1,26 +1,28 @@
-import { NextResponse } from "next/server";
-import type { ELibraryConfig } from "@/types/elibrary";
-import elibraryData from "@/data/generated/elibrary.json";
+import { NextResponse } from 'next/server';
+import type { ELibraryConfig } from '@/types/elibrary';
+import elibraryData from '@/data/generated/elibrary.json';
 
 const staticData = elibraryData as unknown as ELibraryConfig;
 
 // Save as: src/app/api/elibrary/curated-papers/route.ts
-// See src/app/api/elibrary/standard-codes/route.ts for the full explanation
-// of runtime = "edge", JSON_SERVER_URL, and the static-data fallback pattern.
-export const runtime = "edge";
-export const dynamic = "force-dynamic";
+//
+// Route segment is kebab-case ("curated-papers") to match the folder name
+// under src/app/api/elibrary/, but json-server's own resource is camelCase
+// ("curatedPapers") — same split as the rest of loadSection()'s callers.
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const jsonServerUrl = process.env.JSON_SERVER_URL;
 
   if (!jsonServerUrl) {
-    console.error("JSON_SERVER_URL is not configured for this environment.");
+    console.error('JSON_SERVER_URL is not configured for this environment.');
     return NextResponse.json(staticData.curatedPapers ?? []);
   }
 
   try {
     const upstream = await fetch(`${jsonServerUrl}/curatedPapers`, {
-      cache: "no-store",
+      cache: 'no-store',
     });
 
     if (!upstream.ok) {
@@ -28,8 +30,8 @@ export async function GET() {
       return NextResponse.json(staticData.curatedPapers ?? []);
     }
 
-    const contentType = upstream.headers.get("content-type") ?? "";
-    if (!contentType.includes("application/json")) {
+    const contentType = upstream.headers.get('content-type') ?? '';
+    if (!contentType.includes('application/json')) {
       const text = await upstream.text();
       console.error(
         `Upstream returned non-JSON content-type "${contentType}". First 120 chars: ${text.slice(0, 120)}`
@@ -40,7 +42,7 @@ export async function GET() {
     const data = await upstream.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Failed to reach the eLibrary API for curated-papers", error);
+    console.error('Failed to reach the eLibrary API for curated papers', error);
     return NextResponse.json(staticData.curatedPapers ?? []);
   }
 }

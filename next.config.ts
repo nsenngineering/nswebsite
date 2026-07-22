@@ -4,7 +4,7 @@ import type { NextConfig } from "next";
  * Next.js configuration for Cloudflare Pages Functions.
  *
  * No `output: 'export'` — Route Handlers under src/app/api need to run as
- * real Cloudflare Pages Functions (Workers) so they can proxy to a live
+ * real Cloudflare Pages Functions (Workers) so they can proxy to a livea
  * backend on every request. The build is turned into Cloudflare's Worker
  * format by `@cloudflare/next-on-pages` (see package.json `pages:build`),
  * not by Next's own static exporter.
