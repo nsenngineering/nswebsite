@@ -10,8 +10,6 @@ import elibraryData from '@/data/generated/elibrary.json';
 
 const staticData = elibraryData as unknown as ELibraryConfig;
 
-const JSON_SERVER_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
-
 // ── Safe JSON fetch helper ──
 // Guards against the classic "Unexpected token '<', <!DOCTYPE...' is not
 // valid JSON" crash, which happens when fetch() hits a URL that returns an
@@ -37,24 +35,20 @@ async function fetchJsonSafe<T>(url: string): Promise<T> {
 }
 
 /**
- * Generic "load a section from the live API, fall back to the bundled
- * static JSON on any failure (including the API not being configured)."
- * Every exported getter below is a thin, typed wrapper around this.
+ * Generic "load a section from our own Route Handler (/api/elibrary/*),
+ * fall back to the bundled static JSON on any failure." The browser never
+ * talks to json-server directly anymore — only same-origin, so there is
+ * no cross-origin request left to fail on CORS. What lives behind that
+ * route (live json-server proxy in dev, or the static fallback in a
+ * production static export) is the Route Handler's problem, not ours.
  */
 async function loadSection<T>(
   endpoint: string,
   staticFallback: T[],
   sectionName: string
 ): Promise<T[]> {
-  if (!JSON_SERVER_URL) {
-    // No API configured at all — this is expected in some environments,
-    // not an error, so we warn (not error) and use the bundled data.
-    console.warn(`elibrary service: NEXT_PUBLIC_API_URL is not configured, using static ${sectionName} data.`);
-    return staticFallback;
-  }
-
   try {
-    const payload = await fetchJsonSafe<T[]>(`${JSON_SERVER_URL}/${endpoint}`);
+    const payload = await fetchJsonSafe<T[]>(`/api/elibrary/${endpoint}`);
     return Array.isArray(payload) ? payload : staticFallback;
   } catch (error) {
     console.error(`Failed to load ${sectionName} data`, error);
@@ -63,7 +57,7 @@ async function loadSection<T>(
 }
 
 export async function getStandardCodes(): Promise<StandardCode[]> {
-  return loadSection<StandardCode>('standardCodes', staticData.standardCodes ?? [], 'standard codes');
+  return loadSection<StandardCode>('standard-codes', staticData.standardCodes ?? [], 'standard codes');
 }
 
 export async function getPublications(): Promise<Publication[]> {
@@ -75,7 +69,7 @@ export async function getNewsletters(): Promise<Newsletter[]> {
 }
 
 export async function getCuratedPapers(): Promise<CuratedPaper[]> {
-  return loadSection<CuratedPaper>('curatedPapers', staticData.curatedPapers ?? [], 'curated papers');
+  return loadSection<CuratedPaper>('curated-papers', staticData.curatedPapers ?? [], 'curated papers');
 }
 
 export async function getDownloads(): Promise<DownloadItem[]> {
