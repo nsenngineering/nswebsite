@@ -2,6 +2,12 @@ name: Deploy to Cloudflare Pages (Dev)
 
 on:
   workflow_dispatch:
+  schedule:
+    # Time-based revalidation: rebuild + redeploy every 6 hours so the
+    # eLibrary content (backed by Google Sheets) doesn't drift more
+    # than half a day out of date. Adjust freely — this content is
+    # stale-tolerant, so even once/day would be defensible.
+    - cron: '0 */6 * * *'
 
 permissions:
   contents: write
@@ -128,6 +134,24 @@ jobs:
       # Placeholder — substituted with the correct per-env key at deploy time
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: "NSENGINEERING_TURNSTILE_KEY"
       NEXT_PUBLIC_EMAIL_WORKER_URL: "NSENGINEERING_EMAIL_WORKER_URL"
+
+      # This is deliberately expected to be EMPTY here, and that's not
+      # a bug to fix. `json-server` (npm run json:server) only exists
+      # on your own machine, listening on localhost:5002. A
+      # GitHub-hosted runner has no network path to your laptop's
+      # localhost under any circumstances, so setting this secret to
+      # "http://localhost:5002" would never work from CI regardless of
+      # how it's wired up. If JSON_SERVER_URL is unset, our server-side
+      # data functions (src/lib/data/elibrary-server.ts) fall back to
+      # the static elibrary.json, which for cloud builds was itself
+      # just generated fresh from Google Sheets by `build:content:cloud`
+      # a few steps below — so CI IS getting live-ish data, just via
+      # the Sheets pipeline instead of json-server.
+      #
+      # If you genuinely want CI to hit a live json-server, it has to
+      # be a server reachable from the internet (e.g. deployed to a
+      # small VPS/Fly.io/Render instance), and THAT url goes in the
+      # JSON_SERVER_URL secret — not localhost.
       JSON_SERVER_URL: ${{ secrets.JSON_SERVER_URL }}
 
     steps:

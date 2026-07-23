@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ElementType } from 'react';
 import { BookOpen, Download, FileText, Lightbulb, Newspaper, Search } from 'lucide-react';
 import DocumentGrid from '@/components/elibrary/DocumentGrid';
@@ -15,18 +15,7 @@ import {
   isNewsletter,
 } from '@/types/elibrary';
 import elibraryData from '@/data/generated/elibrary.json';
-import {
-  getStandardCodes,
-  getPublications,
-  getNewsletters,
-  getCuratedPapers,
-  getDownloads,
-} from '@/lib/api/elibrary';
 
-// Used only as the synchronous default for first render, before the
-// service call in useEffect below resolves. All fetch/error-handling
-// concerns now live in src/lib/api/elibrary.ts — this component no
-// longer knows a URL exists.
 const data = elibraryData as unknown as ELibraryConfig;
 
 const sectionIcons: Record<ELibrarySection, ElementType> = {
@@ -37,19 +26,41 @@ const sectionIcons: Record<ELibrarySection, ElementType> = {
   newsletters:      Newspaper,
 };
 
-export default function ELibraryClient() {
+export interface ELibraryInitialData {
+  standardCodes: ELibraryItem[];
+  publications: ELibraryItem[];
+  newsletters: ELibraryItem[];
+  curatedPapers: ELibraryItem[];
+  downloads: ELibraryItem[];
+}
+
+interface ELibraryClientProps {
+  initialData: ELibraryInitialData;
+}
+
+// NOTE what's gone from the previous version: no useState mirrors of
+// each section that start empty and get filled in by useEffect, no
+// five separate useEffect fetches, no per-section loadingSection flag.
+// All of that existed to paper over the fact that data used to arrive
+// *after* first paint. Now it arrives *with* first paint, as props,
+// because the Server Component already resolved it before this
+// component ever rendered. The only state left here is genuinely
+// client-side UI state — which tab is active, what's typed in the
+// search box, which item is open — none of which is "server state"
+// and none of which needs a fetch or a cache policy.
+export default function ELibraryClient({ initialData }: ELibraryClientProps) {
   const [activeSection, setActiveSection] = useState<ELibrarySection>('standard-codes');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<ELibraryItem | null>(null);
   const [selectedStandardCategory, setSelectedStandardCategory] = useState<string | null>(null);
 
-  const [standardCodeItems, setStandardCodeItems] = useState<ELibraryItem[]>(data.standardCodes ?? []);
-  const [publicationItems, setPublicationItems] = useState<ELibraryItem[]>(data.publications ?? []);
-  const [newsletterItems, setNewsletterItems] = useState<ELibraryItem[]>(data.newsletters ?? []);
-  const [curatedPaperItems, setCuratedPaperItems] = useState<ELibraryItem[]>(data.curatedPapers ?? []);
-  const [downloadItems, setDownloadItems] = useState<ELibraryItem[]>(data.downloads ?? []);
-
-  const [loadingSection, setLoadingSection] = useState<ELibrarySection | null>(null);
+  const {
+    standardCodes: standardCodeItems,
+    publications: publicationItems,
+    newsletters: newsletterItems,
+    curatedPapers: curatedPaperItems,
+    downloads: downloadItems,
+  } = initialData;
 
   const sectionCounts = useMemo<Record<ELibrarySection, number>>(() => ({
     'standard-codes': standardCodeItems.length || data.standardCodes?.length || 0,
@@ -59,101 +70,11 @@ export default function ELibraryClient() {
     newsletters: newsletterItems.length || data.newsletters?.length || 0,
   }), [newsletterItems, standardCodeItems, publicationItems, curatedPaperItems, downloadItems]);
 
-  // ── Standard Codes ──
-  useEffect(() => {
-    if (activeSection !== 'standard-codes') return;
-    let isCancelled = false;
-
-    setLoadingSection('standard-codes');
-    getStandardCodes()
-      .then((items) => {
-        if (!isCancelled) setStandardCodeItems(items);
-      })
-      .finally(() => {
-        if (!isCancelled) setLoadingSection(null);
-      });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [activeSection]);
-
-  // ── Publications ──
-  useEffect(() => {
-    if (activeSection !== 'publications') return;
-    let isCancelled = false;
-
-    setLoadingSection('publications');
-    getPublications()
-      .then((items) => {
-        if (!isCancelled) setPublicationItems(items);
-      })
-      .finally(() => {
-        if (!isCancelled) setLoadingSection(null);
-      });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [activeSection]);
-
-  // ── Newsletters ──
-  useEffect(() => {
-    if (activeSection !== 'newsletters') return;
-    let isCancelled = false;
-
-    setLoadingSection('newsletters');
-    getNewsletters()
-      .then((items) => {
-        if (!isCancelled) setNewsletterItems(items);
-      })
-      .finally(() => {
-        if (!isCancelled) setLoadingSection(null);
-      });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [activeSection]);
-
-  // ── Curated Papers ──
-  useEffect(() => {
-    if (activeSection !== 'curated-papers') return;
-    let isCancelled = false;
-
-    setLoadingSection('curated-papers');
-    getCuratedPapers()
-      .then((items) => {
-        if (!isCancelled) setCuratedPaperItems(items);
-      })
-      .finally(() => {
-        if (!isCancelled) setLoadingSection(null);
-      });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [activeSection]);
-
-  // ── Downloads ──
-  useEffect(() => {
-    if (activeSection !== 'downloads') return;
-    let isCancelled = false;
-
-    setLoadingSection('downloads');
-    getDownloads()
-      .then((items) => {
-        if (!isCancelled) setDownloadItems(items);
-      })
-      .finally(() => {
-        if (!isCancelled) setLoadingSection(null);
-      });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [activeSection]);
-
+  // Search stays entirely client-side, over data already in memory.
+  // This is the "live search result" the assignment contrasts with
+  // Standard Codes: it recomputes on every keystroke and is never
+  // stale, because it was never fetched separately in the first
+  // place — there's nothing here to cache or revalidate.
   const filteredItems = useMemo(() => {
     let items: ELibraryItem[] = [];
 
@@ -188,8 +109,6 @@ export default function ELibraryClient() {
     setSelectedItem(null);
     setSelectedStandardCategory(null);
   };
-
-  const isActiveSectionLoading = loadingSection === activeSection;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -262,10 +181,6 @@ export default function ELibraryClient() {
           <span className="font-semibold text-gray-900">{filteredItems.length}</span>{' '}
           {activeSection === 'standard-codes' ? 'standard' : ''}{filteredItems.length === 1 ? ' item' : ' items'}
           {searchQuery.trim() ? ` for "${searchQuery}"` : ''}
-          {activeSection === 'newsletters' && isActiveSectionLoading ? ' • loading latest newsletters' : ''}
-          {activeSection === 'publications' && isActiveSectionLoading ? ' • loading latest publications' : ''}
-          {activeSection === 'curated-papers' && isActiveSectionLoading ? ' • loading latest curated papers' : ''}
-          {activeSection === 'downloads' && isActiveSectionLoading ? ' • loading latest downloads' : ''}
         </p>
 
         <div className={selectedItem ? 'lg:mr-96' : ''}>
