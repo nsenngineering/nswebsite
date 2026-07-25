@@ -1,15 +1,9 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 import ELibraryClient from '@/app/elibrary/ELibraryClient';
-import * as elibraryApi from '@/lib/api/elibrary';
 import type { Publication } from '@/types/elibrary';
-
-// Mock the entire service module. ELibraryClient (and therefore
-// DocumentGrid, which it renders) will never see a real fetch call —
-// every section getter resolves with whatever we hand it below.
-vi.mock('@/lib/api/elibrary');
 
 const fakePublication: Publication = {
   id: 'pub-fake-1',
@@ -23,38 +17,26 @@ const fakePublication: Publication = {
   featured: false,
 };
 
-describe('DocumentGrid (via ELibraryClient + mocked service layer)', () => {
-  beforeEach(() => {
-    vi.mocked(elibraryApi.getPublications).mockResolvedValue([fakePublication]);
-    // Other sections aren't visited in this test, but we stub them too so
-    // no unmocked call can slip through and hit the real module.
-    vi.mocked(elibraryApi.getStandardCodes).mockResolvedValue([]);
-    vi.mocked(elibraryApi.getNewsletters).mockResolvedValue([]);
-    vi.mocked(elibraryApi.getCuratedPapers).mockResolvedValue([]);
-    vi.mocked(elibraryApi.getDownloads).mockResolvedValue([]);
-  });
-
-  it('renders the fake publication returned by the mocked service, with no real network call', async () => {
-    // Sanity check per Vitest's own docs: fetch must never actually run.
+describe('DocumentGrid (via ELibraryClient)', () => {
+  it('renders server-provided data without making a browser network request', async () => {
+    // Goal 5: the Server Component supplies this data before hydration.
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
 
-    render(<ELibraryClient />);
+    render(<ELibraryClient initialData={{
+      standardCodes: [],
+      publications: [fakePublication],
+      newsletters: [],
+      curatedPapers: [],
+      downloads: [],
+    }} />);
 
-    // Publications isn't the default tab, so switch to it — this is what
-    // triggers the effect that calls getPublications().
+    // Publications isn't the default tab, so switch to its already-loaded data.
     await userEvent.click(screen.getByRole('button', { name: /publications/i }));
 
-    // DocumentGrid should render the title from our fake data once the
-    // (mocked, instant) service call resolves.
-    await waitFor(() => {
-      expect(screen.getByText('Totally Fake Soil Testing Whitepaper')).toBeInTheDocument();
-    });
-
+    expect(screen.getByText('Totally Fake Soil Testing Whitepaper')).toBeInTheDocument();
     expect(screen.getByText('Ada Lovelace')).toBeInTheDocument();
     expect(screen.getByText('Testing')).toBeInTheDocument();
     expect(screen.getByText('A fake publication used only in this test.')).toBeInTheDocument();
-
-    expect(elibraryApi.getPublications).toHaveBeenCalledTimes(1);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

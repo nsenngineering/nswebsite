@@ -135,25 +135,10 @@ jobs:
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: "NSENGINEERING_TURNSTILE_KEY"
       NEXT_PUBLIC_EMAIL_WORKER_URL: "NSENGINEERING_EMAIL_WORKER_URL"
 
-      # This is deliberately expected to be EMPTY here, and that's not
-      # a bug to fix. `json-server` (npm run json:server) only exists
-      # on your own machine, listening on localhost:5002. A
-      # GitHub-hosted runner has no network path to your laptop's
-      # localhost under any circumstances, so setting this secret to
-      # "http://localhost:5002" would never work from CI regardless of
-      # how it's wired up. If JSON_SERVER_URL is unset, our server-side
-      # data functions (src/lib/data/elibrary-server.ts) fall back to
-      # the static elibrary.json, which for cloud builds was itself
-      # just generated fresh from Google Sheets by `build:content:cloud`
-      # a few steps below — so CI IS getting live-ish data, just via
-      # the Sheets pipeline instead of json-server.
-      #
-      # If you genuinely want CI to hit a live json-server, it has to
-      # be a server reachable from the internet (e.g. deployed to a
-      # small VPS/Fly.io/Render instance), and THAT url goes in the
-      # JSON_SERVER_URL secret — not localhost.
-      JSON_SERVER_URL: ${{ secrets.JSON_SERVER_URL }}
-
+      # json-server is a local development backend only. This static Cloudflare\r\n      # Pages build embeds the eLibrary data generated from Google Sheets.\r\n      # Runtime API revalidation requires a server-capable deployment.\r\n\r\n    steps:
+    
+    
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -237,18 +222,16 @@ jobs:
           name: site-build
           path: ./out
 
-      - name: Inject dev R2 URL, Turnstile key, Email Worker URL and JSON Server URL
+      - name: Inject dev R2 URL, Turnstile key, and Email Worker URL
         env:
           R2_URL: ${{ secrets.NEXT_PUBLIC_R2_BASE_URL }}
           TURNSTILE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
           EMAIL_WORKER_URL: ${{ secrets.NEXT_PUBLIC_EMAIL_WORKER_URL }}
-          JSON_SERVER_URL: ${{ secrets.JSON_SERVER_URL }}
         run: |
           set -euo pipefail
           : "${R2_URL:?NEXT_PUBLIC_R2_BASE_URL is not set in the dev GitHub environment}"
           : "${TURNSTILE_KEY:?NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set in the dev GitHub environment}"
           : "${EMAIL_WORKER_URL:?NEXT_PUBLIC_EMAIL_WORKER_URL is not set in the dev GitHub environment}"
-          : "${JSON_SERVER_URL:?JSON_SERVER_URL is not set in the dev GitHub environment}"
           echo "Substituting R2 URL, Turnstile key and Email Worker URL for dev environment..."
           find ./out -type f \( -name "*.html" -o -name "*.js" -o -name "_redirects" \) \
             -exec sed -i "s|https://NSENGINEERING_R2_URL|${R2_URL}|g" {} \;
@@ -256,8 +239,6 @@ jobs:
             -exec sed -i "s|NSENGINEERING_TURNSTILE_KEY|${TURNSTILE_KEY}|g" {} \;
           find ./out -type f \( -name "*.html" -o -name "*.js" \) \
             -exec sed -i "s|NSENGINEERING_EMAIL_WORKER_URL|${EMAIL_WORKER_URL}|g" {} \;
-          find ./out -type f \( -name "*.html" -o -name "*.js" \) \
-            -exec sed -i "s|NSENGINEERING_JSON_SERVER_URL|${JSON_SERVER_URL}|g" {} \;
           echo "✅ Dev environment values injected"
 
       - name: Setup Node.js
