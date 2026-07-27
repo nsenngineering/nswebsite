@@ -495,7 +495,11 @@ Server state has a lifecycle that local state doesn't: it can go stale without y
 
 ### Questions to Answer
 
-1. If the underlying ERPNext data changes after this page was last rendered, when does a user actually see the new value? Trace it through — is it never, until a rebuild? On every request? Somewhere in between?
+### 1. If the underlying ERPNext data changes after this page was last rendered, when does a user actually see the new value? Trace it through — is it never, until a rebuild? On every request? Somewhere in between?
+=>
+When a user opens the eLibrary page, the data is fetched on the server by getAllELibrarySections() before the page is rendered, and the resolved data is passed to ELibraryClient as props. In a normal Next.js server deployment, the fetch call is configured with next: { revalidate: 21600 }, so the cached data would remain valid for six hours. After the cache expires, the next request would automatically fetch the latest ERPNext data and update the cache. This means users would see updated data somewhere in between—not on every request and not only after a full rebuild.
+
+However, this project uses output: 'export' and is deployed as a static Cloudflare Pages site. In this deployment there is no running Next.js server, so the revalidate option is not actually executed. Instead, the site is rebuilt and redeployed every six hours through the scheduled GitHub Actions workflow. Therefore, if ERPNext data changes after deployment, users continue to see the old data until the next scheduled rebuild generates a new static site. The configured revalidate option documents the intended caching policy and will become active automatically if the project later moves to a server-capable Next.js deployment
 
 ---
 
