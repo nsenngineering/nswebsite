@@ -135,10 +135,10 @@ jobs:
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: "NSENGINEERING_TURNSTILE_KEY"
       NEXT_PUBLIC_EMAIL_WORKER_URL: "NSENGINEERING_EMAIL_WORKER_URL"
 
-      # json-server is a local development backend only. This static Cloudflare\r\n      # Pages build embeds the eLibrary data generated from Google Sheets.\r\n      # Runtime API revalidation requires a server-capable deployment.\r\n\r\n    steps:
-    
-    
-    
+      # json-server is a local development backend only. This static Cloudflare
+      # Pages build embeds the eLibrary data generated from Google Sheets.
+      # Runtime API revalidation requires a server-capable deployment.
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
