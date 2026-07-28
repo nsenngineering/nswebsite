@@ -29,7 +29,8 @@ export default async function ELibraryPage() {
     { name: 'eLibrary', path: '/elibrary' },
   ]);
 
-  const { isEnabled: isPreview } = await draftMode();
+  const isStaticExport = process.env.NEXT_PUBLIC_STATIC_EXPORT === 'true';
+  const isPreview = isStaticExport ? false : (await draftMode()).isEnabled;
   const initialData = await getAllELibrarySections({ includeUnpublished: isPreview });
 
   return (

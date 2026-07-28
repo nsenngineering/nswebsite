@@ -1,3 +1,4 @@
+import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
 import type { NextConfig } from "next";
 
 /**
@@ -7,8 +8,14 @@ import type { NextConfig } from "next";
  * which serves from root. GitHub Pages automatically handles the mapping
  * from the repository path to the custom domain root.
  */
-const nextConfig: NextConfig = {
-  output: 'export',
+const nextConfig = (phase: string): NextConfig => ({
+  // Draft Mode needs a live Next.js server because it sets and reads
+  // request cookies. Keep static export for production builds, but let
+  // `next dev` run in server mode so Goal 6 can be tested locally.
+  output: phase === PHASE_DEVELOPMENT_SERVER ? undefined : 'export',
+  env: {
+    NEXT_PUBLIC_STATIC_EXPORT: phase === PHASE_DEVELOPMENT_SERVER ? 'false' : 'true',
+  },
   basePath: '',
   assetPrefix: '',
   images: {
@@ -18,6 +25,6 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
-};
+});
 
 export default nextConfig;
