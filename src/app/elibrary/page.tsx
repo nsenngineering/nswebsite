@@ -1,3 +1,4 @@
+import { draftMode } from 'next/headers';
 import ELibraryClient from './ELibraryClient';
 import JsonLd from '@/components/seo/JsonLd';
 import { generateBreadcrumbSchema } from '@/lib/seo/schema-generators';
@@ -12,17 +13,34 @@ export const metadata = generateELibraryMetadata();
 // ELibraryClient no longer fetches anything on mount; it only receives
 // already-resolved data as props and handles UI state (active tab,
 // search query, selected item).
+//
+// Goal 6 (Draft Mode): `draftMode()` reads whether the incoming request
+// carried the __prerender_bypass cookie set by /api/draft. This check
+// only means anything on a live Next.js server (`next dev`, or a real
+// server runtime in prod) — under the current `output: 'export'`
+// deploy, this page is rendered once at build time with no request to
+// inspect, so isEnabled will always read false there. That's expected:
+// this feature is real and working in `next dev` today, and would need
+// the site to move off static export (see the note in elibrary-server.ts)
+// before a real editor could use it in production.
 export default async function ELibraryPage() {
   const breadcrumbData = generateBreadcrumbSchema([
     { name: 'Home', path: '/' },
     { name: 'eLibrary', path: '/elibrary' },
   ]);
 
-  const initialData = await getAllELibrarySections();
+  const { isEnabled: isPreview } = await draftMode();
+  const initialData = await getAllELibrarySections({ includeUnpublished: isPreview });
 
   return (
     <>
       <JsonLd data={breadcrumbData} />
+      {isPreview && (
+        <div className="bg-amber-500 text-amber-950 text-sm font-medium text-center py-2">
+          Draft preview mode — showing unpublished standard codes.{' '}
+          <a href="/api/draft/disable" className="underline">Exit preview</a>
+        </div>
+      )}
       <ELibraryClient initialData={initialData} />
     </>
   );

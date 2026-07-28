@@ -31,6 +31,11 @@ export interface StandardCode extends ELibraryItemBase {
   standards: StandardReference[];  // Array of standards with organization and URL
   category?: string;
   dateAdded: string;
+  // Goal 6 (Draft Mode): absent or `true` means publicly visible, same
+  // as every existing entry today — this is additive, nothing already
+  // in db.json / elibrary.json needs to change. Only `false` hides an
+  // item from the public site; it still renders when Draft Mode is on.
+  published?: boolean;
 }
 
 // Publication (internal PDF or external link - technical papers/research)

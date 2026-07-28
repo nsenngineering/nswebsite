@@ -87,8 +87,31 @@ async function fetchSection<T>(
   }
 }
 
-export async function getStandardCodesServer(): Promise<StandardCode[]> {
-  return fetchSection<StandardCode>('standardCodes', staticData.standardCodes ?? [], 'standard-codes');
+/**
+ * ── Draft Mode (Goal 6) ────────────────────────────────────────────
+ *
+ * `published: false` on a Standard Code marks it as not-yet-public.
+ * By default this function filters those out — same behavior for
+ * every visitor, whether they're on the static production build or
+ * hitting a live json-server backend in dev.
+ *
+ * `includeUnpublished` is the one place that check gets skipped, and
+ * it is only ever passed `true` from page.tsx after page.tsx itself
+ * has confirmed `draftMode().isEnabled` — i.e. after the visitor
+ * proved they hold the __prerender_bypass cookie. This function has
+ * no cookie/session awareness of its own; it trusts its caller, which
+ * is exactly why page.tsx (a Server Component, not client code) is
+ * what makes that call.
+ */
+export async function getStandardCodesServer(
+  { includeUnpublished = false }: { includeUnpublished?: boolean } = {}
+): Promise<StandardCode[]> {
+  const codes = await fetchSection<StandardCode>(
+    'standardCodes',
+    staticData.standardCodes ?? [],
+    'standard-codes'
+  );
+  return includeUnpublished ? codes : codes.filter((code) => code.published !== false);
 }
 
 export async function getPublicationsServer(): Promise<Publication[]> {
@@ -107,9 +130,11 @@ export async function getDownloadsServer(): Promise<DownloadItem[]> {
   return fetchSection<DownloadItem>('downloads', staticData.downloads ?? [], 'downloads');
 }
 
-export async function getAllELibrarySections() {
+export async function getAllELibrarySections(
+  { includeUnpublished = false }: { includeUnpublished?: boolean } = {}
+) {
   const [standardCodes, publications, newsletters, curatedPapers, downloads] = await Promise.all([
-    getStandardCodesServer(),
+    getStandardCodesServer({ includeUnpublished }),
     getPublicationsServer(),
     getNewslettersServer(),
     getCuratedPapersServer(),

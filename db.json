@@ -29,33 +29,34 @@
       "dateAdded": "2026-01-11"
     },
     {
-      "id": "mt-002",
-      "title": "Shear Test",
-      "section": "standard-codes",
-      "standards": [
-        {
-          "organization": "BIS",
-          "url": "https://www.bis.gov.in/know-your-standard/?search=1852"
-        },
-        {
-          "organization": "ASTM International",
-          "url": "https://www.astm.org/d143.html"
-        },
-        {
-          "organization": "British Standards Institution",
-          "url": "https://www.bsigroup.com/en-GB/standards/"
-        }
-      ],
-      "category": "Metal & Structural Materials",
-      "tags": [
-        "shear testing",
-        "metal & structural materials",
-        "material testing",
-        "standards"
-      ],
-      "featured": false,
-      "dateAdded": "2026-01-11"
+  "id": "mt-002",
+  "title": "Shear Test",
+  "section": "standard-codes",
+  "standards": [
+    {
+      "organization": "BIS",
+      "url": "https://www.bis.gov.in/know-your-standard/?search=1852"
     },
+    {
+      "organization": "ASTM International",
+      "url": "https://www.astm.org/d143.html"
+    },
+    {
+      "organization": "British Standards Institution",
+      "url": "https://www.bsigroup.com/en-GB/standards/"
+    }
+  ],
+  "category": "Metal & Structural Materials",
+  "tags": [
+    "shear testing",
+    "metal & structural materials",
+    "material testing",
+    "standards"
+  ],
+  "featured": false,
+  "dateAdded": "2026-01-11",
+  "published": false
+},
     {
       "id": "rk-001",
       "title": "Triaxial Test (C & Ãâ€ )",
