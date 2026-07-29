@@ -126,7 +126,7 @@ Technical foundation (real, shipped, verified in code):
   docs/SEO_OPTIMIZATION_ROADMAP.md  → the master plan, 5 phases, dated 2026-06-19
 
 What's claimed but not code-verified:
-  Google Search Console + Bing Webmaster Tools — reported verified by Chance directly,
+  Google Search Console + Bing Webmaster Tools — reported verified by your mentor directly,
   but src/app/layout.tsx's `verification` metadata block is still a commented-out
   placeholder ("Add when available"). Either verification happened by a non-meta-tag
   method (DNS TXT, HTML file upload — both fine), or the code was never wired up to
@@ -280,7 +280,7 @@ No new dependencies for Goals 0–6 — everything is web-based tooling:
 - [Google Rich Results Test](https://search.google.com/test/rich-results)
 - [Schema Markup Validator](https://validator.schema.org)
 - [PageSpeed Insights](https://pagespeed.web.dev/)
-- A Google account for [Google Business Profile](https://business.google.com/) — Goal 5, paired, do not create a listing without mentor + Chance sign-off (see that goal)
+- A Google account for [Google Business Profile](https://business.google.com/) — Goal 5, paired, do not create a listing without mentor sign-off (see that goal)
 - Accounts (free tier is fine) on ChatGPT, Perplexity, and access to Claude — for Goal 6. Google AI Overviews/AI Mode need no separate account, just a Google Search query that triggers one — but note AI Mode may need to be enabled/available in your region
 - Read access to `docs/SEO_OPTIMIZATION_ROADMAP.md` in full before Goal 0 — it's long, read it once anyway
 
@@ -418,10 +418,10 @@ Run [PageSpeed Insights](https://pagespeed.web.dev/) against the same 5 pages fr
 
 ### Completion Goal
 
-**Paired with mentor throughout, and this one doesn't ship without Chance's explicit sign-off too** — this goal ends with a real, public business listing under NS Engineering's name, which is a genuine real-world action, not a code change, and it needs a second set of eyes beyond just this doc before anything goes live.
+**Paired with mentor throughout, and this one doesn't ship without your mentor's explicit sign-off too** — this goal ends with a real, public business listing under NS Engineering's name, which is a genuine real-world action, not a code change, and it needs a second set of eyes beyond just this doc before anything goes live.
 
 1. **Search first, exhaustively, before anything else.** Check Google Maps and Google Search for any existing NS Engineering listing — including old addresses, an old name, or one created years ago by a past employee or a directory-listing vendor without the current team's knowledge. Finding and fixing a duplicate later is a meaningfully harder problem than getting this right once now, which is why this step is mandatory and comes first, not last.
-2. **If nothing exists, draft before you create.** Write a full proposal in `docs/local/GBP_SETUP.md`: your recommended primary category (with reasoning against at least one plausible alternative you considered and rejected), secondary categories, a business description, a Services list mirroring what NS Engineering actually does, hours, and NAP (Name/Address/Phone) copied exactly from the site footer — not retyped, copied, so it's character-for-character identical. This is a proposal document for mentor + Chance review, not a live action yet.
+2. **If nothing exists, draft before you create.** Write a full proposal in `docs/local/GBP_SETUP.md`: your recommended primary category (with reasoning against at least one plausible alternative you considered and rejected), secondary categories, a business description, a Services list mirroring what NS Engineering actually does, hours, and NAP (Name/Address/Phone) copied exactly from the site footer — not retyped, copied, so it's character-for-character identical. This is a proposal document for mentor review, not a live action yet.
 3. **Only after sign-off, create or claim the listing together with your mentor.** Expect Google to ask for video verification (an in-app, real-time walkthrough of the office/signage) rather than the older postcard method. Fill in every field in one sitting rather than editing repeatedly over the following days or weeks — a burst of rapid post-creation edits to name, address, or category is a documented trigger for suspension review on new listings.
 4. **Set up a real maintenance plan, not a one-time setup.** Decide, in writing, who checks the public Q&A section (anyone can post a question or an answer there, including competitors) and reviews on some regular cadence, and what the minimum posting frequency should be to keep the profile from reading as inactive — both because inactivity is linked to visibility drops in classical local ranking, and because Google's AI Overviews/AI Mode ground local-intent answers in this same data, so a stale profile risks feeding a stale or wrong AI answer too.
 
