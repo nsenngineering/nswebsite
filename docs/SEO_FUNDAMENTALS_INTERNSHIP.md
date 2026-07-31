@@ -472,10 +472,25 @@ Pick 5 real pages: homepage, `/services`, `/projects`, `/team`, and one individu
 
 ### Questions to Answer
 
-1. Which of your 5 pages had the weakest title/description, and what would you change it to? (The roadmap has real before/after examples for Services, Projects, and Homepage — compare your independent answer to theirs before reading them, then note where you agree or disagree.)
-2. Did you find any duplicate titles or descriptions across the 5 pages? If not here, would you expect to find any across the full 124-URL sitemap, and why?
-3. Pick one Lighthouse SEO finding that surprised you — something you wouldn't have caught by eye. What did it catch, and why does that particular thing matter to a crawler even though it's invisible to a human?
+### 1. Which of your 5 pages had the weakest title/description, and what would you change it to? (The roadmap has real before/after examples for Services, Projects, and Homepage — compare your independent answer to theirs before reading them, then note where you agree or disagree.)
+=>
+Among the five pages I audited, the Services page and the Projects page were the weakest because they both received a Lighthouse SEO score of 92, while the other pages scored 100.
 
+Although both pages already have a title and meta description, I believe they could be improved by making them more keyword-focused and descriptive.
+
+### 2. Did you find any duplicate titles or descriptions across the 5 pages? If not here, would you expect to find any across the full 124-URL sitemap, and why?
+=>
+I did not find any duplicate titles or meta descriptions among the five pages that I audited. Each page had its own unique metadata that matched its content.
+
+However, I would still expect duplicate metadata to be possible across the complete 124-page sitemap. Large websites often contain many similar pages, especially service pages, project pages, or pages created from templates. If metadata is reused without being customized for each page, duplicate titles or descriptions can occur.
+
+### 3. Pick one Lighthouse SEO finding that surprised you — something you wouldn't have caught by eye. What did it catch, and why does that particular thing matter to a crawler even though it's invisible to a human?
+=>
+One finding that stood out was that the Services page and the Projects page both received a Lighthouse SEO score of 92, while the other audited pages received a perfect score of 100.
+
+Although both pages looked completely normal to a visitor, Lighthouse identified that there were still technical SEO improvements that could be made. This showed me that search engines evaluate much more than just the visible content on a page.
+
+Many SEO signals—such as metadata, canonical tags, robots directives, image alt attributes, and other HTML elements—are largely invisible to users but are essential for search engine crawlers. These technical elements help crawlers understand what a page is about, determine whether it should be indexed, and display it correctly in search results. Even when a page appears visually correct, small technical issues can reduce its SEO score and affect how efficiently search engines process the page.
 ---
 
 ## Goal 2: Structured Data — Validate What's Already Built (and What Changed Under It)
