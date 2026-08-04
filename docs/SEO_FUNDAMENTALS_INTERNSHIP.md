@@ -512,9 +512,33 @@ Take the 5 pages from Goal 1 (or the ones that actually carry schema — check w
 
 ### Questions to Answer
 
-1. Did any schema fail either validator? If yes — which tool caught it, what was wrong, and did you fix it or flag it? (Note if a page passed one validator but not the other — that's a real, informative finding about which layer actually broke.) If nothing failed either tool — pick one schema type *other than FAQPage* and explain, concretely, what result Google's Rich Results feature would actually show a searcher because this schema exists (a knowledge panel, an image carousel, a breadcrumb trail — be specific, not "better SEO").
-2. Find one place where two schemas are supposed to be linked (e.g., a `Person`'s `worksFor` pointing at the `Organization`, or a `Service`'s `provider`). Confirm in the code that the link is real, not just two schemas that happen to mention the same company name as plain text.
-3. Independently verify the FAQ rich-results retirement claim above (search Google's own Search Central documentation/blog, don't just trust an SEO blog's summary of it). What's your actual source? Does what you found match what this doc says, or is it more nuanced?
+### 1. Did any schema fail either validator? If yes — which tool caught it, what was wrong, and did you fix it or flag it? (Note if a page passed one validator but not the other — that's a real, informative finding about which layer actually broke.) If nothing failed either tool — pick one schema type *other than FAQPage* and explain, concretely, what result Google's Rich Results feature would actually show a searcher because this schema exists (a knowledge panel, an image carousel, a breadcrumb trail — be specific, not "better SEO").
+=>
+No schema failed either the Schema Markup Validator or Google's Rich Results Test. All five audited pages validated successfully, and no errors or warnings were reported. Therefore, no schema fixes were required.
+
+One schema type that contributes to Google's rich search features is the `Organization` schema. This schema helps Google identify the business behind the website and can contribute to an organization's knowledge panel when sufficient supporting information is available. The knowledge panel may display details such as the company name, logo, website, contact information, and social media profiles. Although the `Organization` schema alone does not guarantee a knowledge panel, it provides structured information that helps Google understand and verify the business entity.
+
+### 2. Find one place where two schemas are supposed to be linked (e.g., a `Person`'s `worksFor` pointing at the `Organization`, or a `Service`'s `provider`). Confirm in the code that the link is real, not just two schemas that happen to mention the same company name as plain text.
+=>
+One clear relationship in the code exists between the `Person` schema and the `Organization` schema. The `Person` schema uses the `worksFor` property to reference the `Organization` schema through its unique `@id` (`https://www.nsengineering.com.np/#organization`) rather than simply repeating the company name as plain text. :contentReference[oaicite:1]{index=1}
+
+```ts
+worksFor: {
+  '@id': `${SITE_URL}/#organization`,
+}
+```
+
+The `Organization` schema itself is defined with the same `@id`:
+
+```ts
+'@id': `${SITE_URL}/#organization`,
+```
+
+This confirms that the two schemas are directly linked in the code. Search engines and AI systems can therefore understand that each team member works for N.S. Engineering & Geotechnical Services Pvt. Ltd., creating a connected knowledge graph instead of treating the `Person` and `Organization` as unrelated entities.
+
+### 3. Independently verify the FAQ rich-results retirement claim above (search Google's own Search Central documentation/blog, don't just trust an SEO blog's summary of it). What's your actual source? Does what you found match what this doc says, or is it more nuanced?
+=>
+
 4. Given what you found in Question 3: should `FAQPageSchema.tsx` stay, change, or go? Write your reasoning, not just your conclusion — this is a real recommendation you're making about live code, not a hypothetical.
 
 ---
