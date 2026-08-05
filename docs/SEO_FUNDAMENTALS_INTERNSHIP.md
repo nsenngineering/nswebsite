@@ -538,8 +538,17 @@ This confirms that the two schemas are directly linked in the code. Search engin
 
 ### 3. Independently verify the FAQ rich-results retirement claim above (search Google's own Search Central documentation/blog, don't just trust an SEO blog's summary of it). What's your actual source? Does what you found match what this doc says, or is it more nuanced?
 =>
+I verified the FAQ rich-result changes using Google's official Search Central documentation for FAQ structured data. The documentation states that FAQ rich results stopped appearing in Google Search on **May 7, 2026**. It also explains that support for FAQPage in the Rich Results Test, the FAQ search appearance report in Google Search Console, and the FAQ rich-result report were removed in **June 2026**.
 
-4. Given what you found in Question 3: should `FAQPageSchema.tsx` stay, change, or go? Write your reasoning, not just your conclusion — this is a real recommendation you're making about live code, not a hypothetical.
+My findings match the roadmap. However, the documentation also makes an important distinction: Google removed the **FAQ rich result feature**, not the **FAQPage Schema.org vocabulary** itself. The structured data remains valid, but it no longer produces the expandable FAQ rich result in Google Search.
+
+### 4. Given what you found in Question 3: should `FAQPageSchema.tsx` stay, change, or go? Write your reasoning, not just your conclusion — this is a real recommendation you're making about live code, not a hypothetical.
+=>
+I recommend **keeping** the `FAQPageSchema.tsx` component but updating its purpose and the accompanying documentation.
+
+Previously, the main benefit of FAQPage schema was to generate expandable FAQ rich results in Google Search. Since Google has retired this feature, the component should no longer be maintained with the expectation of improving search-result appearance.
+
+However, the FAQPage structured data itself remains valid according to Schema.org, and Google's documentation does not recommend removing it. Keeping the schema still provides structured question-and-answer information that can help search engines and AI systems better understand the page content. Therefore, the component should remain in the codebase, but the project documentation should be updated to explain that its primary value is now improved content understanding and structured data consistency rather than generating FAQ rich results.
 
 ---
 
