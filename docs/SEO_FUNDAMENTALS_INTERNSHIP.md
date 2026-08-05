@@ -301,13 +301,151 @@ Read, in this order: `docs/SEO_OPTIMIZATION_ROADMAP.md` (full), then `src/lib/se
 
 ### Questions to Answer
 
-1. `generatePageMetadata()` in `metadata-helpers.ts` takes a `keywords` array as an optional parameter. Find one page in `src/app/` that actually passes keywords, and one that doesn't. Why would a page skip it?
-2. List the 5 schema types implemented in `src/components/seo/`. For each, name one specific fact it exposes that Google (or an AI assistant) couldn't otherwise reliably extract just from reading the page's visible text.
-3. Open `public/robots.txt`. What does `Crawl-delay: 1` actually do, and is it a good idea for a site this size? (Consider: does a 1-second-per-request delay meaningfully protect server load, or does it just slow down how fast Google indexes new pages?)
-4. The roadmap claims "Phase 4 (Structured Data): 90% Complete." Based on what you read in `schema-generators.ts` and the components, what's the missing 10%? Is the roadmap's estimate still accurate, or did it change since 2026-06-19?
-5. `layout.tsx` has a `verification` metadata field that's commented out. Ask your mentor how GSC verification was actually done for this site (DNS, HTML file, or meta tag), and separately whether Bing verification was ever done at all — note that Bing offers a one-click "import from GSC" path that leaves zero trace in the codebase, so a code search finding nothing doesn't settle the Bing question; only logging into bing.com/webmasters directly does. Write down both answers. If GSC verification was meta-tag based and never got un-commented, that's a real bug to flag, not a documentation gap.
-6. `robots.txt` currently only has a wildcard `User-agent: *` rule. Each major AI company runs *multiple, differently-named* bots for different purposes, not one — look up the real list: OpenAI runs `GPTBot` (training), `OAI-SearchBot` (builds the index behind ChatGPT's citations), and `ChatGPT-User` (live fetch on a user's request); Perplexity runs `PerplexityBot` (indexing) and `Perplexity-User` (live fetch); Anthropic runs `ClaudeBot` (training), `Claude-SearchBot` (indexing), and `Claude-User` (live fetch); Google's `Google-Extended` controls only whether crawled content can be used to *train* Gemini/Vertex models — it does **not** gate whether the site can be cited in AI Overviews or AI Mode, which draw from the same index Googlebot itself feeds. Given that, does a wildcard `Allow: /` reliably cover all of these, or can a crawler choose to ignore a wildcard rule if it never sees a rule addressed to its specific name? Form an opinion on whether this site should add explicit per-bot lines, and why — and specifically, whether blocking `Google-Extended` (if that were ever considered, e.g. to opt out of AI training) would have any effect on AI Overviews/AI Mode visibility, or whether that's a common misconception worth writing down so nobody on the team makes it later.
-7. Log into Google Search Console (ask your mentor for access) and check whether this property has the **Generative AI performance report** (Performance → a "Generative AI" tab, shipped June 2026, phased rollout — not guaranteed on every property). If it's there, note what it shows (impressions only, no clicks, as of when this was written). If it's not there, write that down too — it's a real, checkable fact about this specific property, not a guess.
+### 1. `generatePageMetadata()` in `metadata-helpers.ts` takes a `keywords` array as an optional parameter. Find one page in `src/app/` that actually passes keywords, and one that doesn't. Why would a page skip it?
+=> 
+The generatePageMetadata() function accepts keywords as an optional parameter (keywords?: string[]). One page that passes the keywords array is the About page (src/app/about/page.tsx), which uses generateAboutMetadata(). Inside generateAboutMetadata(), a list of SEO keywords such as "about NS Engineering" and "geotechnical company Nepal" is passed to generatePageMetadata(). A page that does not directly pass keywords is the Home page (src/app/page.tsx). The Home page does not export its own metadata or call generatePageMetadata(). Instead, it inherits the default metadata, including the global keywords, from src/app/layout.tsx. A page may skip passing its own keywords because the parameter is optional, because it can inherit metadata from the root layout, or because modern search engines rely much more on page content, titles, descriptions, and structured data than on the meta keywords tag. This makes page-specific keywords unnecessary in some cases.
+
+### 2. List the 5 schema types implemented in `src/components/seo/`. For each, name one specific fact it exposes that Google (or an AI assistant) couldn't otherwise reliably extract just from reading the page's visible text.
+=>
+
+| Schema Type | Purpose | One Specific Fact It Exposes |
+|-------------|---------|------------------------------|
+| **Organization Schema** | Provides structured information about NS Engineering as a company. | It explicitly identifies the company's official social media profiles (`sameAs`), allowing Google and AI assistants to recognize the official accounts instead of guessing from the visible page content. |
+| **LocalBusiness Schema** | Provides information about the company's physical business location. | It exposes the exact geographic coordinates (latitude and longitude) of the office, which cannot be reliably extracted from the visible address alone. |
+| **BreadcrumbList Schema** | Defines the navigation hierarchy of the website. | It explicitly describes the relationship between pages (e.g., **Home → Services → Projects**), helping search engines understand the site's structure rather than inferring it from navigation links. |
+| **FAQPage Schema** | Marks frequently asked questions and their answers in a structured format. | It explicitly identifies each question and its accepted answer, allowing Google to recognize FAQ content without having to infer the relationship from headings and paragraphs. |
+| **Person Schema** | Provides structured information about featured team members. | It exposes professional details such as the engineer's official role, experience, and LinkedIn profile, which search engines cannot reliably determine from visible text alone. |
+
+### 3. Open `public/robots.txt`. What does `Crawl-delay: 1` actually do, and is it a good idea for a site this size? (Consider: does a 1-second-per-request delay meaningfully protect server load, or does it just slow down how fast Google indexes new pages?)
+=>
+The `robots.txt` file contains the following directive:
+
+```txt
+Crawl-delay: 1
+```
+
+### What does `Crawl-delay: 1` do?
+
+`Crawl-delay: 1` tells web crawlers that respect this directive to wait **1 second between consecutive requests** when crawling the website. Its purpose is to reduce the load on the web server by preventing bots from sending many requests in a very short time.
+
+For example:
+
+```text
+Request 1
+↓ (wait 1 second)
+Request 2
+↓ (wait 1 second)
+Request 3
+```
+
+### Does Google follow `Crawl-delay`?
+
+No. **Googlebot ignores the `Crawl-delay` directive**. Google manages its crawl rate automatically based on the website's performance and server response. Therefore, adding `Crawl-delay: 1` does **not** slow down or control Google's crawling.
+
+For this site, **`Crawl-delay: 1` can be unnecessary. It does not improve Google's crawling behavior or significantly protect the server, but it may slow down compliant crawlers from indexing newly added or updated pages.
+
+### 4. The roadmap claims "Phase 4 (Structured Data): 90% Complete." Based on what you read in `schema-generators.ts` and the components, what's the missing 10%? Is the roadmap's estimate still accurate, or did it change since 2026-06-19?
+=>
+
+After reviewing `schema-generators.ts` and the pages under `src/app/`, the website already implements a comprehensive set of structured data, including:
+
+- **Organization** schema
+- **LocalBusiness** schema
+- **BreadcrumbList** schema
+- **Service** and **ServiceList (ItemList)** schemas
+- **ProjectList (ItemList)** schema
+- **FAQPage** schema
+- **Person** schema
+- **DefinedTerm** schema
+
+These schemas are dynamically generated from the project's JSON/Google Sheets data and are injected into the relevant pages using the `JsonLd` component. This means that structured data automatically stays up to date as the site's content changes.
+
+### What is the likely missing 10%?
+
+Based on the current implementation, the remaining work is not the core structured data itself but additional enhancements, such as:
+
+- Adding more specialized schema types (for example, `Article`, `WebPage`, `CollectionPage`, or `SearchAction`) where appropriate.
+- Further validating and testing the structured data using Google's Rich Results Test and Schema Markup Validator.
+- Monitoring Search Console for structured data warnings or enhancement reports.
+- Expanding schema coverage if new content types are added in the future.
+
+### Is the roadmap's estimate still accurate?
+
+The roadmap's estimate of **90% complete** no longer appears to be accurate.
+
+Compared with the roadmap dated **2026-06-19**, the current implementation is significantly more complete. The project includes multiple structured data types, dynamic JSON-LD generation, and page-specific schema integration across major pages such as About, Services, Projects, FAQ, Team, and others.
+
+Based on the current codebase, the Structured Data implementation is **closer to 100% complete**. Any remaining work consists of optional improvements and ongoing maintenance rather than major missing functionality.
+
+### 5. `layout.tsx` has a `verification` metadata field that's commented out. Ask your mentor how GSC verification was actually done for this site (DNS, HTML file, or meta tag), and separately whether Bing verification was ever done at all — note that Bing offers a one-click "import from GSC" path that leaves zero trace in the codebase, so a code search finding nothing doesn't settle the Bing question; only logging into bing.com/webmasters directly does. Write down both answers. If GSC verification was meta-tag based and never got un-commented, that's a real bug to flag, not a documentation gap.
+=>
+### Google Search Console (GSC) Verification
+
+The website is verified using **DNS verification**. A Google Search Console verification TXT record was added to the domain's DNS configuration, so no verification meta tag or HTML verification file is required in the codebase.
+
+Therefore, the commented-out `verification` metadata field in `layout.tsx` is **not a bug**. Since verification is handled through DNS, the metadata field is simply unused.
+
+### Bing Webmaster Verification
+
+**Bing Webmaster Tools has not been configured or verified** for this website.
+
+Although no Bing verification meta tag or HTML verification file exists in the codebase, that alone would not have been sufficient to determine its status because Bing also supports importing a site directly from Google Search Console. The verification status was confirmed separately.
+
+### 6. `robots.txt` currently only has a wildcard `User-agent: *` rule. Each major AI company runs *multiple, differently-named* bots for different purposes, not one — look up the real list: OpenAI runs `GPTBot` (training), `OAI-SearchBot` (builds the index behind ChatGPT's citations), and `ChatGPT-User` (live fetch on a user's request); Perplexity runs `PerplexityBot` (indexing) and `Perplexity-User` (live fetch); Anthropic runs `ClaudeBot` (training), `Claude-SearchBot` (indexing), and `Claude-User` (live fetch); Google's `Google-Extended` controls only whether crawled content can be used to *train* Gemini/Vertex models — it does **not** gate whether the site can be cited in AI Overviews or AI Mode, which draw from the same index Googlebot itself feeds. Given that, does a wildcard `Allow: /` reliably cover all of these, or can a crawler choose to ignore a wildcard rule if it never sees a rule addressed to its specific name? Form an opinion on whether this site should add explicit per-bot lines, and why — and specifically, whether blocking `Google-Extended` (if that were ever considered, e.g. to opt out of AI training) would have any effect on AI Overviews/AI Mode visibility, or whether that's a common misconception worth writing down so nobody on the team makes it later.
+=>
+The current `robots.txt` only contains a wildcard rule:
+
+```txt
+User-agent: *
+Allow: /
+```
+
+This rule allows all crawlers that follow the Robots Exclusion Protocol to crawl the website. also, most major AI crawlers (such as GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, Claude-SearchBot, Claude-User, PerplexityBot, and Perplexity-User) will match this wildcard rule if they do not have a more specific rule.
+However, each major AI company now operates **multiple crawlers with different purposes**, including:
+
+| Company | Crawlers | Purpose |
+|---------|----------|---------|
+| OpenAI | `GPTBot`, `OAI-SearchBot`, `ChatGPT-User` | Model training, search indexing, and live user-requested fetching |
+| Anthropic | `ClaudeBot`, `Claude-SearchBot`, `Claude-User` | Model training, search indexing, and live user-requested fetching |
+| Perplexity | `PerplexityBot`, `Perplexity-User` | Search indexing and live user-requested fetching |
+| Google | `Googlebot`, `Google-Extended` | Search indexing and AI training control |
+
+### Does the wildcard rule cover all AI bots?
+
+**yes**. A compliant crawler that does not find a rule addressed to its own user-agent will fall back to the wildcard (`User-agent: *`) group. Therefore, the current configuration already allows these crawlers to access the site.
+
+However, relying only on a wildcard rule is not the clearest long-term approach. As AI crawlers continue to evolve, adding **explicit per-bot rules** makes the site's crawling policy easier to understand, audit, and maintain. It also allows the team to control individual crawlers independently in the future.
+
+### Should this site add explicit AI bot rules?
+
+**Yes.**
+
+Even though the wildcard rule currently permits all crawlers, explicitly listing important AI crawlers is a better practice because it:
+
+- Clearly documents which AI crawlers the site intends to allow.
+- Makes future policy changes easier without affecting unrelated bots.
+- Separates training crawlers from search and live-retrieval crawlers.
+- Improves maintainability as additional AI crawlers are introduced.
+
+### About `Google-Extended`
+
+`Google-Extended` is **not** the crawler responsible for Google Search indexing. Instead, it is a control token that determines whether Google may use already-crawled content for training Gemini and Vertex AI models. Blocking `Google-Extended` **does not** stop Googlebot from crawling the site or prevent pages from appearing in Google Search. It also **does not prevent the site from being cited in AI Overviews or AI Mode**, because those features use Google's normal search index built by **Googlebot**, not the `Google-Extended` training permission. :contentReference[oaicite:3]{index=3}
+
+### Common misconception
+
+A common misconception is that blocking `Google-Extended` will remove a website from **AI Overviews** or **AI Mode**. Blocking `Google-Extended` only opts the site's content out of Google's AI model training. Search visibility, AI Overviews, and AI Mode continue to depend on **Googlebot** crawling and indexing the website. :contentReference[oaicite:4]{index=4}
+
+### 7. Log into Google Search Console (ask your mentor for access) and check whether this property has the **Generative AI performance report** (Performance → a "Generative AI" tab, shipped June 2026, phased rollout — not guaranteed on every property). If it's there, note what it shows (impressions only, no clicks, as of when this was written). If it's not there, write that down too — it's a real, checkable fact about this specific property, not a guess.
+=>
+**Google Search Console – Generative AI Performance Report**
+
+**Property**: nsengineering.com.np
+
+**Status**: Not available
+
+**Observation**:
+
+I logged into the Google Search Console property and checked the Performance report. The property currently does not have the Generative AI Performance report or tab. Only the standard Web Search performance metrics (Clicks, Impressions, CTR, and Average Position) are available. Therefore, there are no Generative AI impression metrics available for this property at this time.
 
 ---
 
@@ -334,10 +472,25 @@ Pick 5 real pages: homepage, `/services`, `/projects`, `/team`, and one individu
 
 ### Questions to Answer
 
-1. Which of your 5 pages had the weakest title/description, and what would you change it to? (The roadmap has real before/after examples for Services, Projects, and Homepage — compare your independent answer to theirs before reading them, then note where you agree or disagree.)
-2. Did you find any duplicate titles or descriptions across the 5 pages? If not here, would you expect to find any across the full 124-URL sitemap, and why?
-3. Pick one Lighthouse SEO finding that surprised you — something you wouldn't have caught by eye. What did it catch, and why does that particular thing matter to a crawler even though it's invisible to a human?
+### 1. Which of your 5 pages had the weakest title/description, and what would you change it to? (The roadmap has real before/after examples for Services, Projects, and Homepage — compare your independent answer to theirs before reading them, then note where you agree or disagree.)
+=>
+Among the five pages I audited, the Services page and the Projects page were the weakest because they both received a Lighthouse SEO score of 92, while the other pages scored 100.
 
+Although both pages already have a title and meta description, I believe they could be improved by making them more keyword-focused and descriptive.
+
+### 2. Did you find any duplicate titles or descriptions across the 5 pages? If not here, would you expect to find any across the full 124-URL sitemap, and why?
+=>
+I did not find any duplicate titles or meta descriptions among the five pages that I audited. Each page had its own unique metadata that matched its content.
+
+However, I would still expect duplicate metadata to be possible across the complete 124-page sitemap. Large websites often contain many similar pages, especially service pages, project pages, or pages created from templates. If metadata is reused without being customized for each page, duplicate titles or descriptions can occur.
+
+### 3. Pick one Lighthouse SEO finding that surprised you — something you wouldn't have caught by eye. What did it catch, and why does that particular thing matter to a crawler even though it's invisible to a human?
+=>
+One finding that stood out was that the Services page and the Projects page both received a Lighthouse SEO score of 92, while the other audited pages received a perfect score of 100.
+
+Although both pages looked completely normal to a visitor, Lighthouse identified that there were still technical SEO improvements that could be made. This showed me that search engines evaluate much more than just the visible content on a page.
+
+Many SEO signals—such as metadata, canonical tags, robots directives, image alt attributes, and other HTML elements—are largely invisible to users but are essential for search engine crawlers. These technical elements help crawlers understand what a page is about, determine whether it should be indexed, and display it correctly in search results. Even when a page appears visually correct, small technical issues can reduce its SEO score and affect how efficiently search engines process the page.
 ---
 
 ## Goal 2: Structured Data — Validate What's Already Built (and What Changed Under It)
@@ -359,10 +512,43 @@ Take the 5 pages from Goal 1 (or the ones that actually carry schema — check w
 
 ### Questions to Answer
 
-1. Did any schema fail either validator? If yes — which tool caught it, what was wrong, and did you fix it or flag it? (Note if a page passed one validator but not the other — that's a real, informative finding about which layer actually broke.) If nothing failed either tool — pick one schema type *other than FAQPage* and explain, concretely, what result Google's Rich Results feature would actually show a searcher because this schema exists (a knowledge panel, an image carousel, a breadcrumb trail — be specific, not "better SEO").
-2. Find one place where two schemas are supposed to be linked (e.g., a `Person`'s `worksFor` pointing at the `Organization`, or a `Service`'s `provider`). Confirm in the code that the link is real, not just two schemas that happen to mention the same company name as plain text.
-3. Independently verify the FAQ rich-results retirement claim above (search Google's own Search Central documentation/blog, don't just trust an SEO blog's summary of it). What's your actual source? Does what you found match what this doc says, or is it more nuanced?
-4. Given what you found in Question 3: should `FAQPageSchema.tsx` stay, change, or go? Write your reasoning, not just your conclusion — this is a real recommendation you're making about live code, not a hypothetical.
+### 1. Did any schema fail either validator? If yes — which tool caught it, what was wrong, and did you fix it or flag it? (Note if a page passed one validator but not the other — that's a real, informative finding about which layer actually broke.) If nothing failed either tool — pick one schema type *other than FAQPage* and explain, concretely, what result Google's Rich Results feature would actually show a searcher because this schema exists (a knowledge panel, an image carousel, a breadcrumb trail — be specific, not "better SEO").
+=>
+No schema failed either the Schema Markup Validator or Google's Rich Results Test. All five audited pages validated successfully, and no errors or warnings were reported. Therefore, no schema fixes were required.
+
+One schema type that contributes to Google's rich search features is the `Organization` schema. This schema helps Google identify the business behind the website and can contribute to an organization's knowledge panel when sufficient supporting information is available. The knowledge panel may display details such as the company name, logo, website, contact information, and social media profiles. Although the `Organization` schema alone does not guarantee a knowledge panel, it provides structured information that helps Google understand and verify the business entity.
+
+### 2. Find one place where two schemas are supposed to be linked (e.g., a `Person`'s `worksFor` pointing at the `Organization`, or a `Service`'s `provider`). Confirm in the code that the link is real, not just two schemas that happen to mention the same company name as plain text.
+=>
+One clear relationship in the code exists between the `Person` schema and the `Organization` schema. The `Person` schema uses the `worksFor` property to reference the `Organization` schema through its unique `@id` (`https://www.nsengineering.com.np/#organization`) rather than simply repeating the company name as plain text. :contentReference[oaicite:1]{index=1}
+
+```ts
+worksFor: {
+  '@id': `${SITE_URL}/#organization`,
+}
+```
+
+The `Organization` schema itself is defined with the same `@id`:
+
+```ts
+'@id': `${SITE_URL}/#organization`,
+```
+
+This confirms that the two schemas are directly linked in the code. Search engines and AI systems can therefore understand that each team member works for N.S. Engineering & Geotechnical Services Pvt. Ltd., creating a connected knowledge graph instead of treating the `Person` and `Organization` as unrelated entities.
+
+### 3. Independently verify the FAQ rich-results retirement claim above (search Google's own Search Central documentation/blog, don't just trust an SEO blog's summary of it). What's your actual source? Does what you found match what this doc says, or is it more nuanced?
+=>
+I verified the FAQ rich-result changes using Google's official Search Central documentation for FAQ structured data. The documentation states that FAQ rich results stopped appearing in Google Search on **May 7, 2026**. It also explains that support for FAQPage in the Rich Results Test, the FAQ search appearance report in Google Search Console, and the FAQ rich-result report were removed in **June 2026**.
+
+My findings match the roadmap. However, the documentation also makes an important distinction: Google removed the **FAQ rich result feature**, not the **FAQPage Schema.org vocabulary** itself. The structured data remains valid, but it no longer produces the expandable FAQ rich result in Google Search.
+
+### 4. Given what you found in Question 3: should `FAQPageSchema.tsx` stay, change, or go? Write your reasoning, not just your conclusion — this is a real recommendation you're making about live code, not a hypothetical.
+=>
+I recommend **keeping** the `FAQPageSchema.tsx` component but updating its purpose and the accompanying documentation.
+
+Previously, the main benefit of FAQPage schema was to generate expandable FAQ rich results in Google Search. Since Google has retired this feature, the component should no longer be maintained with the expectation of improving search-result appearance.
+
+However, the FAQPage structured data itself remains valid according to Schema.org, and Google's documentation does not recommend removing it. Keeping the schema still provides structured question-and-answer information that can help search engines and AI systems better understand the page content. Therefore, the component should remain in the codebase, but the project documentation should be updated to explain that its primary value is now improved content understanding and structured data consistency rather than generating FAQ rich results.
 
 ---
 
