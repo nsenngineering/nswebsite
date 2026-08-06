@@ -375,7 +375,7 @@ The roadmap's estimate of **90% complete** no longer appears to be accurate.
 
 Compared with the roadmap dated **2026-06-19**, the current implementation is significantly more complete. The project includes multiple structured data types, dynamic JSON-LD generation, and page-specific schema integration across major pages such as About, Services, Projects, FAQ, Team, and others.
 
-Based on the current codebase, the Structured Data implementation is **closer to 100% complete**. Any remaining work consists of optional improvements and ongoing maintenance rather than major missing functionality.
+Because I couldn't find an identifiable missing feature, I believe the roadmap's "90% complete" estimate is likely a snapshot from 2026-06-19 that has since become stale. Based on the current codebase, the structured data implementation appears functionally complete for the site's existing content. Future work would be maintenance or expansion for new content types rather than completing an unfinished implementation.
 
 ### 5. `layout.tsx` has a `verification` metadata field that's commented out. Ask your mentor how GSC verification was actually done for this site (DNS, HTML file, or meta tag), and separately whether Bing verification was ever done at all — note that Bing offers a one-click "import from GSC" path that leaves zero trace in the codebase, so a code search finding nothing doesn't settle the Bing question; only logging into bing.com/webmasters directly does. Write down both answers. If GSC verification was meta-tag based and never got un-commented, that's a real bug to flag, not a documentation gap.
 =>
@@ -474,9 +474,9 @@ Pick 5 real pages: homepage, `/services`, `/projects`, `/team`, and one individu
 
 ### 1. Which of your 5 pages had the weakest title/description, and what would you change it to? (The roadmap has real before/after examples for Services, Projects, and Homepage — compare your independent answer to theirs before reading them, then note where you agree or disagree.)
 =>
-Among the five pages I audited, the Services page and the Projects page were the weakest because they both received a Lighthouse SEO score of 92, while the other pages scored 100.
+Before reviewing the roadmap examples, I independently identified the Services page as having the weakest metadata because the title is relatively generic and the description focuses more on the company than the specific search intent. My proposed improvement was to make both the title and description more service-oriented by including keywords such as "Geotechnical Investigation", "Soil Testing", and "Foundation Engineering Nepal".
 
-Although both pages already have a title and meta description, I believe they could be improved by making them more keyword-focused and descriptive.
+After comparing my findings with the roadmap examples, I found that they reached essentially the same conclusion. The roadmap also rewrites the Services and Projects metadata to be more keyword focused and descriptive rather than simply branding the company. I therefore agree with the roadmap's direction. My independent review identified the same pages as needing improvement, although my wording differs slightly from the roadmap's examples.
 
 ### 2. Did you find any duplicate titles or descriptions across the 5 pages? If not here, would you expect to find any across the full 124-URL sitemap, and why?
 =>
@@ -512,10 +512,43 @@ Take the 5 pages from Goal 1 (or the ones that actually carry schema — check w
 
 ### Questions to Answer
 
-1. Did any schema fail either validator? If yes — which tool caught it, what was wrong, and did you fix it or flag it? (Note if a page passed one validator but not the other — that's a real, informative finding about which layer actually broke.) If nothing failed either tool — pick one schema type *other than FAQPage* and explain, concretely, what result Google's Rich Results feature would actually show a searcher because this schema exists (a knowledge panel, an image carousel, a breadcrumb trail — be specific, not "better SEO").
-2. Find one place where two schemas are supposed to be linked (e.g., a `Person`'s `worksFor` pointing at the `Organization`, or a `Service`'s `provider`). Confirm in the code that the link is real, not just two schemas that happen to mention the same company name as plain text.
-3. Independently verify the FAQ rich-results retirement claim above (search Google's own Search Central documentation/blog, don't just trust an SEO blog's summary of it). What's your actual source? Does what you found match what this doc says, or is it more nuanced?
-4. Given what you found in Question 3: should `FAQPageSchema.tsx` stay, change, or go? Write your reasoning, not just your conclusion — this is a real recommendation you're making about live code, not a hypothetical.
+### 1. Did any schema fail either validator? If yes — which tool caught it, what was wrong, and did you fix it or flag it? (Note if a page passed one validator but not the other — that's a real, informative finding about which layer actually broke.) If nothing failed either tool — pick one schema type *other than FAQPage* and explain, concretely, what result Google's Rich Results feature would actually show a searcher because this schema exists (a knowledge panel, an image carousel, a breadcrumb trail — be specific, not "better SEO").
+=>
+No schema failed either the Schema Markup Validator or Google's Rich Results Test. All five audited pages validated successfully, and no errors or warnings were reported. Therefore, no schema fixes were required.
+
+One schema type that contributes to Google's rich search features is the `Organization` schema. This schema helps Google identify the business behind the website and can contribute to an organization's knowledge panel when sufficient supporting information is available. The knowledge panel may display details such as the company name, logo, website, contact information, and social media profiles. Although the `Organization` schema alone does not guarantee a knowledge panel, it provides structured information that helps Google understand and verify the business entity.
+
+### 2. Find one place where two schemas are supposed to be linked (e.g., a `Person`'s `worksFor` pointing at the `Organization`, or a `Service`'s `provider`). Confirm in the code that the link is real, not just two schemas that happen to mention the same company name as plain text.
+=>
+One clear relationship in the code exists between the `Person` schema and the `Organization` schema. The `Person` schema uses the `worksFor` property to reference the `Organization` schema through its unique `@id` (`https://www.nsengineering.com.np/#organization`) rather than simply repeating the company name as plain text. :contentReference[oaicite:1]{index=1}
+
+```ts
+worksFor: {
+  '@id': `${SITE_URL}/#organization`,
+}
+```
+
+The `Organization` schema itself is defined with the same `@id`:
+
+```ts
+'@id': `${SITE_URL}/#organization`,
+```
+
+This confirms that the two schemas are directly linked in the code. Search engines and AI systems can therefore understand that each team member works for N.S. Engineering & Geotechnical Services Pvt. Ltd., creating a connected knowledge graph instead of treating the `Person` and `Organization` as unrelated entities.
+
+### 3. Independently verify the FAQ rich-results retirement claim above (search Google's own Search Central documentation/blog, don't just trust an SEO blog's summary of it). What's your actual source? Does what you found match what this doc says, or is it more nuanced?
+=>
+I verified the FAQ rich-result changes using Google's official Search Central documentation for FAQ structured data. The documentation states that FAQ rich results stopped appearing in Google Search on **May 7, 2026**. It also explains that support for FAQPage in the Rich Results Test, the FAQ search appearance report in Google Search Console, and the FAQ rich-result report were removed in **June 2026**.
+
+My findings match the roadmap. However, the documentation also makes an important distinction: Google removed the **FAQ rich result feature**, not the **FAQPage Schema.org vocabulary** itself. The structured data remains valid, but it no longer produces the expandable FAQ rich result in Google Search.
+
+### 4. Given what you found in Question 3: should `FAQPageSchema.tsx` stay, change, or go? Write your reasoning, not just your conclusion — this is a real recommendation you're making about live code, not a hypothetical.
+=>
+I recommend **keeping** the `FAQPageSchema.tsx` component but updating its purpose and the accompanying documentation.
+
+Previously, the main benefit of FAQPage schema was to generate expandable FAQ rich results in Google Search. Since Google has retired this feature, the component should no longer be maintained with the expectation of improving search-result appearance.
+
+However, the FAQPage structured data itself remains valid according to Schema.org, and Google's documentation does not recommend removing it. Keeping the schema still provides structured question-and-answer information that can help search engines and AI systems better understand the page content. Therefore, the component should remain in the codebase, but the project documentation should be updated to explain that its primary value is now improved content understanding and structured data consistency rather than generating FAQ rich results.
 
 ---
 
@@ -537,7 +570,9 @@ Take the 5 pages from Goal 1 (or the ones that actually carry schema — check w
 
 ### Questions to Answer
 
-1. Of your 15+ keywords, how many currently have a real page that could rank for them today (even if imperfectly optimized), and how many represent content that doesn't exist yet?
+### 1. Of your 15+ keywords, how many currently have a real page that could rank for them today (even if imperfectly optimized), and how many represent content that doesn't exist yet?
+=>
+
 2. Pick one keyword and honestly assess its intent. Does the page you mapped it to actually serve that intent, or does it serve a *different* intent that happens to use similar words?
 3. Compare your independent keyword list to the roadmap's example categories (Pile Testing, Soil Testing, Rock Testing, Geophysical, Drilling, Project Types). Did you find anything real people would search for that doesn't fit neatly into those categories?
 
