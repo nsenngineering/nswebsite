@@ -572,11 +572,93 @@ However, the FAQPage structured data itself remains valid according to Schema.or
 
 ### 1. Of your 15+ keywords, how many currently have a real page that could rank for them today (even if imperfectly optimized), and how many represent content that doesn't exist yet?
 =>
+Out of the **15 researched keywords**:
 
-2. Pick one keyword and honestly assess its intent. Does the page you mapped it to actually serve that intent, or does it serve a *different* intent that happens to use similar words?
-3. Compare your independent keyword list to the roadmap's example categories (Pile Testing, Soil Testing, Rock Testing, Geophysical, Drilling, Project Types). Did you find anything real people would search for that doesn't fit neatly into those categories?
+- **6 keywords** are marked as **Good Fit**, meaning the website already has a page that closely matches the keyword and its search intent. These pages are already well aligned and do not require major SEO changes.
+- **6 keywords** are marked as **Needs Rework**, meaning the website has a relevant page, but the page should be improved. The page title, H1 heading, meta description, or page content does not use the same wording that people search for on Google. These pages need SEO optimization instead of new content.
+- **3 keywords** are marked as **Content Gap**, meaning the website does not currently have a page that targets these topics. The missing keywords are:
+  - foundation investigation
+  - concrete testing labs near me
+  - concrete laboratory
 
----
+The keyword audit shows that the website already covers most of the researched keywords, but several existing pages need SEO improvements. Three keywords have no matching page, creating clear content gaps. The most important missing topic is **concrete testing**, which should be added as a new service page or section.
+
+### 2. Pick one keyword and honestly assess its intent. Does the page you mapped it to actually serve that intent, or does it serve a *different* intent that happens to use similar words?
+=>
+
+**Keyword:** **"geotechnical lab near me"**
+
+**Mapped Page:** **Homepage**
+
+The homepage only partially matches the user's search intent.
+
+When someone searches for **"geotechnical lab near me"**, they are usually looking for:
+
+- A nearby laboratory
+- Business location
+- Contact number
+- Office hours
+- Google Maps directions
+
+The **homepage** mainly provides:
+
+- Company introduction
+- Services offered
+- General business information
+
+The **homepage** partially matches the keyword because it introduces the company's geotechnical services. However, users searching for "geotechnical lab near me" want to find the laboratory's location and contact details. Therefore, the existing Contact page should be optimized to better meet this search intent.
+
+### 3. Compare your independent keyword list to the roadmap's example categories (Pile Testing, Soil Testing, Rock Testing, Geophysical, Drilling, Project Types). Did you find anything real people would search for that doesn't fit neatly into those categories?
+=>
+Most of the researched keywords fit into the roadmap's service categories, such as:
+
+- Pile Testing
+- Soil Testing
+- Rock Testing
+- Geophysical Investigation
+- Drilling
+- Project Types
+
+However, two groups of keywords do **not** fit into these categories.
+
+### 1. Local ("Near Me") Searches
+
+Examples:
+
+- geotechnical lab near me
+- concrete testing labs near me
+- soil testing lab in Kathmandu
+
+These keywords focus on **finding a nearby business**, not on learning about a specific engineering service.
+
+People searching these keywords usually want:
+
+- Nearby location
+- Contact information
+- Google Maps
+- Office hours
+- Directions
+
+These searches are based on **location**, so they do not belong to a single service category.
+
+### 2. Publication / Resource Searches
+
+Examples:
+
+- civil engineering journal
+- civil engineering publications
+
+These users are **not looking for engineering services**.
+
+Instead, they want educational resources such as:
+
+- Technical papers
+- Journals
+- Publications
+- Standards
+- Reference documents
+
+These keywords naturally belong to the **eLibrary** section of the website instead of the Services pages.
 
 ## Goal 4: Core Web Vitals — Measuring the Performance Ranking Signal
 
