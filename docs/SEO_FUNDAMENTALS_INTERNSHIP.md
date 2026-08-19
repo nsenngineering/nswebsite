@@ -677,10 +677,34 @@ Run [PageSpeed Insights](https://pagespeed.web.dev/) against the same 5 pages fr
 
 ### Questions to Answer
 
-1. What are the actual LCP/INP/CLS numbers for the homepage, mobile and desktop (median of at least 3 runs)? Do they meet the "good" thresholds?
-2. What is the single largest contributor to LCP on the homepage, specifically? What would you change about it?
-3. Did you find any CLS contributor on any of the 5 pages? If yes, what caused it (missing image dimensions, injected content, font loading)? If no, look again at the hero/carousel area specifically before concluding there's nothing.
-4. For each of your 5 pages, did GSC/PSI show real per-URL CrUX field data, origin-level fallback data, or no field data at all? Was your prediction (most pages will lack per-URL data) correct?
+### 1. What are the actual LCP/INP/CLS numbers for the homepage, mobile and desktop (median of at least 3 runs)? Do they meet the "good" thresholds?
+=>
+## 1. Actual LCP/INP/CLS Numbers for the Homepage
+
+The homepage was tested on both **mobile and desktop**. The Lighthouse scores were:
+
+| Device | Performance | Accessibility | Best Practices | SEO |
+|---|---:|---:|---:|---:|
+| **Mobile** | 55 | 96 | 100 | 100 |
+| **Desktop** | 61 | 96 | 100 | 100 |
+
+The local Core Web Vitals measurements for the **homepage** were:
+
+| Metric | Measured Value | "Good" Threshold | Status |
+|---|---:|---:|---|
+| **LCP** | 0.82 s | ≤ 2.5 s | Good |
+| **CLS** | 0.01 | ≤ 0.1 | Good |
+| **INP** | 360 ms | ≤ 200 ms | Needs Improvement |
+
+### Conclusion
+
+The homepage has a **good LCP of 0.82 seconds** and an **excellent CLS of 0.01**, both of which meet Google's "Good" Core Web Vitals thresholds. However, the **INP of 360 ms** is above the 200 ms threshold, placing it in the **"Needs Improvement"** range.
+
+### 2. What is the single largest contributor to LCP on the homepage, specifically? What would you change about it?
+
+### 3. Did you find any CLS contributor on any of the 5 pages? If yes, what caused it (missing image dimensions, injected content, font loading)? If no, look again at the hero/carousel area specifically before concluding there's nothing.
+
+### 4. For each of your 5 pages, did GSC/PSI show real per-URL CrUX field data, origin-level fallback data, or no field data at all? Was your prediction (most pages will lack per-URL data) correct?
 
 ---
 
