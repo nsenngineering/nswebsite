@@ -701,11 +701,39 @@ The local Core Web Vitals measurements for the **homepage** were:
 The homepage has a **good LCP of 0.82 seconds** and an **excellent CLS of 0.01**, both of which meet Google's "Good" Core Web Vitals thresholds. However, the **INP of 360 ms** is above the 200 ms threshold, placing it in the **"Needs Improvement"** range.
 
 ### 2. What is the single largest contributor to LCP on the homepage, specifically? What would you change about it?
+=>
+The homepage's largest LCP contributor is the hero text element span.text-white.drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]. Since its LCP is already 0.82 s, I wouldn't replace or heavily modify it. I would optimize how the hero content is delivered—keeping the text server-rendered, avoiding render-blocking fonts or JavaScript, and removing any animation/delay—so it remains available immediately.
 
 ### 3. Did you find any CLS contributor on any of the 5 pages? If yes, what caused it (missing image dimensions, injected content, font loading)? If no, look again at the hero/carousel area specifically before concluding there's nothing.
+=>
+The CLS (Cumulative Layout Shift) values were checked for the required pages using Google PageSpeed Insights. The **Home** and **Team** pages recorded a CLS score of **0.00**, indicating no measurable layout shifts. The **Services** and **Projects** pages recorded a CLS score of **0.03** each. Although a minor layout shift was detected on these two pages, the value is well below Google's **0.10 "Good" threshold**.
+
+The hero, image, carousel, and major content areas were also inspected to identify potential causes such as missing image dimensions, dynamically injected content, or font loading. No significant visual movement was observed during manual inspection.
+
+| Page | CLS Score | Result |
+|---|---:|---|
+| Home | 0.00 | Good – no measurable layout shift |
+| Team | 0.00 | Good – no measurable layout shift |
+| Services | 0.03 | Good – minor layout shift detected |
+| Projects | 0.03 | Good – minor layout shift detected |
+
+**Conclusion:** No significant CLS contributor was identified across the tested pages. The Services and Projects pages showed a small CLS value of 0.03, but both remain within the **Good** performance range. The hero and carousel areas were specifically checked and did not show noticeable layout instability.
 
 ### 4. For each of your 5 pages, did GSC/PSI show real per-URL CrUX field data, origin-level fallback data, or no field data at all? Was your prediction (most pages will lack per-URL data) correct?
+=>
+The five selected pages were tested using Google PageSpeed Insights to determine whether real-user performance data from the Chrome User Experience Report (CrUX) was available. PageSpeed Insights provides field data from real Chrome users when sufficient data is available for a URL. If URL-level data is unavailable, PageSpeed Insights attempts to provide origin-level data for the website. If there is also insufficient origin-level data, PageSpeed Insights displays **“No Data.”**
 
+| Page | CrUX Field Data | Data Level |
+|---|---|---|
+| Home | No Data | No field data available |
+| Team | No Data | No field data available |
+| Services | No Data | No field data available |
+| Projects | No Data | No field data available |
+| Contact | No Data | No field data available |
+
+The results show that **none of the five tested pages had available CrUX field data**. This means that PageSpeed Insights did not have sufficient real-user data to provide either URL-level or origin-level field data for the tested pages. This does not indicate that the pages had poor performance; rather, it means that sufficient real-user data was not available in the CrUX dataset.
+
+Therefore, the initial prediction that **most of the tested pages would lack per-URL CrUX data was correct**. In this case, the result was even stronger than predicted because **all five pages lacked available CrUX field data**. Consequently, the performance analysis for these pages relied on the **Lighthouse lab data** provided by PageSpeed Insights rather than real-user CrUX field data. PageSpeed Insights distinguishes lab data, which is collected in a controlled testing environment, from field data, which represents actual user experiences.
 ---
 
 ## Goal 5: Google Business Profile — The Single Highest-Leverage Gap on This List
