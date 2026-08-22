@@ -757,10 +757,96 @@ Therefore, the initial prediction that **most of the tested pages would lack per
 
 ### Questions to Answer
 
-1. Did you find any existing NS Engineering listing, even an old or inaccurate one? If yes, what specifically needs correcting rather than being replaced with something new?
-2. What primary category are you proposing, and what's your reasoning against at least one plausible alternative you considered and rejected?
-3. Write out NS Engineering's real services the way you'd enter them in the GBP Services list. Do they match, in substance, what the `Service` schema components already claim on the site? A real mismatch between the two is a credibility inconsistency worth flagging to your mentor, not something to quietly paper over.
-4. What's your proposed minimum posting/review cadence for keeping the profile active and the Q&A section monitored, and why that frequency specifically?
+### 1. Did you find any existing NS Engineering listing, even an old or inaccurate one? If yes, what specifically needs correcting rather than being replaced with something new?
+=>
+**Yes.**
+
+An existing Google Business Profile for **N.S. Engineering & Geo-technical Services Pvt. Ltd.** was found.
+
+Therefore, a new listing should not be created.
+
+The existing listing requires correction/verification rather than replacement.
+
+The main issues identified are:
+
+* Business-name spelling difference: `Geo-technical` vs. `Geotechnical`
+* NAP/address consistency
+* HTTP website URL instead of HTTPS
+* Business-description wording
+* Missing/insufficient visual assets such as logo and cover photo
+* No Google reviews
+
+A separate duplicate-search check should still be documented before making any changes.
+
+---
+
+### 2. What primary category are you proposing, and what's your reasoning against at least one plausible alternative you considered and rejected?
+=>
+### Proposed primary category:
+
+> **Engineering consultant**
+
+### Reasoning
+
+The company provides a broad range of engineering, geotechnical investigation, drilling, testing, pile testing, geophysical, bridge/pavement, and non-destructive testing services.
+
+A broad engineering category therefore represents the organization better than choosing a category focused on only one service.
+
+### Alternative considered
+
+A narrower geotechnical-focused category was considered because geotechnical engineering is a major area of the company's work.
+
+However, it could represent only one part of the company's broader service offering.
+
+---
+### 3. Write out NS Engineering's real services the way you'd enter them in the GBP Services list. Do they match, in substance, what the `Service` schema components already claim on the site? A real mismatch between the two is a credibility inconsistency worth flagging to your mentor, not something to quietly paper over.
+=>
+### The services currently represented in GBP are:
+
+1. Drilling
+2. Field Investigation
+3. Physical and Chemical Material Testing
+4. Rock Mechanical Testing
+5. Pile Testing
+6. Geophysical Surveys
+7. Bridge and Pavement
+8. Non-Destructive Testing
+
+### These broadly correspond to the official website's service structure:
+
+1. Drilling & Field Investigation
+2. Material Testing (Physical & Chemical)
+3. Rock Mechanical Testing
+4. Pile Testing
+5. Geophysical Surveys
+6. Bridge & Pavement
+7. Non-Destructive Testing
+
+### Conclusion
+
+**Yes, the GBP services match the website in substance.**
+
+The main difference is that GBP separates Drilling and Field Investigation while the website groups them together.
+
+No major service-schema mismatch has been identified.
+
+### 4. What's your proposed minimum posting/review cadence for keeping the profile active and the Q&A section monitored, and why that frequency specifically?
+=>
+### Proposed minimum maintenance cadence
+
+* **Q&A:** Monitor weekly
+* **Reviews:** Monitor weekly
+* **Review responses:** Respond within 3–5 business days
+* **Google Posts:** Approximately 2 per month
+* **Profile information:** Review monthly
+* **Performance:** Review monthly
+* **Photos:** Update when genuine, useful business/project photos become available
+
+### Reasoning
+
+The proposed cadence is designed to be realistic and sustainable.
+
+The purpose is to maintain accurate and useful information. Reviews and Q&A should be monitored regularly because they can directly affect how potential customers perceive the business, while Posts and photos should only be added when there is genuine company information worth publishing.
 
 ---
 
