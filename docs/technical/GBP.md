@@ -92,7 +92,6 @@ This should not be changed based on assumption.
 
 > Engineering consultant
 
-The category name can be changed if needed.
 ## Reasoning
 
 NS Engineering provides a broad range of engineering and geotechnical services rather than operating only as a single-purpose testing laboratory.
