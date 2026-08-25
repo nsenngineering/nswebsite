@@ -880,7 +880,33 @@ Run each query more than once per surface where practical — these are probabil
 
 ### Questions to Answer
 
-1. Across your 4+ queries and 5 surfaces (ChatGPT, Perplexity, Claude, Google AI Overviews, Google AI Mode), did NS Engineering ever get mentioned unprompted? Where, and how accurately?
+### 1. Across your 4+ queries and 5 surfaces (ChatGPT, Perplexity, Claude, Google AI Overviews, Google AI Mode), did NS Engineering ever get mentioned unprompted? Where, and how accurately?
+=>
+**Yes**.
+
+NS Engineering appeared unprompted in the collected results for all four queries on Google AI Search, ChatGPT and Claude.
+
+It also appeared in the Perplexity results for:
+
+- "What is PDA testing and who provides it in Kathmandu?"
+- "Best geotechnical engineering firm in Nepal"
+
+However, Perplexity did not mention NS Engineering in the available response for:
+
+- "Who does soil investigation for hydropower projects in Nepal?"
+
+The strongest visibility was around **pile testing and PDA testing**.
+
+The systems repeatedly connected:
+
+> NS Engineering → pile testing → PDA/high-strain dynamic testing
+
+NS Engineering also showed strong visibility for broader geotechnical-engineering searches and hydropower-related investigation.
+
+The available results generally described NS Engineering using technically relevant services rather than merely mentioning the company name.
+
+However, AI-generated claims still require verification against the company's current website before being classified as definitively accurate.
+
 2. Pick one query where NS Engineering did *not* come up. What organization or source did come up instead? What does that source have (a directory listing, a review site, a competitor's site) that NS Engineering's site currently doesn't?
 3. From your content check: did the 2 pages you audited already contain citable specifics (numbers, named standards, cited sources), or mostly unquantified claims? What's one real sentence you'd rewrite, and what would you add to it?
 4. Of the 5 schema types validated in Goal 2, which one do you think is most directly useful to an AI trying to answer "who does X in Nepal" — and is that schema actually present on the pages most likely to be the right answer to that question?
