@@ -907,10 +907,10 @@ The available results generally described NS Engineering using technically relev
 
 However, AI-generated claims still require verification against the company's current website before being classified as definitively accurate.
 
-2. Pick one query where NS Engineering did *not* come up. What organization or source did come up instead? What does that source have (a directory listing, a review site, a competitor's site) that NS Engineering's site currently doesn't?
-3. From your content check: did the 2 pages you audited already contain citable specifics (numbers, named standards, cited sources), or mostly unquantified claims? What's one real sentence you'd rewrite, and what would you add to it?
-4. Of the 5 schema types validated in Goal 2, which one do you think is most directly useful to an AI trying to answer "who does X in Nepal" — and is that schema actually present on the pages most likely to be the right answer to that question?
-5. Propose your 3 concrete fixes. At least one should be something achievable with existing tools/content this week (not "wait for AI companies to change how they work," and not "add llms.txt" unless you can justify it against what Question in the Checkpoint Concepts above just told you about its actual usage).
+### 2. Pick one query where NS Engineering did *not* come up. What organization or source did come up instead? What does that source have (a directory listing, a review site, a competitor's site) that NS Engineering's site currently doesn't?
+### 3. From your content check: did the 2 pages you audited already contain citable specifics (numbers, named standards, cited sources), or mostly unquantified claims? What's one real sentence you'd rewrite, and what would you add to it?
+### 4. Of the 5 schema types validated in Goal 2, which one do you think is most directly useful to an AI trying to answer "who does X in Nepal" — and is that schema actually present on the pages most likely to be the right answer to that question?
+### 5. Propose your 3 concrete fixes. At least one should be something achievable with existing tools/content this week (not "wait for AI companies to change how they work," and not "add llms.txt" unless you can justify it against what Question in the Checkpoint Concepts above just told you about its actual usage).
 
 ---
 
