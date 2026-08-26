@@ -56,7 +56,7 @@ const Header: React.FC = () => {
   ];
 
   const isActiveLink = (href: string) => {
-    return href === '/' ? pathname === '/' : pathname.startsWith(href);
+    return href === '/' ? pathname === '/' : Boolean(pathname?.startsWith(href));
   };
 
   return (

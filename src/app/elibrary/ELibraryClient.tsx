@@ -63,11 +63,11 @@ export default function ELibraryClient({ initialData }: ELibraryClientProps) {
   } = initialData;
 
   const sectionCounts = useMemo<Record<ELibrarySection, number>>(() => ({
-    'standard-codes': standardCodeItems.length || data.standardCodes?.length || 0,
-    publications: publicationItems.length || data.publications?.length || 0,
-    'curated-papers': curatedPaperItems.length || data.curatedPapers?.length || 0,
-    downloads: downloadItems.length || data.downloads?.length || 0,
-    newsletters: newsletterItems.length || data.newsletters?.length || 0,
+    'standard-codes': standardCodeItems.length,
+    publications: publicationItems.length,
+    'curated-papers': curatedPaperItems.length,
+    downloads: downloadItems.length,
+    newsletters: newsletterItems.length,
   }), [newsletterItems, standardCodeItems, publicationItems, curatedPaperItems, downloadItems]);
 
   // Search stays entirely client-side, over data already in memory.

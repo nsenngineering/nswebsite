@@ -11,6 +11,8 @@ export default function NotFound() {
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
+    if (!pathname) return;
+
     // Check if current path matches a redirect rule
     const target = findRedirect(pathname);
 
