@@ -29,6 +29,7 @@ export async function generateSitemap() {
     { path: '/about', priority: 0.9, changefreq: 'monthly' as const },
     { path: '/services', priority: 0.9, changefreq: 'weekly' as const },
     { path: '/projects', priority: 0.9, changefreq: 'weekly' as const },
+    { path: '/hydropower-investigations', priority: 0.9, changefreq: 'monthly' as const },
     { path: '/team', priority: 0.8, changefreq: 'monthly' as const },
     { path: '/elibrary', priority: 0.7, changefreq: 'weekly' as const },
     { path: '/faq', priority: 0.7, changefreq: 'monthly' as const },
