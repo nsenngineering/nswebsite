@@ -908,9 +908,207 @@ The available results generally described NS Engineering using technically relev
 However, AI-generated claims still require verification against the company's current website before being classified as definitively accurate.
 
 ### 2. Pick one query where NS Engineering did *not* come up. What organization or source did come up instead? What does that source have (a directory listing, a review site, a competitor's site) that NS Engineering's site currently doesn't?
+=>
+## Query selected
+
+> "Who does soil investigation for hydropower projects in Nepal?"
+
+## Surface
+
+Perplexity
+
+## Result
+
+NS Engineering did not appear in the available Perplexity answer.
+
+Instead, Perplexity emphasized companies including:
+
+- SILT Consultants
+- ICGS
+- Quartz Drilling and Lab
+- Explorer Geophysical Consultants
+- Clean Energy Consultants
+- Akara Material Testing Laboratory
+
+## Competitor example: SILT Consultants
+
+The Perplexity response presented SILT as a strongly hydropower-focused geotechnical firm.
+
+It associated SILT with:
+
+- hydropower projects
+- dams
+- test pits
+- core drilling
+- laboratory testing
+- slope stability
+- foundation studies
+- intakes
+- powerhouses
+- tunnels
+
 ### 3. From your content check: did the 2 pages you audited already contain citable specifics (numbers, named standards, cited sources), or mostly unquantified claims? What's one real sentence you'd rewrite, and what would you add to it?
+=>
+Two pages were audited:
+
+1. Pile Testing / PDA service page
+2. Hydropower / Geotechnical Investigation project or service page
+
+The pages contain useful service descriptions and some project-specific information, but there is an opportunity to make the content more citation-friendly.
+
+The strongest improvements would be to add:
+
+- concrete project numbers
+- named projects
+- project locations
+- MW capacity where relevant
+- number/type of tests performed
+- applicable testing standards
+- specific equipment
+- dates or project periods
+- links to authoritative project sources where available
+
+A generic statement such as:
+
+> "We provide professional and reliable geotechnical testing services."
+
+would be less useful to an AI system than a verifiable statement containing a specific service, project, standard, location, or measurable result.
+
+Therefore, the main content weakness is not a lack of service coverage, but a lack of consistently structured, independently verifiable specifics on some pages.
+
+---
 ### 4. Of the 5 schema types validated in Goal 2, which one do you think is most directly useful to an AI trying to answer "who does X in Nepal" — and is that schema actually present on the pages most likely to be the right answer to that question?
+=>
+Of the five schema types validated in Goal 2, the `Service` schema is the most directly useful for a query such as "who does X in Nepal?"
+
+A `Service` schema can explicitly connect:
+
+- the service being offered
+- the organization providing it
+- the service description
+- the relevant page
+
+For example, a service relationship can communicate that NS Engineering provides pile testing, PDA testing, or geotechnical investigation.
+
+This is more directly aligned with a query such as "who does pile testing in Nepal" than a general `Organization` schema, because the question is fundamentally asking for a relationship between a service and its provider.
+
+The `Service` schema is therefore especially relevant to category-level AI queries.
+
+It should be present on the pages that are the most likely answers to these queries, particularly the pile-testing/PDA and relevant geotechnical investigation service pages. The important point is that the schema should accurately describe the visible content on those pages and connect the service to the NS Engineering organization entity.
+
+---
+
 ### 5. Propose your 3 concrete fixes. At least one should be something achievable with existing tools/content this week (not "wait for AI companies to change how they work," and not "add llms.txt" unless you can justify it against what Question in the Checkpoint Concepts above just told you about its actual usage).
+=>
+### Fix 1 — Strengthen the hydropower investigation content
+
+This is **important** because Perplexity failed to retrieve NS Engineering for the hydropower query.
+
+Create or improve a dedicated page around:
+
+> **Geotechnical Investigation for Hydropower Projects in Nepal**
+
+Include:
+
+* specific hydropower projects
+* MW capacities
+* locations
+* investigation methods
+* drilling information
+* laboratory testing
+* geophysical testing
+* named project experience
+* project dates
+* relevant standards
+* internal links to related services
+
+> **NS Engineering → Geotechnical Investigation → Hydropower Projects → Nepal**
+
+---
+
+### Fix 2: Turn project experience into evidence
+
+Our project pages should contain **specific, extractable facts** rather than only promotional descriptions.
+
+For example, structure projects like:
+
+```md
+## [Project Name]
+
+**Project type:** Hydropower  
+**Capacity:** [X] MW  
+**Location:** [Location]  
+**Client:** [Client, if publishable]  
+**Service provided:** Geotechnical Investigation  
+**Investigation methods:** [Methods]  
+**Project period:** [Date/Year]
+
+### Scope of Work
+
+NS Engineering carried out [specific work].
+
+### Key Deliverables
+
+- [Deliverable 1]
+- [Deliverable 2]
+- [Deliverable 3]
+```
+
+This gives an AI system several independently extractable facts.
+
+---
+
+### Fix 3: Strengthen the service/entity relationships
+
+Use the structured-data work from Goal 2.
+
+Make sure the important service pages have:
+
+```text
+Organization
+      ↓
+   provides
+      ↓
+   Service
+      ↓
+has related project experience
+      ↓
+   Project
+```
+
+For example:
+
+```text
+NS Engineering
+      ↓
+   provides
+      ↓
+PDA Testing
+```
+
+```text
+NS Engineering
+      ↓
+   provides
+      ↓
+Pile Integrity Testing
+```
+
+```text
+NS Engineering
+      ↓
+   provides
+      ↓
+Geotechnical Investigation
+```
+
+```text
+NS Engineering
+      ↓
+   provides
+      ↓
+Hydropower Investigation
+```
 
 ---
 
