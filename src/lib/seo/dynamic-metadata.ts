@@ -81,10 +81,13 @@ export function generateServicesMetadata() {
  */
 export function generateProjectsMetadata() {
   const counts = getDynamicCounts();
+  const hydropowerProjects = projectsData.projects.filter(
+    project => project.category === 'hydropower'
+  );
 
   return generatePageMetadata({
-    title: `Projects - ${counts.projects}+ Infrastructure Projects Across Nepal`,
-    description: `${counts.projects}+ completed geotechnical projects across Nepal. Roads, bridges, tunnels, hydropower, transmission lines. View our interactive project map showing work in all major districts.`,
+    title: `Projects - Hydropower & Infrastructure Work Across Nepal`,
+    description: `${counts.projects}+ projects across Nepal, including ${hydropowerProjects.length} hydropower investigations. Published examples include 284 m drilling at Nalgad and ERT, SRT and MASW surveys at Upper Bheri.`,
     path: '/projects',
     keywords: [
       'geotechnical projects Nepal',

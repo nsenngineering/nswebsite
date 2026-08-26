@@ -21,7 +21,7 @@ The intended test surfaces were:
 4. Google Search / AI Overview
 5. Google AI Mode
 
-At the time of this report, results have been collected for ChatGPT, Perplexity, Claude, and Google AI Search/AI Overview.
+At the time of this report, results have been collected for all five intended surfaces: ChatGPT, Perplexity, Claude, Google Search/AI Overview, and Google AI Mode.
 
 ---
 
@@ -56,6 +56,14 @@ For every query/surface combination, the following were evaluated:
 
 AI-generated claims were not automatically treated as factual. Claims were considered candidates for verification against NS Engineering's website and other authoritative sources.
 
+## 1.3 Google AI Mode capture
+
+The supplied Google AI Mode result mentioned NS Engineering for all four tested queries. It also surfaced the company's Google Business Profile for the pile-testing and PDA queries. This is positive unprompted visibility, but some wording was not supported by the current site data and should not be reused as company copy without review.
+
+Supported or substantially consistent claims included PDA, PIT, static pile-load testing, geotechnical investigation, drilling, soil/rock laboratory testing, geophysical surveys, MASW, and the Phukot Karnali PRoR HEP (480 MW) project. The capture also correctly connected the company to Juwagal/Lalitpur and to hydropower investigation in general.
+
+Claims requiring correction or independent verification included "one of the most technologically advanced operators," "leading provider," "lead the local market," the stated number of years for other firms, and any claim that a particular standard or software is used by NS Engineering. The current project data verifies Phukot Karnali and 16 other hydropower records, but it does not by itself prove market leadership, Google review facts, or every service attribution in the generated answer.
+
 ---
 
 # 2. Query Results
@@ -73,6 +81,14 @@ NS Engineering was **not the first company shown**. Other companies appeared bef
 The answer associated NS Engineering with pile testing, including **Pile Driving Analyzer (PDA) high-strain dynamic testing**.
 
 Other companies mentioned included Soil Engineering, I.C.G.S., Geo Engineering and AH Engineering Services,
+
+### Google AI Mode
+
+**NS Engineering mentioned:** Yes.
+
+Google AI Mode presented NS Engineering's business profile first among the visible results and associated the company with high-strain dynamic pile testing, PDA, PIT, and infrastructure work in Nepal. The company name, Juwagal/Lalitpur location, and PDA/PIT relationship are consistent with the site's public information.
+
+The descriptive phrases "one of the most technologically advanced operators" and the implied market ranking are promotional or comparative claims that are not demonstrated by the current project data. They should not be treated as verified evidence.
 
 ### ChatGPT
 
@@ -148,6 +164,12 @@ as visible PDA providers.
 
 It specifically stated that NS Engineering offers Dynamic Pile Load Test/PDA together with static pile load tests, PIT, CSL, and lateral load tests.
 
+### Google AI Mode
+
+**NS Engineering mentioned:** Yes.
+
+Google AI Mode explained PDA as a high-strain dynamic test and identified NS Engineering in Juwagal/Lalitpur as a provider. PDA, PIT, static load testing, and CSL are all represented in the site's service or project data. The capture's statements about being a "leading provider" and about other companies' equipment or certifications were not independently verified in this research.
+
 ## Preliminary finding
 
 This was one of the **strongest queries in the experiment**.
@@ -216,6 +238,12 @@ Perplexity included NS Engineering among notable geotechnical firms but position
 
 It positioned NS Engineering particularly strongly for advanced foundation testing and pile-related services.
 
+### Google AI Mode
+
+**NS Engineering mentioned:** Yes.
+
+Google AI Mode included NS Engineering among specialist firms and positioned it particularly around dynamic pile testing, PIT, MASW, and foundation load validation. The service associations are broadly consistent with the site. However, the answer's "best" rankings and claims such as "lead the local market" are opinions or unsupported comparative claims, not verified facts.
+
 ## Preliminary finding
 
 NS Engineering was **consistently discoverable for the broad geotechnical-engineering category**.
@@ -283,9 +311,17 @@ Perplexity's response described SILT in particular as having strong hydropower-s
 
 This query exposed a meaningful **cross-platform visibility difference**.
 
-NS Engineering appeared on Google AI Search, ChatGPT and Claude but was absent from the available Perplexity response.
+NS Engineering appeared on Google AI Search, Google AI Mode, ChatGPT and Claude but was absent from the available Perplexity response.
 
 This suggests that NS Engineering's association with general geotechnical investigation is strong enough to be retrieved by several systems, but its **hydropower-specific topical association may not yet be strong enough on every retrieval platform**.
+
+### Google AI Mode
+
+**NS Engineering mentioned:** Yes.
+
+Google AI Mode included NS Engineering among hydropower investigation providers and specifically referenced the Phukot Karnali PRoR HEP (480 MW). That project and capacity match the current project record, which lists in-situ rock mechanical testing. The capture also described drilling, rock/soil laboratory testing, and geophysical surveys, which are supported in substance by the company's service catalogue and hydropower project records.
+
+The answer did not provide a complete list of the company's verified hydropower projects or the strongest available technical examples such as Nalgad's 284 m drilling, four in-situ direct-shear tests, and nine plate-jacking tests. This supports the earlier finding that the site needs a more explicit, indexable hydropower evidence page.
 
 ---
 
@@ -293,12 +329,12 @@ This suggests that NS Engineering's association with general geotechnical invest
 
 The following table summarizes the currently collected evidence.
 
-| Query | Google AI Search | ChatGPT | Claude | Perplexity |
-|---|---|---|---|---|
-| Who does pile testing in Nepal? | **Yes — mentioned, but below other companies** | Yes | Yes | Yes |
-| What is PDA testing and who provides it in Kathmandu? | **Yes — mentioned** | Yes | Yes | Yes |
-| Best geotechnical engineering firm in Nepal | **Yes — mentioned among other firms** | Yes | Yes | Yes |
-| Who does soil investigation for hydropower projects in Nepal? | **Yes — mentioned** | Yes | Yes | **No** |
+| Query | Google AI Overview | Google AI Mode | ChatGPT | Claude | Perplexity |
+|---|---|---|---|---|---|
+| Who does pile testing in Nepal? | **Yes — mentioned, but below other companies** | **Yes — profile surfaced first** | Yes | Yes | Yes |
+| What is PDA testing and who provides it in Kathmandu? | **Yes — mentioned** | **Yes — provider identified** | Yes | Yes | Yes |
+| Best geotechnical engineering firm in Nepal | **Yes — mentioned among other firms** | **Yes — included among specialists** | Yes | Yes | Yes |
+| Who does soil investigation for hydropower projects in Nepal? | **Yes — mentioned** | **Yes — Phukot Karnali referenced** | Yes | Yes | **No** |
 
 ---
 
@@ -354,7 +390,27 @@ This is particularly important for hydropower-related searches, where Perplexity
 
 ---
 ## 7. Content Audit and GEO Improvement Opportunities
-### 7.1 Project Content Audit
+
+### 7.1 Required two-page citable-content audit
+
+The following audit checks for direct, extractable facts: numbers, named methods or equipment, standards, cited sources, and outcomes. It does not treat general claims such as "professional" or "reliable" as evidence.
+
+| Page | Concrete specifics present | Cited source present | Outcome present | Main gap |
+|---|---|---|---|---|
+| PDA Testing service (`/services#pda-testing`) | Yes: strain gauges, accelerometers, force/velocity measurement, five process steps, and four listed deliverables | No | Partly: capacity analysis is named, but no project result or example is supplied | Add the applicable test standard, a clearly approved example with number of piles or reported deliverable, and a source/report link where publication is allowed |
+| Nalgad Storage HPP (`/projects#hydro-nalgad`) | Yes: 417 MW, 284 m drilling, four in-situ direct-shear tests, nine plate-jacking tests, piezometer installation, and rock sample testing | No public report attached | Partly: the record identifies rock-mass characterization and testing, but no result or design decision | Add the approved investigation report/case study, test results, or a named project contact before claiming a design outcome |
+
+The project page is currently more citation-ready than the service page because it contains several measurable project facts. Neither page currently cites a public document. The figures above should remain published only while they are confirmed by the company records.
+
+### 7.2 Three concrete fixes
+
+1. **Create a hydropower investigation hub page.** Build a dedicated, indexable page that summarizes the 17 hydropower project records, links to each project entry, and groups verified methods such as drilling, Lugeon, ERT, SRT, MASW, direct shear, plate jacking, dilatometer and pressure-meter testing. Use only the verified values in `content/projects/projects.csv` and the research sheet; do not add inferred outcomes.
+2. **Add approved evidence to the strongest project records.** For Nalgad, Upper Arun, Upper Bheri, Mewa Khola and West Seti, attach a public case study, approved report excerpt, site photograph with caption, or named company contact where permission exists. Add the evidence URL/document reference to the content record so the page can support its claims directly.
+3. **Make service pages fact-specific and source-aware.** Expand the PDA and related investigation service records with applicable standards, measurable capability limits only when documented, and one approved project example. Add a visible "Evidence" or "Related projects" link rather than relying on generic claims. This should be reviewed by the technical lead before publication.
+
+A controlled repeat of the Google AI Mode round is still useful because the supplied capture does not include its date, region, browser state, or personalization settings. After these content changes are approved, repeat all four queries across all five surfaces and record the date, browser/region, whether browsing was enabled, exact answer wording, citations, and any factual mismatch.
+
+### 7.3 Project Content Audit
 
 The project data was reviewed to determine whether NS Engineering's project pages contain concrete, independently verifiable information that an AI retrieval system could extract and cite.
 
@@ -373,7 +429,7 @@ The strongest examples include:
 
 These examples provide stronger factual signals than generic marketing statements because they contain specific project capacities, technical methods and measurable quantities.
 
-### 7.2 Main Content Gap
+### 7.4 Main Content Gap
 
 The main weakness is inconsistency.
 
@@ -387,7 +443,7 @@ are less useful to an AI retrieval system than a statement identifying the actua
 
 Where the information is publicly verified and approved for publication, project pages should therefore be expanded with concrete facts rather than additional generic marketing language.
 
-### 7.3 Recommended Content Pattern
+### 7.5 Recommended Content Pattern
 
 Future project pages should follow a consistent structure:
 
@@ -407,7 +463,7 @@ Future project pages should follow a consistent structure:
 
 Information should only be added when it can be verified from project records or another authoritative source.
 
-### 7.4 GEO Content Priority
+### 7.6 GEO Content Priority
 
 The first pages to improve should be projects most closely related to the queries tested in this experiment, particularly hydropower geotechnical investigation.
 
