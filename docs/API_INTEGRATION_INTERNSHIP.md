@@ -517,9 +517,58 @@ A cookie is state that outlives a single request — HTTP itself is stateless, s
 
 ### Questions to Answer
 
-1. What's actually in the cookie Draft Mode set?
-2. What would happen if this were a **token in localStorage** instead of a cookie? Name one attack each approach is vulnerable to (XSS vs. CSRF) and one it isn't.
-3. Where does the draft-mode secret live? Could it ever safely be a `NEXT_PUBLIC_*` variable? Why not — read the comment already sitting above `JSON_SERVER_URL` in `ELibraryClient.tsx` before you answer, then tie it back to what you learned about environment secrets in the Cloudflare project.
+### 1. What's actually in the cookie Draft Mode set?
+
+=>
+
+When I enabled Next.js Draft Mode and inspected the cookies in:
+
+`DevTools → Application → Storage → Cookies → http://localhost:3000`
+
+I found the following Draft Mode cookie:
+
+| Property | Observed value |
+|---|---|
+| **Cookie name** | `__prerender_bypass` |
+| **Value** | `db02543d14821361b90bebf10c9c3150` |
+| **Domain** | `localhost` |
+| **Path** | `/` |
+| **HttpOnly** | Yes |
+| **SameSite** | `Lax` |
+
+The value is a generated identifier used by Next.js for Draft Mode. It does **not** contain the unpublished Standard Code itself.
+
+The important part is that the browser stores this cookie and automatically sends it with later requests to the same site. Next.js can then recognize that the request is coming from a browser with Draft Mode enabled.
+
+The flow is:
+
+User enables Draft Mode
+        <br>↓</br>
+Next.js sets the Draft Mode cookie
+        <br>↓</br>
+Browser stores the cookie
+        <br>↓</br>
+User makes another request
+        <br>↓</br>
+Browser automatically sends the cookie
+        <br>↓</br>
+Next.js recognizes Draft Mode
+        <br>↓</br>
+Unpublished Standard Codes can be shown
+
+### 2. What would happen if this were a **token in localStorage** instead of a cookie? Name one attack each approach is vulnerable to (XSS vs. CSRF) and one it isn't.
+=>
+An `HttpOnly` cookie is automatically sent by the browser with requests, but JavaScript cannot directly read it. This helps protect the cookie from being stolen through an **XSS (Cross-Site Scripting)** attack.
+
+However, because the browser automatically sends cookies with requests, cookies can be vulnerable to **CSRF (Cross-Site Request Forgery)** if proper CSRF protections are not used.
+
+If the token were stored in `localStorage`, the browser would not automatically send it with requests. The application would need to explicitly read the token and send it, for example:
+
+Authorization: Bearer <token>
+
+### 3. Where does the draft-mode secret live? Could it ever safely be a `NEXT_PUBLIC_*` variable? Why not — read the comment already sitting above `JSON_SERVER_URL` in `ELibraryClient.tsx` before you answer, then tie it back to what you learned about environment secrets in the Cloudflare project.
+=>
+
 
 ---
 
