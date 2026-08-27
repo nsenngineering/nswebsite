@@ -57,7 +57,7 @@ export default function HydropowerBrowser({ projects }: { projects: Project[] })
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Hero — purple gradient, matches reference */}
+      {/* Hero — purple gradient */}
       <section className="relative overflow-hidden bg-gradient-to-r from-violet-700 via-purple-600 to-purple-700 px-4 py-20 text-white sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl text-center">
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-6xl">
@@ -158,21 +158,23 @@ export default function HydropowerBrowser({ projects }: { projects: Project[] })
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="border-t border-slate-200 bg-white px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-6xl flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Need a hydropower investigation scope?</h2>
-            <p className="mt-2 max-w-2xl text-slate-600">
-              Contact the NS Engineering team to confirm available methods, project records and documentation for your site.
-            </p>
+      {/* Method breakdown stats */}
+            {/* Method breakdown stats */}
+      <section className="border-t border-slate-200 bg-white px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid grid-cols-2 gap-8 text-center sm:grid-cols-4">
+            {METHOD_FILTERS.filter(m => m.id !== 'all').map(method => {
+              const count = projects.filter(project =>
+                projectMatchesMethod(project, method.id)
+              ).length;
+              return (
+                <div key={method.id}>
+                  <p className="text-5xl font-extrabold text-purple-600">{count}</p>
+                  <p className="mt-2 text-sm text-slate-600">{method.label}</p>
+                </div>
+              );
+            })}
           </div>
-          <Link
-            href="/contact"
-            className="inline-flex shrink-0 items-center justify-center bg-purple-600 px-5 py-3 font-semibold text-white hover:bg-purple-700"
-          >
-            Contact NS Engineering
-          </Link>
         </div>
       </section>
     </main>
