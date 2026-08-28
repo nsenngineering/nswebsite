@@ -146,7 +146,7 @@ export default function HydropowerBrowser({ projects }: { projects: Project[] })
                   </ul>
 
                   <Link
-                    href={`/projects#${project.id}`}
+                    href={`/projects#project-${project.id}`}
                     className="mt-6 text-sm font-semibold text-purple-700 underline underline-offset-4 hover:text-purple-900"
                   >
                     View portfolio record
@@ -159,7 +159,6 @@ export default function HydropowerBrowser({ projects }: { projects: Project[] })
       </section>
 
       {/* Method breakdown stats */}
-            {/* Method breakdown stats */}
       <section className="border-t border-slate-200 bg-white px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="grid grid-cols-2 gap-8 text-center sm:grid-cols-4">

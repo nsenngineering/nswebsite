@@ -903,7 +903,7 @@ The systems repeatedly connected:
 
 NS Engineering also showed strong visibility for broader geotechnical-engineering searches and hydropower-related investigation.
 
-The available results generally described NS Engineering using technically relevant services rather than merely mentioning the company name.
+The available captures generally described NS Engineering using technically relevant services rather than merely mentioning the company name. Because the captures do not consistently preserve timestamps, region, browser state, personalization state, exact answer text, or citation URLs, this is directional evidence rather than a fully reproducible result set.
 
 However, AI-generated claims still require verification against the company's current website before being classified as definitively accurate.
 
@@ -968,7 +968,7 @@ The strongest improvements would be to add:
 - dates or project periods
 - links to authoritative project sources where available
 
-A generic statement such as:
+A generic statement such as the following illustrative example:
 
 > "We provide professional and reliable geotechnical testing services."
 
@@ -994,7 +994,7 @@ This is more directly aligned with a query such as "who does pile testing in Nep
 
 The `Service` schema is therefore especially relevant to category-level AI queries.
 
-It should be present on the pages that are the most likely answers to these queries, particularly the pile-testing/PDA and relevant geotechnical investigation service pages. The important point is that the schema should accurately describe the visible content on those pages and connect the service to the NS Engineering organization entity.
+The `/services` page emits a service list whose entries reference service IDs such as `pda-testing`; the individual services are displayed as cards and opened in a modal. The important point is that the schema should accurately describe the visible content and connect each service to the NS Engineering organization entity. This repository does not prove that a separate service detail page exists.
 
 ---
 
@@ -1004,7 +1004,7 @@ It should be present on the pages that are the most likely answers to these quer
 
 This is **important** because Perplexity failed to retrieve NS Engineering for the hydropower query.
 
-Create or improve a dedicated page around:
+Improve the existing dedicated page at `/hydropower-investigations` around:
 
 > **Geotechnical Investigation for Hydropower Projects in Nepal**
 

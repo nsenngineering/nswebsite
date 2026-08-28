@@ -47,6 +47,7 @@ export default function ServiceCard({ service, onOpenModal }: ServiceCardProps) 
 
   return (
     <Card
+      id={service.id}
       hover
       className="h-full transition-all duration-300 cursor-pointer group"
       onClick={onOpenModal}
